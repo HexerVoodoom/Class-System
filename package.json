@@ -1,0 +1,23 @@
+{
+  "name": "class-system",
+  "version": "0.1.0",
+  "description": "Sistema de classes: registros de elementos/recursos/escolas/talentos e calculadora de progressão, skills e balanceamento.",
+  "type": "module",
+  "main": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HexerVoodoom/Class-System"
+  },
+  "license": "ISC",
+  "scripts": {
+    "demo": "tsx src/demo.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}
