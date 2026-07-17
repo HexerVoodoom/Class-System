@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de Classes</title>
+<style>
+  :root {
+    --bg: #f3efe4;
+    --surface: #fbf8f0;
+    --surface-2: #eee8d8;
+    --linha: #d8cfb8;
+    --ink: #2a2433;
+    --ink-2: #6c6479;
+    --acento: #8a6d1f;
+    --arcano: #5b4bb0;
+    --ok: #3d7d5a;
+    --alerta: #b4622d;
+    --erro: #a8443a;
+    --barra-fundo: #e2dac6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14121c;
+      --surface: #1d1a28;
+      --surface-2: #262233;
+      --linha: #363048;
+      --ink: #e8e3d8;
+      --ink-2: #9a92a8;
+      --acento: #c9a84c;
+      --arcano: #9d8ce0;
+      --ok: #6fbf8f;
+      --alerta: #d08a4a;
+      --erro: #d06a5a;
+      --barra-fundo: #2c2739;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #14121c;
+    --surface: #1d1a28;
+    --surface-2: #262233;
+    --linha: #363048;
+    --ink: #e8e3d8;
+    --ink-2: #9a92a8;
+    --acento: #c9a84c;
+    --arcano: #9d8ce0;
+    --ok: #6fbf8f;
+    --alerta: #d08a4a;
+    --erro: #d06a5a;
+    --barra-fundo: #2c2739;
+  }
+  :root[data-theme='light'] {
+    --bg: #f3efe4;
+    --surface: #fbf8f0;
+    --surface-2: #eee8d8;
+    --linha: #d8cfb8;
+    --ink: #2a2433;
+    --ink-2: #6c6479;
+    --acento: #8a6d1f;
+    --arcano: #5b4bb0;
+    --ok: #3d7d5a;
+    --alerta: #b4622d;
+    --erro: #a8443a;
+    --barra-fundo: #e2dac6;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  h1, h2, h3 {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    text-wrap: balance;
+    margin: 0;
+  }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 1px;
+  }
+  .num { font-variant-numeric: tabular-nums; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.92em; }
+
+  .app { max-width: 1280px; margin: 0 auto; padding: 20px 16px 80px; }
+
+  header.topo {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+    justify-content: space-between; padding-bottom: 14px; margin-bottom: 18px;
+    border-bottom: 2px solid var(--acento);
+  }
+  header.topo h1 { font-size: 26px; letter-spacing: 0.2px; }
+  header.topo .sub { margin: 2px 0 0; color: var(--ink-2); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .orcamentos { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .orcamento { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--ink-2); }
+  .orcamento input { width: 70px; background: var(--surface); color: var(--ink); border: 1px solid var(--linha); border-radius: 4px; padding: 3px 6px; }
+  .gasto { font-size: 13px; }
+  .gasto.excedido { color: var(--erro); font-weight: 600; }
+  .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+  .acoes button, .acoes label {
+    background: var(--surface); border: 1px solid var(--linha); color: var(--ink);
+    border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+  }
+  .acoes button:hover, .acoes label:hover { border-color: var(--acento); }
+  .acoes .perigo:hover { border-color: var(--erro); color: var(--erro); }
+
+  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
+  @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
+
+  section.bloco { margin-bottom: 24px; }
+  section.bloco > h2 {
+    font-size: 17px; margin-bottom: 10px; color: var(--acento);
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  section.bloco > h2 .conta { font-size: 12px; color: var(--ink-2); font-family: system-ui, sans-serif; }
+
+  .grade-elementos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .carta {
+    background: var(--surface); border: 1px solid var(--linha); border-radius: 8px;
+    padding: 8px 10px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .carta .nome { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13.5px; }
+  .ponto-cor { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .carta .desc { font-size: 11.5px; color: var(--ink-2); line-height: 1.35; }
+  .controles { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+  .controles button {
+    width: 24px; height: 24px; border-radius: 5px; border: 1px solid var(--linha);
+    background: var(--surface-2); color: var(--ink); line-height: 1; padding: 0;
+  }
+  .controles button:hover { border-color: var(--acento); }
+  .controles .valor { min-width: 26px; text-align: center; font-weight: 600; }
+  .efetivo { font-size: 11px; color: var(--arcano); }
+
+  .lista-cartas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+
+  .talento-grupo { margin-bottom: 10px; }
+  .talento-grupo h3 { font-size: 13px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-family: system-ui, sans-serif; }
+  .req { font-size: 11px; color: var(--alerta); }
+  .exclusivo { font-size: 11px; color: var(--arcano); }
+  .ranks { letter-spacing: 2px; color: var(--acento); font-size: 12px; }
+
+  .filtro { width: 100%; margin-bottom: 8px; background: var(--surface); color: var(--ink); border: 1px solid var(--linha); border-radius: 6px; padding: 6px 10px; }
+
+  .linha-derivado {
+    display: flex; align-items: center; gap: 10px; padding: 6px 8px;
+    border-bottom: 1px solid var(--linha); font-size: 13px;
+  }
+  .linha-derivado:last-child { border-bottom: none; }
+  .linha-derivado .info { flex: 1; min-width: 0; }
+  .linha-derivado .receita { font-size: 11px; color: var(--ink-2); }
+  .rotulo-nivel { flex: none; font-size: 12px; }
+  .rotulo-nivel.liberado { color: var(--ok); font-weight: 600; }
+  .barra { height: 5px; border-radius: 3px; background: var(--barra-fundo); overflow: hidden; margin-top: 3px; }
+  .barra > i { display: block; height: 100%; background: var(--arcano); border-radius: 3px; }
+  .barra.cheia > i { background: var(--ok); }
+  .painel { background: var(--surface); border: 1px solid var(--linha); border-radius: 8px; padding: 4px 8px; max-height: 340px; overflow-y: auto; }
+
+  .arquetipo { padding: 8px 10px; border-bottom: 1px solid var(--linha); font-size: 13px; }
+  .arquetipo:last-child { border-bottom: none; }
+  .arquetipo .titulo { font-weight: 600; display: flex; gap: 8px; align-items: baseline; }
+  .selo { font-size: 10.5px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--ok); color: var(--ok); letter-spacing: 0.05em; }
+  .selo.bloqueado { border-color: var(--linha); color: var(--ink-2); }
+  .condicoes { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
+  .condicoes .falta { color: var(--alerta); }
+  .capacidades-lista { font-size: 11.5px; color: var(--arcano); margin-top: 2px; }
+
+  form.skill { background: var(--surface); border: 1px solid var(--linha); border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
+  form.skill .linha-campo { display: grid; grid-template-columns: 118px 1fr auto; gap: 8px; align-items: center; font-size: 13px; }
+  form.skill label { color: var(--ink-2); }
+  form.skill select, form.skill input[type='text'] {
+    background: var(--surface-2); color: var(--ink); border: 1px solid var(--linha);
+    border-radius: 5px; padding: 5px 8px; width: 100%; font: inherit;
+  }
+  form.skill input[type='range'] { width: 100%; accent-color: var(--acento); }
+  .radios { display: flex; gap: 12px; }
+  .radios label { color: var(--ink); display: flex; gap: 4px; align-items: center; font-size: 13px; }
+
+  .resultado-skill { margin-top: 12px; background: var(--surface); border: 1px solid var(--acento); border-radius: 8px; padding: 12px; }
+  .resultado-skill h3 { font-size: 16px; margin-bottom: 6px; }
+  .metricas { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 8px 0; }
+  .metrica { background: var(--surface-2); border-radius: 6px; padding: 6px 8px; }
+  .metrica .rotulo { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-2); }
+  .metrica .valor { font-size: 17px; font-weight: 600; }
+  .perfil-linha { display: grid; grid-template-columns: 72px 1fr 48px; gap: 8px; align-items: center; font-size: 12px; margin: 3px 0; }
+  .perfil-linha .barra { margin-top: 0; height: 8px; }
+  .erros { color: var(--erro); font-size: 13px; margin: 0; padding-left: 18px; }
+  .propriedades li { font-size: 12.5px; }
+  .lista-skills .item-skill {
+    display: flex; justify-content: space-between; gap: 8px; align-items: center;
+    padding: 6px 8px; border-bottom: 1px solid var(--linha); font-size: 13px;
+  }
+  .lista-skills .item-skill:last-child { border-bottom: none; }
+  .lista-skills button { background: none; border: none; color: var(--erro); font-size: 12px; }
+  .botao-primario {
+    background: var(--acento); color: var(--bg); border: none; border-radius: 6px;
+    padding: 7px 14px; font-weight: 600;
+  }
+  .botao-primario:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    max-width: 90vw;
+  }
+  #toast.visivel { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+  .vazio { color: var(--ink-2); font-size: 13px; padding: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topo">
+    <div>
+      <h1>Simulador de Classes</h1>
+      <p class="sub">elementos · recursos · escolas · talentos</p>
+    </div>
+    <div class="orcamentos">
+      <div class="orcamento">
+        <span>Pontos de atributo</span>
+        <input id="orc-atributos" type="number" min="0" step="5" value="100">
+      </div>
+      <div class="orcamento">
+        <span>Pontos de talento</span>
+        <input id="orc-talentos" type="number" min="0" step="1" value="20">
+      </div>
+      <div id="gastos" class="gasto num"></div>
+    </div>
+    <div class="acoes">
+      <button id="btn-exportar" type="button">Exportar build</button>
+      <label>Importar<input id="input-importar" type="file" accept=".json,application/json" hidden></label>
+      <button id="btn-resetar" type="button" class="perigo">Resetar</button>
+    </div>
+  </header>
+
+  <main>
+    <div>
+      <section class="bloco">
+        <h2>Elementos base <span class="conta" id="conta-elementos"></span></h2>
+        <div id="elementos" class="grade-elementos"></div>
+      </section>
+      <section class="bloco">
+        <h2>Escolas</h2>
+        <div id="escolas" class="lista-cartas"></div>
+      </section>
+      <section class="bloco">
+        <h2>Recursos</h2>
+        <div id="recursos" class="lista-cartas"></div>
+      </section>
+      <section class="bloco">
+        <h2>Talentos <span class="conta" id="conta-talentos"></span></h2>
+        <div id="talentos"></div>
+      </section>
+    </div>
+
+    <div>
+      <section class="bloco">
+        <h2>Elementos combinados <span class="conta" id="conta-derivados"></span></h2>
+        <input id="filtro-derivados" class="filtro" type="search" placeholder="Filtrar por nome ou componente…">
+        <div id="derivados" class="painel"></div>
+      </section>
+      <section class="bloco">
+        <h2>Arquétipos <span class="conta" id="conta-arquetipos"></span></h2>
+        <div id="arquetipos" class="painel"></div>
+      </section>
+      <section class="bloco">
+        <h2>Construtor de skill</h2>
+        <form class="skill" id="form-skill"></form>
+        <div id="resultado-skill"></div>
+      </section>
+      <section class="bloco">
+        <h2>Skills salvas <span class="conta" id="conta-skills"></span></h2>
+        <div id="skills-salvas" class="painel lista-skills"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div id="toast" role="status"></div>
+<script>"use strict";(()=>{var bo=["fogo","agua","terra","ar","eletricidade"],_=(e,o,a,r,i)=>({dano:e,controle:o,cura:a,defesa:r,suporte:i}),N={fogo:{id:"fogo",nome:"Fogo",tipo:"base",fatorPotencia:1,pesos:_(1,0,0,0,0),descricao:"Destrui\xE7\xE3o pura: dano direto e queimadura."},agua:{id:"agua",nome:"\xC1gua",tipo:"base",fatorPotencia:1,pesos:_(.4,.4,.2,0,0),descricao:"Fluxo e adapta\xE7\xE3o: empurra, puxa, afoga e sustenta."},terra:{id:"terra",nome:"Terra",tipo:"base",fatorPotencia:1,pesos:_(.3,.2,0,.5,0),descricao:"Peso e perman\xEAncia: muralhas, tremores e imobilidade."},ar:{id:"ar",nome:"Ar",tipo:"base",fatorPotencia:1,pesos:_(.4,.4,0,0,.2),descricao:"Velocidade e alcance: l\xE2minas de vento e deslocamento."},eletricidade:{id:"eletricidade",nome:"Eletricidade",tipo:"base",fatorPotencia:1,pesos:_(.8,.2,0,0,0),descricao:"Picos instant\xE2neos: dano em cadeia e paralisia breve."},arcano:{id:"arcano",nome:"Arcano",tipo:"base",fatorPotencia:1,pesos:_(.5,.2,0,0,.3),descricao:"Magia pura: conversa com todas as escolas e elementos m\xE1gicos."},sombra:{id:"sombra",nome:"Sombra",tipo:"base",fatorPotencia:1,pesos:_(.5,.3,0,0,.2),descricao:"Furtividade, drenagem e medo."},luz:{id:"luz",nome:"Luz",tipo:"base",fatorPotencia:1,pesos:_(.3,0,.3,.2,.2),descricao:"Revela\xE7\xE3o, puni\xE7\xE3o e prote\xE7\xE3o."},vileza:{id:"vileza",nome:"Vileza",tipo:"base",fatorPotencia:1,pesos:_(.6,.3,0,0,.1),descricao:"Pactos, corrup\xE7\xE3o e dem\xF4nios; vizinha do fogo."},morte:{id:"morte",nome:"Morte",tipo:"base",fatorPotencia:1,pesos:_(.6,.3,0,0,.1),descricao:"Decad\xEAncia, mortos-vivos e o fim inevit\xE1vel."},vida:{id:"vida",nome:"Vida",tipo:"base",fatorPotencia:1,pesos:_(0,0,.6,.2,.2),descricao:"Cura e crescimento; alimenta os elementos primais."},vigor:{id:"vigor",nome:"Vigor",tipo:"base",fatorPotencia:1,pesos:_(.6,0,0,.3,.1),descricao:"O esp\xEDrito do corpo; potencializa o combate f\xEDsico."}};function s(e,o,a,r,i={}){let n=i.fator??(a.length>=3?1.3:1.15),t=i.minimo??(a.length>=3?15:10),l={dano:0,controle:0,cura:0,defesa:0,suporte:0};for(let d of a){let p=N[d].pesos;l.dano+=p.dano/a.length,l.controle+=p.controle/a.length,l.cura+=p.cura/a.length,l.defesa+=p.defesa/a.length,l.suporte+=p.suporte/a.length}return{id:e,nome:o,tipo:i.tipo??"derivado",fatorPotencia:n,pesos:l,descricao:r,receita:a.map(d=>({elemento:d,nivelMinimo:t}))}}var W=[s("vapor","Vapor",["fogo","agua"],"N\xE9voa escaldante: queima, oculta e sufoca em \xE1rea.",{fator:1.2}),s("lava","Lava",["fogo","terra"],"Fogo que adere: impacto pesado + queimadura persistente."),s("incendio","Inc\xEAndio",["fogo","ar"],"Fogo alimentado pelo vento: espalha-se sozinho de alvo em alvo."),s("plasma","Plasma",["fogo","eletricidade"],"Mat\xE9ria ionizada: o dano mais cru do sistema, dif\xEDcil de resistir."),s("fogo_feiticeiro","Fogo Feiticeiro",["fogo","arcano"],"Chama program\xE1vel: explos\xF5es com atraso, formas e gatilhos."),s("fogo_negro","Fogo Negro",["fogo","sombra"],"Chama que n\xE3o ilumina: queima e drena ao mesmo tempo."),s("chama_solar","Chama Solar",["fogo","luz"],"Fogo purificador: dano que tamb\xE9m aben\xE7oa aliados pr\xF3ximos."),s("fogo_infernal","Fogo Infernal",["fogo","vileza"],"A fornalha dos pactos: queima a carne e a vontade."),s("chama_azul","Chama Azul",["fogo","morte"],"Fogo que queima a alma; ignora parte da defesa.",{fator:1.2,minimo:12}),s("fenix","F\xEAnix",["fogo","vida"],"Fogo que renasce: dano que retorna como cura."),s("fervor","Fervor",["fogo","vigor"],"Sangue fervente: golpes f\xEDsicos incendi\xE1rios."),s("pantano","P\xE2ntano",["agua","terra"],"Lama viva: prende, afunda e engole os inimigos."),s("gelo","Gelo",["agua","ar"],"\xC1gua parada no tempo: congela, retarda e estilha\xE7a."),s("agua_viva","\xC1gua-Viva",["agua","eletricidade"],"Corrente condutora: choques que viajam por superf\xEDcies molhadas."),s("mare","Mar\xE9",["agua","arcano"],"Fluxo lunar: ondas que reposicionam aliados e inimigos."),s("abismo","Abismo",["agua","sombra"],"Press\xE3o das profundezas: esmaga e cega quem afunda."),s("prisma","Prisma",["agua","luz"],"Luz refratada: divide um efeito entre m\xFAltiplos feixes."),s("acido","\xC1cido",["agua","vileza"],"Corros\xE3o: derrete armadura e derrete defesas."),s("veneno","Veneno",["agua","morte"],"Toxina paciente: dano cont\xEDnuo que se recusa a sair."),s("nascente","Nascente",["agua","vida"],"Fonte restauradora: cura em \xE1rea que persiste no ch\xE3o."),s("correnteza","Correnteza",["agua","vigor"],"Fluidez marcial: golpes encadeados sem pausa."),s("areia","Areia",["terra","ar"],"Tempestade de areia: cega, corr\xF3i e desloca."),s("magnetismo","Magnetismo",["terra","eletricidade"],"Atra\xE7\xE3o e repuls\xE3o: desarma, puxa e prende metais."),s("cristal","Cristal",["terra","arcano"],"Terra lapidada pelo arcano: barreiras e foco amplificador."),s("obsidiana","Obsidiana",["terra","sombra"],"Vidro vulc\xE2nico: l\xE2minas defensivas que cortam quem ataca."),s("ouro_vivo","Ouro Vivo",["terra","luz"],"Metal sagrado: armaduras e armas conjuradas brilhantes."),s("solo_profano","Solo Profano",["terra","vileza"],"Ch\xE3o corrompido: territ\xF3rio que enfraquece quem pisa."),s("ossuario","Ossu\xE1rio",["terra","morte"],"Os ossos da terra: muralhas e lan\xE7as de osso."),s("flora","Flora",["terra","vida"],"Natureza desperta: vinhas, ra\xEDzes e crescimento selvagem."),s("tita","Tit\xE3",["terra","vigor"],"Corpo de pedra: for\xE7a colossal e pele impenetr\xE1vel."),s("tempestade","Tempestade",["ar","eletricidade"],"C\xE9u em f\xFAria: \xE1rea enorme e rel\xE2mpagos encadeados."),s("eter","\xC9ter",["ar","arcano"],"O vento entre os mundos: teleporte curto e levita\xE7\xE3o."),s("murmurio","Murm\xFArio",["ar","sombra"],"Vozes no vento: medo, confus\xE3o e sussurros que distraem."),s("aurora","Aurora",["ar","luz"],"V\xE9u celeste: prote\xE7\xE3o em \xE1rea e clareza mental."),s("enxofre","Enxofre",["ar","vileza"],"Fuma\xE7a infernal: nuvens t\xF3xicas que corrompem o f\xF4lego."),s("miasma","Miasma",["ar","morte"],"Ar p\xFAtrido: praga aerotransportada de longo alcance."),s("alento","Alento",["ar","vida"],"Sopro vital: cura \xE0 dist\xE2ncia e f\xF4lego renovado."),s("impeto","\xCDmpeto",["ar","vigor"],"Velocidade sobre-humana: investidas e esquivas rel\xE2mpago."),s("fluxo","Fluxo",["eletricidade","arcano"],"Corrente de mana: sobrecarrega magias e dispositivos."),s("trovao_negro","Trov\xE3o Negro",["eletricidade","sombra"],"Rel\xE2mpago silencioso: atinge sem aviso e sem som."),s("fulgor","Fulgor",["eletricidade","luz"],"Clar\xE3o ofuscante: cega em \xE1rea e pune quem ataca."),s("tormento","Tormento",["eletricidade","vileza"],"Choque cruel: dor que interrompe e desespera."),s("galvanismo","Galvanismo",["eletricidade","morte"],"A centelha que reanima: constructos de carne e raio."),s("sinapse","Sinapse",["eletricidade","vida"],"Sistema nervoso: acelera aliados e trava reflexos inimigos."),s("reflexo","Reflexo",["eletricidade","vigor"],"Nervos el\xE9tricos: contra-ataques instant\xE2neos."),s("ocultismo","Ocultismo",["arcano","sombra"],"Saber proibido: magias que o alvo n\xE3o v\xEA chegar."),s("runa","Runa",["arcano","luz"],"Palavra gravada: efeitos persistentes ancorados no ch\xE3o ou em aliados."),s("pacto","Pacto",["arcano","vileza"],"Contrato de poder: sacrifica recurso por efeito ampliado."),s("alma","Alma",["arcano","morte"],"A moeda dos mortos: manipula esp\xEDritos e ess\xEAncias."),s("essencia","Ess\xEAncia",["arcano","vida"],"A mat\xE9ria-prima da vida: transmuta\xE7\xE3o e restaura\xE7\xE3o profunda."),s("encantamento","Encantamento",["arcano","vigor"],"Corpo como foco: armas e punhos imbu\xEDdos de magia."),s("crepusculo","Crep\xFAsculo",["sombra","luz"],"A fronteira: revela e oculta ao mesmo tempo.",{fator:1.25,minimo:15}),s("terror","Terror",["sombra","vileza"],"Medo encarnado: inimigos fogem ou congelam."),s("espectro","Espectro",["sombra","morte"],"Forma incorp\xF3rea: atravessa paredes e ignora armadura."),s("parasita","Parasita",["sombra","vida"],"Vida roubada: drena o inimigo para curar voc\xEA."),s("assassinio","Assass\xEDnio",["sombra","vigor"],"A arte do golpe \xFAnico: dano massivo pelas costas."),s("heresia","Heresia",["luz","vileza"],"Luz falsa: ilus\xF5es sagradas e milagres corrompidos."),s("julgamento","Julgamento",["luz","morte"],"O veredito final: executa alvos enfraquecidos."),s("santidade","Santidade",["luz","vida"],"Gra\xE7a plena: a cura mais pura do sistema."),s("bravura","Bravura",["luz","vigor"],"Coragem radiante: aura que fortalece a linha de frente."),s("praga","Praga",["vileza","morte"],"Corrup\xE7\xE3o contagiosa: veneno e maldi\xE7\xE3o se espalham.",{fator:1.2,minimo:12}),s("mutacao","Muta\xE7\xE3o",["vileza","vida"],"Carne mold\xE1vel: transforma o pr\xF3prio corpo em arma."),s("carnificina","Carnificina",["vileza","vigor"],"Sede de sangue: quanto mais fere, mais forte fica."),s("equilibrio","Equil\xEDbrio",["morte","vida"],"Vida e morte na mesma m\xE3o: converte dano em cura e cura em dano.",{fator:1.25,minimo:15}),s("ceifa","Ceifa",["morte","vigor"],"A foice encarnada: golpes f\xEDsicos que colhem almas."),s("vitalidade","Vitalidade",["vida","vigor"],"Regenera\xE7\xE3o cont\xEDnua: o corpo que n\xE3o aceita cair."),s("chama_demoniaca","Chama Demon\xEDaca",["fogo","vileza","morte"],"Fogo alimentado por pacto e morte: queima corpo, alma e contrato."),s("furacao","Furac\xE3o",["agua","ar","eletricidade"],"A tempestade perfeita: \xE1rea devastadora que se move sozinha."),s("selva","Selva",["agua","terra","vida"],"Ecossistema vivo: terreno inteiro que luta por voc\xEA."),s("abominacao","Abomina\xE7\xE3o",["sombra","morte","vileza"],"O horror completo: criaturas que n\xE3o deveriam existir."),s("eclipse","Eclipse",["luz","sombra","arcano"],"O instante em que os opostos se alinham: anula magias alheias."),s("reencarnacao","Reencarna\xE7\xE3o",["vida","morte","arcano"],"O ciclo dominado: retorno da morte e segunda chance."),s("sobrecarga","Sobrecarga",["eletricidade","arcano","vigor"],"Corpo-condutor: velocidade e poder al\xE9m do limite seguro."),s("ascensao","Ascens\xE3o",["luz","vida","vigor"],"Forma exaltada: transcende brevemente a condi\xE7\xE3o mortal."),s("nucleo","N\xFAcleo",["fogo","terra","eletricidade"],"O cora\xE7\xE3o do mundo: erup\xE7\xF5es magn\xE9ticas e magma pressurizado."),s("primordial","Primordial",["fogo","agua","terra","ar","eletricidade"],"Os cinco primais em harmonia: comanda o pr\xF3prio terreno da batalha.",{fator:1.35,minimo:12,tipo:"especial"}),s("ciclo","Ciclo",["vida","morte","luz","sombra"],"Nascimento, morte, dia e noite: inverte estados \u2014 cura vira dano, buff vira maldi\xE7\xE3o.",{fator:1.35,minimo:12,tipo:"especial"}),s("nulo","Nulo",["fogo","agua","terra","ar","eletricidade","arcano","sombra","luz","vileza","morte","vida","vigor"],"O elemento de quem dominou todos: nega, absorve e devolve qualquer coisa.",{fator:1.4,minimo:8,tipo:"especial"})],_o=Object.fromEntries(W.map(e=>[e.id,e])),g={...N,..._o};function Y(){return Object.values(N)}function F(){return W}var Z=[{de:"vida",para:[...bo],razao:.2},{de:"fogo",para:["vileza"],razao:.1},{de:"vileza",para:["fogo"],razao:.1},{de:"sombra",para:["morte"],razao:.1},{de:"morte",para:["sombra"],razao:.1},{de:"luz",para:["vida"],razao:.1},{de:"vida",para:["luz"],razao:.1},{de:"vigor",para:["vida"],razao:.1},{de:"vida",para:["vigor"],razao:.1},{de:"terra",para:["vigor"],razao:.05},{de:"eletricidade",para:["ar"],razao:.05},{de:"arcano",para:["fogo","agua","terra","ar","eletricidade","sombra","luz"],razao:.05}];var b={combate_fisico:{id:"combate_fisico",nome:"Combate F\xEDsico",tipo:"marcial",entregaPadrao:"dano",pesos:{dano:.7,controle:0,cura:0,defesa:.3,suporte:0},descricao:"Corpo a corpo; escala com vigor e alimenta a f\xFAria."},longo_alcance:{id:"longo_alcance",nome:"Longo Alcance",tipo:"marcial",entregaPadrao:"dano",pesos:{dano:.9,controle:.1,cura:0,defesa:0,suporte:0},descricao:"Proj\xE9teis e precis\xE3o \xE0 dist\xE2ncia."},evocacao:{id:"evocacao",nome:"Evoca\xE7\xE3o",tipo:"magica",entregaPadrao:"invocacao",pesos:{dano:.6,controle:0,cura:0,defesa:.2,suporte:.2},descricao:"Traz criaturas e construtos para lutar por voc\xEA."},conjuracao:{id:"conjuracao",nome:"Conjura\xE7\xE3o",tipo:"magica",entregaPadrao:"dano",pesos:{dano:.7,controle:.3,cura:0,defesa:0,suporte:0},descricao:"Molda o elemento em efeito direto: proj\xE9til, explos\xE3o, parede."},benca:{id:"benca",nome:"B\xEAn\xE7\xE3o (Buff)",tipo:"magica",entregaPadrao:"efeito",pesos:{dano:0,controle:0,cura:.3,defesa:.3,suporte:.4},descricao:"Fortalece aliados: escudos, auras e \xEAxtase."},maldicao:{id:"maldicao",nome:"Maldi\xE7\xE3o (Debuff)",tipo:"magica",entregaPadrao:"efeito",pesos:{dano:.4,controle:.6,cura:0,defesa:0,suporte:0},descricao:"Enfraquece, envenena e amaldi\xE7oa inimigos."}};var h={mana:{id:"mana",nome:"Mana",descricao:"Gasto cont\xEDnuo e previs\xEDvel; regenera a taxa constante.",poolBase:100,poolPorProficiencia:10,parametros:{regenBasePorSegundo:5,regenPorProficiencia:.4}},fe:{id:"fe",nome:"F\xE9",descricao:"Cada uso aumenta o custo dos pr\xF3ximos; a penalidade decai com o tempo sem usar.",poolBase:100,poolPorProficiencia:8,parametros:{regenBasePorSegundo:6,regenPorProficiencia:.4,penalidadePorEnergia:.02,meiaVidaPenalidadeSegundos:20,reducaoPenalidadePorProficiencia:.01,multiplicadorMaximo:4}},furia:{id:"furia",nome:"F\xFAria",descricao:"Gerada ao causar e receber dano; decai fora de combate; sem regenera\xE7\xE3o passiva.",poolBase:100,poolPorProficiencia:5,parametros:{ganhoPorDanoCausado:.5,ganhoPorDanoRecebido:.8,ganhoPorProficiencia:.02,decaimentoForaDeCombatePorSegundo:3,segundosParaSairDeCombate:5}}};var P={area_ampliada:{id:"area_ampliada",nome:"\xC1rea Ampliada",descricao:"Aumenta o raio m\xE1ximo configur\xE1vel das suas skills (+2m/rank).",ranksMaximos:5,efeitos:[{tipo:"raio_maximo_bonus",valorPorRank:2}]},conjuracao_rapida:{id:"conjuracao_rapida",nome:"Conjura\xE7\xE3o R\xE1pida",descricao:"Reduz o tempo m\xEDnimo de conjura\xE7\xE3o (\u22120.1s/rank).",ranksMaximos:5,efeitos:[{tipo:"tempo_conjuracao_minimo_reducao",valorPorRank:.1}]},alcance_estendido:{id:"alcance_estendido",nome:"Alcance Estendido",descricao:"Aumenta a dist\xE2ncia m\xE1xima de lan\xE7amento (+5m/rank).",ranksMaximos:5,efeitos:[{tipo:"alcance_bonus_metros",valorPorRank:5}]},canalizacao_profunda:{id:"canalizacao_profunda",nome:"Canaliza\xE7\xE3o Profunda",descricao:"Permite investir mais energia por skill (+10%/rank).",ranksMaximos:5,efeitos:[{tipo:"energia_maxima_bonus_fracao",valorPorRank:.1}]},economia_de_recurso:{id:"economia_de_recurso",nome:"Economia de Recurso",descricao:"Reduz o custo efetivo das skills (\u22123%/rank).",ranksMaximos:5,efeitos:[{tipo:"custo_reducao_fracao",valorPorRank:.03}]},persistencia:{id:"persistencia",nome:"Persist\xEAncia",descricao:"Efeitos cont\xEDnuos e invoca\xE7\xF5es duram mais (+15%/rank).",ranksMaximos:3,efeitos:[{tipo:"propriedade",chave:"duracao_bonus",rotulo:"Dura\xE7\xE3o de efeitos",valorPorRank:.15}]},impacto_imediato:{id:"impacto_imediato",nome:"Impacto Imediato",descricao:"Especializa em dano instant\xE2neo (+5%/rank; exclui DoT).",ranksMaximos:3,exclusivoCom:["dano_ao_longo_do_tempo"],efeitos:[{tipo:"foco_entrega",entrega:"instantaneo",bonusFracaoPorRank:.05}]},dano_ao_longo_do_tempo:{id:"dano_ao_longo_do_tempo",nome:"Dano ao Longo do Tempo",descricao:"Especializa em efeitos cont\xEDnuos (+5%/rank; exclui Impacto Imediato).",ranksMaximos:3,exclusivoCom:["impacto_imediato"],efeitos:[{tipo:"foco_entrega",entrega:"continuo",bonusFracaoPorRank:.05}]},perfuracao:{id:"perfuracao",nome:"Perfura\xE7\xE3o",descricao:"Suas conjura\xE7\xF5es ignoram parte da defesa (10%/rank; exclui Estilha\xE7o).",ranksMaximos:3,requisito:{escola:"conjuracao",nivelMinimo:5},exclusivoCom:["estilhaco"],efeitos:[{tipo:"propriedade",chave:"penetracao_defesa",rotulo:"Penetra\xE7\xE3o de defesa",valorPorRank:.1,escola:"conjuracao"}]},estilhaco:{id:"estilhaco",nome:"Estilha\xE7o",descricao:"Acertos em alvo \xFAnico respingam nos vizinhos (12%/rank; exclui Perfura\xE7\xE3o).",ranksMaximos:3,requisito:{escola:"conjuracao",nivelMinimo:5},exclusivoCom:["perfuracao"],efeitos:[{tipo:"propriedade",chave:"respingo",rotulo:"Dano respingado",valorPorRank:.12,escola:"conjuracao"}]},eco_arcano:{id:"eco_arcano",nome:"Eco Arcano",descricao:"Chance da conjura\xE7\xE3o repetir de gra\xE7a (8%/rank).",ranksMaximos:2,requisito:{escola:"conjuracao",nivelMinimo:10},efeitos:[{tipo:"propriedade",chave:"eco",rotulo:"Chance de eco",valorPorRank:.08,escola:"conjuracao"}]},enxame:{id:"enxame",nome:"Enxame",descricao:"Evoca mais criaturas, individualmente mais fracas (+1/rank; exclui Colosso).",ranksMaximos:4,requisito:{escola:"evocacao",nivelMinimo:5},exclusivoCom:["colosso"],efeitos:[{tipo:"invocacao_quantidade_bonus",valorPorRank:1}]},colosso:{id:"colosso",nome:"Colosso",descricao:"Evoca menos criaturas, muito mais poderosas (+10%/rank; exclui Enxame).",ranksMaximos:4,requisito:{escola:"evocacao",nivelMinimo:5},exclusivoCom:["enxame"],efeitos:[{tipo:"invocacao_potencia_bonus_fracao",valorPorRank:.1}]},vinculo_marcial:{id:"vinculo_marcial",nome:"V\xEDnculo Marcial",descricao:"Suas evoca\xE7\xF5es herdam sua t\xE9cnica de combate f\xEDsico (+6%/rank).",ranksMaximos:3,requisito:{escola:"combate_fisico",nivelMinimo:5},efeitos:[{tipo:"invocacao_potencia_bonus_fracao",valorPorRank:.06}]},simbiose:{id:"simbiose",nome:"Simbiose",descricao:"Suas criaturas curam voc\xEA com parte do dano que causam (5%/rank).",ranksMaximos:3,requisito:{escola:"evocacao",nivelMinimo:8},efeitos:[{tipo:"propriedade",chave:"simbiose",rotulo:"Dano das criaturas vira cura",valorPorRank:.05,escola:"evocacao"}]},autonomia:{id:"autonomia",nome:"Autonomia",descricao:"Criaturas ca\xE7am sozinhas e persistem longe de voc\xEA (exclui Comando).",ranksMaximos:2,requisito:{escola:"evocacao",nivelMinimo:10},exclusivoCom:["comando"],efeitos:[{tipo:"propriedade",chave:"autonomia",rotulo:"Alcance de ca\xE7a das criaturas",valorPorRank:.5,escola:"evocacao"}]},comando:{id:"comando",nome:"Comando",descricao:"Criaturas pr\xF3ximas a voc\xEA ganham poder (+8%/rank; exclui Autonomia).",ranksMaximos:2,requisito:{escola:"evocacao",nivelMinimo:10},exclusivoCom:["autonomia"],efeitos:[{tipo:"invocacao_potencia_bonus_fracao",valorPorRank:.08}]},contagio:{id:"contagio",nome:"Cont\xE1gio",descricao:"Maldi\xE7\xF5es pulam para inimigos pr\xF3ximos (+1 salto/rank; exclui Afli\xE7\xE3o).",ranksMaximos:3,requisito:{escola:"maldicao",nivelMinimo:5},exclusivoCom:["aflicao_profunda"],efeitos:[{tipo:"propriedade",chave:"saltos_contagio",rotulo:"Saltos de cont\xE1gio",valorPorRank:1,escola:"maldicao"}]},aflicao_profunda:{id:"aflicao_profunda",nome:"Afli\xE7\xE3o Profunda",descricao:"Maldi\xE7\xF5es acumulam no mesmo alvo (+10% por ac\xFAmulo/rank; exclui Cont\xE1gio).",ranksMaximos:3,requisito:{escola:"maldicao",nivelMinimo:5},exclusivoCom:["contagio"],efeitos:[{tipo:"propriedade",chave:"acumulo_aflicao",rotulo:"B\xF4nus por ac\xFAmulo",valorPorRank:.1,escola:"maldicao"}]},egide:{id:"egide",nome:"\xC9gide",descricao:"Suas b\xEAn\xE7\xE3os criam escudos absorventes (15%/rank; exclui Exalta\xE7\xE3o).",ranksMaximos:3,requisito:{escola:"benca",nivelMinimo:5},exclusivoCom:["exaltacao"],efeitos:[{tipo:"propriedade",chave:"escudo",rotulo:"Fra\xE7\xE3o convertida em escudo",valorPorRank:.15,escola:"benca"}]},exaltacao:{id:"exaltacao",nome:"Exalta\xE7\xE3o",descricao:"Suas b\xEAn\xE7\xE3os aumentam o dano dos aliados (8%/rank; exclui \xC9gide).",ranksMaximos:3,requisito:{escola:"benca",nivelMinimo:5},exclusivoCom:["egide"],efeitos:[{tipo:"propriedade",chave:"exaltacao",rotulo:"Dano concedido a aliados",valorPorRank:.08,escola:"benca"}]},vinculo_de_grupo:{id:"vinculo_de_grupo",nome:"V\xEDnculo de Grupo",descricao:"B\xEAn\xE7\xE3os em \xE1rea afetam +1 aliado por rank sem perder for\xE7a.",ranksMaximos:3,requisito:{escola:"benca",nivelMinimo:8},efeitos:[{tipo:"propriedade",chave:"alvos_extras_benca",rotulo:"Aliados extras",valorPorRank:1,escola:"benca"}]},sequencia_marcial:{id:"sequencia_marcial",nome:"Sequ\xEAncia Marcial",descricao:"Golpes consecutivos aceleram (+6% velocidade por acerto/rank; exclui Golpe Devastador).",ranksMaximos:3,requisito:{escola:"combate_fisico",nivelMinimo:5},exclusivoCom:["golpe_devastador"],efeitos:[{tipo:"propriedade",chave:"combo",rotulo:"Acelera\xE7\xE3o por combo",valorPorRank:.06,escola:"combate_fisico"}]},golpe_devastador:{id:"golpe_devastador",nome:"Golpe Devastador",descricao:"Golpes lentos com chance de atordoar (10%/rank; exclui Sequ\xEAncia).",ranksMaximos:3,requisito:{escola:"combate_fisico",nivelMinimo:5},exclusivoCom:["sequencia_marcial"],efeitos:[{tipo:"propriedade",chave:"atordoamento",rotulo:"Chance de atordoar",valorPorRank:.1,escola:"combate_fisico"}]},postura_inabalavel:{id:"postura_inabalavel",nome:"Postura Inabal\xE1vel",descricao:"Reduz dano recebido enquanto ataca (5%/rank).",ranksMaximos:3,requisito:{escola:"combate_fisico",nivelMinimo:8},efeitos:[{tipo:"propriedade",chave:"mitigacao",rotulo:"Redu\xE7\xE3o de dano",valorPorRank:.05,escola:"combate_fisico"}]},olho_de_aguia:{id:"olho_de_aguia",nome:"Olho de \xC1guia",descricao:"Tiros precisos: chance de cr\xEDtico (+8%/rank; exclui Rajada).",ranksMaximos:3,requisito:{escola:"longo_alcance",nivelMinimo:5},exclusivoCom:["rajada"],efeitos:[{tipo:"propriedade",chave:"critico",rotulo:"Chance de cr\xEDtico",valorPorRank:.08,escola:"longo_alcance"}]},rajada:{id:"rajada",nome:"Rajada",descricao:"Dispara proj\xE9teis extras mais fracos (+1/rank; exclui Olho de \xC1guia).",ranksMaximos:3,requisito:{escola:"longo_alcance",nivelMinimo:5},exclusivoCom:["olho_de_aguia"],efeitos:[{tipo:"propriedade",chave:"projeteis_extras",rotulo:"Proj\xE9teis extras",valorPorRank:1,escola:"longo_alcance"}]},devocao:{id:"devocao",nome:"Devo\xE7\xE3o",descricao:"F\xE9: a penalidade por uso cresce 15% mais devagar por rank.",ranksMaximos:3,requisito:{recurso:"fe",nivelMinimo:5},efeitos:[{tipo:"propriedade",chave:"fe_penalidade_reduzida",rotulo:"Penalidade de f\xE9 reduzida",valorPorRank:.15}]},fluxo_constante:{id:"fluxo_constante",nome:"Fluxo Constante",descricao:"Mana: regenera\xE7\xE3o 10% maior por rank.",ranksMaximos:3,requisito:{recurso:"mana",nivelMinimo:5},efeitos:[{tipo:"propriedade",chave:"mana_regen_bonus",rotulo:"Regenera\xE7\xE3o de mana",valorPorRank:.1}]},sede_de_batalha:{id:"sede_de_batalha",nome:"Sede de Batalha",descricao:"F\xFAria: ganho por dano 12% maior por rank.",ranksMaximos:3,requisito:{recurso:"furia",nivelMinimo:5},efeitos:[{tipo:"propriedade",chave:"furia_ganho_bonus",rotulo:"Ganho de f\xFAria",valorPorRank:.12}]}};var u=(e,o,a,r,i)=>({id:e,nome:o,descricao:a,condicao:r,capacidades:i}),A=Object.fromEntries([u("necromante","Necromante","Morte + Evoca\xE7\xE3o: ergue mortos-vivos para lutar por voc\xEA.",{elementos:{morte:10},escolas:{evocacao:10}},["evocar_mortos_vivos"]),u("verdejante","Verdejante","Vida + Evoca\xE7\xE3o: invoca plantas guardi\xE3s e vinhas.",{elementos:{vida:10},escolas:{evocacao:10}},["evocar_plantas"]),u("demonologista","Demonologista","Vileza + Evoca\xE7\xE3o: sela pactos e invoca dem\xF4nios.",{elementos:{vileza:10},escolas:{evocacao:10}},["evocar_demonios"]),u("senhor_dos_mortos_vis","Senhor dos Mortos Vis","Necromante com Vileza: invoca dem\xF4nios mortos.",{elementos:{morte:15,vileza:15},escolas:{evocacao:15}},["evocar_demonios_mortos"]),u("arsenal_espectral","Arsenal Espectral","Evoca\xE7\xE3o + Combate F\xEDsico + F\xFAria: armas que orbitam voc\xEA e lutam sozinhas.",{escolas:{evocacao:12,combate_fisico:12},recursos:{furia:8}},["evocar_armas_autonomas"]),u("piromante_vegetal","Piromante Vegetal","Verdejante com Fogo: plantas e vinhas em chamas.",{elementos:{vida:12,fogo:12},escolas:{evocacao:10}},["evocar_plantas_de_fogo","conjurar_vinha_de_fogo"]),u("engenheiro_galvanico","Engenheiro Galv\xE2nico","Galvanismo + Evoca\xE7\xE3o: constructos de carne e raio reanimados.",{elementos:{galvanismo:10},escolas:{evocacao:12}},["evocar_constructos_galvanicos"]),u("senhor_das_feras","Senhor das Feras","Vigor + Vida + Evoca\xE7\xE3o: feras vivas de carne e instinto.",{elementos:{vigor:12,vida:12},escolas:{evocacao:10}},["evocar_feras"]),u("horologista_do_horror","Tecel\xE3o de Abomina\xE7\xF5es","Abomina\xE7\xE3o + Evoca\xE7\xE3o: costura horrores que n\xE3o deveriam existir.",{elementos:{abominacao:15},escolas:{evocacao:15}},["evocar_abominacoes"]),u("avatar_primordial","Avatar Primordial","Primordial + Evoca\xE7\xE3o: o pr\xF3prio terreno luta ao seu lado.",{elementos:{primordial:12},escolas:{evocacao:12}},["evocar_elementais_primais"]),u("lavamante","Lavamante","Lava + Conjura\xE7\xE3o: erup\xE7\xF5es e rios de magma.",{elementos:{lava:12},escolas:{conjuracao:10}},["conjurar_erupcao"]),u("tempestario","Tempest\xE1rio","Tempestade + Conjura\xE7\xE3o: comanda o c\xE9u em f\xFAria.",{elementos:{tempestade:12},escolas:{conjuracao:10}},["conjurar_tempestade"]),u("feiticeiro_do_abismo","Feiticeiro do Abismo","Abismo + Conjura\xE7\xE3o: press\xE3o das profundezas em terra firme.",{elementos:{abismo:12},escolas:{conjuracao:10}},["conjurar_abismo"]),u("arquimago","Arquimago","Arcano profundo + tr\xEAs escolas m\xE1gicas: reescreve as regras.",{elementos:{arcano:20},escolas:{conjuracao:10,evocacao:10,benca:10}},["metamagia"]),u("portador_do_nulo","Portador do Nulo","Nulo: nega, absorve e devolve qualquer magia.",{elementos:{nulo:8}},["anular_magia","refletir_magia"]),u("berserker","Berserker","Vigor + Combate F\xEDsico + F\xFAria: quanto mais apanha, mais forte.",{elementos:{vigor:12},escolas:{combate_fisico:12},recursos:{furia:10}},["furia_crescente"]),u("cavaleiro_da_morte","Cavaleiro da Morte","Ceifa + Combate F\xEDsico: golpes que colhem almas.",{elementos:{ceifa:12},escolas:{combate_fisico:10}},["golpe_ceifador"]),u("paladino","Paladino","Bravura + Combate F\xEDsico + F\xE9: o muro sagrado.",{elementos:{bravura:10},escolas:{combate_fisico:10},recursos:{fe:8}},["aura_sagrada","golpe_justiceiro"]),u("espadachim_arcano","Espadachim Arcano","Encantamento + Combate F\xEDsico: l\xE2minas imbu\xEDdas de magia.",{elementos:{encantamento:12},escolas:{combate_fisico:10}},["lamina_arcana"]),u("sombra_ambulante","Sombra Ambulante","Assass\xEDnio + Combate F\xEDsico: o golpe \xFAnico e perfeito.",{elementos:{assassinio:12},escolas:{combate_fisico:10}},["execucao_furtiva"]),u("olho_da_tormenta","Olho da Tormenta","Tempestade + Longo Alcance: flechas-rel\xE2mpago que nunca erram.",{elementos:{tempestade:10},escolas:{longo_alcance:12}},["flecha_relampago"]),u("atirador_fantasma","Atirador Fantasma","Espectro + Longo Alcance: proj\xE9teis que atravessam paredes.",{elementos:{espectro:10},escolas:{longo_alcance:12}},["tiro_fantasma"]),u("santo_guardiao","Santo Guardi\xE3o","Santidade + B\xEAn\xE7\xE3o: a cura mais pura do sistema.",{elementos:{santidade:12},escolas:{benca:12}},["cura_sagrada"]),u("mestre_das_runas","Mestre das Runas","Runa + B\xEAn\xE7\xE3o: efeitos persistentes gravados em aliados e no ch\xE3o.",{elementos:{runa:12},escolas:{benca:10}},["gravar_runas"]),u("corruptor","Corruptor","Muta\xE7\xE3o + Maldi\xE7\xE3o: transforma inimigos contra si mesmos.",{elementos:{mutacao:12},escolas:{maldicao:10}},["maldicao_mutante"]),u("toxicologista","Toxicologista","Veneno + Maldi\xE7\xE3o: toxinas que corroem ao longo do tempo.",{elementos:{veneno:10},escolas:{maldicao:10}},["maldicao_veneno"]),u("inquisidor","Inquisidor","Julgamento + Maldi\xE7\xE3o: pune e executa os enfraquecidos.",{elementos:{julgamento:12},escolas:{maldicao:10}},["sentenca_final"]),u("vampiro_espiritual","Vampiro Espiritual","Parasita + Maldi\xE7\xE3o: drena vida \xE0 dist\xE2ncia.",{elementos:{parasita:12},escolas:{maldicao:10}},["dreno_vital"]),u("guardiao_do_ciclo","Guardi\xE3o do Ciclo","Ciclo + B\xEAn\xE7\xE3o + Maldi\xE7\xE3o: inverte cura e dano, buff e maldi\xE7\xE3o.",{elementos:{ciclo:12},escolas:{benca:10,maldicao:10}},["inverter_estado"])].map(e=>[e.id,e]));function oo(e){return{nome:e,elementos:{},escolas:{},recursos:{},talentos:{}}}function ao(e,o,a){let r=g[o];if(!r)throw new Error(`Elemento desconhecido: ${o}`);if(r.tipo!=="base")throw new Error(`"${r.nome}" \xE9 ${r.tipo}: n\xE3o aceita pontos diretos. Ele evolui pelos componentes da receita.`);if(a<=0||!Number.isInteger(a))throw new Error("Pontos devem ser inteiros positivos.");e.elementos[o]=(e.elementos[o]??0)+a}function eo(e,o,a){if(!b[o])throw new Error(`Escola desconhecida: ${o}`);if(a<=0||!Number.isInteger(a))throw new Error("Pontos devem ser inteiros positivos.");e.escolas[o]=(e.escolas[o]??0)+a}function ro(e,o,a){if(!h[o])throw new Error(`Recurso desconhecido: ${o}`);if(a<=0||!Number.isInteger(a))throw new Error("Pontos devem ser inteiros positivos.");e.recursos[o]=(e.recursos[o]??0)+a}function io(e,o,a){let r=P[o];if(!r)throw new Error(`Talento desconhecido: ${o}`);if(a<=0||!Number.isInteger(a))throw new Error("Ranks devem ser inteiros positivos.");let i=e.talentos[o]??0;if(i+a>r.ranksMaximos)throw new Error(`"${r.nome}" tem no m\xE1ximo ${r.ranksMaximos} ranks.`);if(r.requisito){let{escola:n,recurso:t,nivelMinimo:l}=r.requisito;if(n&&(e.escolas[n]??0)<l)throw new Error(`"${r.nome}" exige ${l} pontos em ${b[n].nome}.`);if(t&&(e.recursos[t]??0)<l)throw new Error(`"${r.nome}" exige profici\xEAncia ${l} no recurso ${h[t].nome}.`)}for(let n of r.exclusivoCom??[])if((e.talentos[n]??0)>0)throw new Error(`"${r.nome}" \xE9 exclusivo com "${P[n].nome}" \u2014 remova os ranks rivais primeiro.`);e.talentos[o]=i+a}function T(e){let o={},a={};for(let t of Object.keys(g))o[t]=0;for(let[t,l]of Object.entries(e.elementos))o[t]+=l;for(let t of Z){let l=e.elementos[t.de]??0,d=Math.floor(l*t.razao);if(!(d<=0))for(let p of t.para)o[p]+=d,a[p]=(a[p]??0)+d}for(let t of Object.values(g)){if(!t.receita)continue;let l=t.receita.map(p=>o[p.elemento]),d=t.receita.every(p=>o[p.elemento]>=p.nivelMinimo);o[t.id]=d?Math.min(...l):0}let r=[],i=new Set;for(let t of Object.values(A)){let l=t.condicao,d=Object.entries(l.elementos??{}).every(([E,R])=>o[E]>=(R??0)),p=Object.entries(l.escolas??{}).every(([E,R])=>(e.escolas[E]??0)>=(R??0)),q=Object.entries(l.recursos??{}).every(([E,R])=>(e.recursos[E]??0)>=(R??0));if(d&&p&&q){r.push(t);for(let E of t.capacidades)i.add(E)}}let n=Object.keys(o).filter(t=>o[t]>0);return{niveisEfetivos:o,transbordo:a,elementosDisponiveis:n,arquetipos:r,capacidades:i}}var ko=40,Eo=2,xo=.5,ho=.1,Po=4,Mo=.15,$o=.9,Ro=.04,So=.03,Co=.3,so=.9;function C(e,o){let a=0;for(let[r,i]of Object.entries(e.talentos))if(i)for(let n of P[r].efeitos)a+=o(n,i);return a}function qo(e,o){let a=e.escolas[o]??0,r=C(e,(t,l)=>t.tipo==="energia_maxima_bonus_fracao"?t.valorPorRank*l:0),i=C(e,(t,l)=>t.tipo==="tempo_conjuracao_minimo_reducao"?t.valorPorRank*l:0),n=C(e,(t,l)=>t.tipo==="raio_maximo_bonus"?t.valorPorRank*l:0);return{energiaMaxima:(ko+Eo*a)*(1+r),tempoConjuracaoMinimo:Math.max(ho,xo-i),raioMaximo:Po+n}}function Io(e,o,a){let r=[],i=qo(e,a.escola);return o.niveisEfetivos[a.elemento]<=0&&r.push(`Elemento "${g[a.elemento].nome}" ainda n\xE3o foi liberado.`),(e.escolas[a.escola]??0)<=0&&r.push(`Sem pontos na escola "${b[a.escola].nome}".`),a.energia<=0&&r.push("Energia deve ser positiva."),a.energia>i.energiaMaxima&&r.push(`Energia ${a.energia} acima do m\xE1ximo ${i.energiaMaxima.toFixed(1)} (suba a escola ou o talento Canaliza\xE7\xE3o Profunda).`),a.tempoConjuracaoSegundos<i.tempoConjuracaoMinimo&&r.push(`Tempo de conjura\xE7\xE3o m\xEDnimo \xE9 ${i.tempoConjuracaoMinimo.toFixed(2)}s (talento Conjura\xE7\xE3o R\xE1pida reduz).`),a.area.tipo==="circulo"&&(a.area.raioMetros<=0&&r.push("Raio deve ser positivo."),a.area.raioMetros>i.raioMaximo&&r.push(`Raio ${a.area.raioMetros}m acima do m\xE1ximo ${i.raioMaximo}m (talento \xC1rea Ampliada aumenta).`)),a.entrega.tipo==="continuo"&&a.entrega.duracaoSegundos<=0&&r.push("Dura\xE7\xE3o do efeito cont\xEDnuo deve ser positiva."),a.capacidadeExigida&&!o.capacidades.has(a.capacidadeExigida)&&r.push(`Exige a capacidade "${a.capacidadeExigida}" \u2014 desbloqueie o arqu\xE9tipo correspondente.`),{erros:r,limites:i}}function B(e,o,a){let{erros:r,limites:i}=Io(e,o,a),n=o.niveisEfetivos[a.elemento],t=e.escolas[a.escola]??0,l=g[a.elemento].fatorPotencia,d=C(e,(f,M)=>f.tipo==="custo_reducao_fracao"?f.valorPorRank*M:0),p=a.energia*Math.max(.5,1-d),q=Math.max(a.tempoConjuracaoSegundos,i.tempoConjuracaoMinimo),E=Math.sqrt(q),R=l*(1+Ro*n)*(1+So*t),uo=C(e,(f,M)=>f.tipo==="foco_entrega"&&f.entrega===a.entrega.tipo?f.bonusFracaoPorRank*M:0),G=a.energia*E*R*(1+uo),H=a.area.tipo==="unico"?1:Math.max(1,1+Mo*Math.PI*a.area.raioMetros**2),po=a.area.tipo==="unico"?1:$o,S=G*po,U;if(a.entrega.tipo==="continuo"){let f=Math.min(Co,.02*a.entrega.duracaoSegundos);S*=1+f,U=S/a.entrega.duracaoSegundos}let vo=S/H,J;if(b[a.escola].entregaPadrao==="invocacao"){let f=C(e,(I,D)=>I.tipo==="invocacao_quantidade_bonus"?I.valorPorRank*D:0),M=C(e,(I,D)=>I.tipo==="invocacao_potencia_bonus_fracao"?I.valorPorRank*D:0),x=1+Math.floor(f),K=S*(1+M)/x**so;J={quantidade:x,poderPorCriatura:K,poderTotal:K*x**so}}let fo=g[a.elemento].pesos,go=b[a.escola].pesos,X={};for(let f of["dano","controle","cura","defesa","suporte"])X[f]=(fo[f]+go[f])/2*S;let Q=[];for(let[f,M]of Object.entries(e.talentos))if(M)for(let x of P[f].efeitos)x.tipo==="propriedade"&&(x.escola&&x.escola!==a.escola||Q.push({chave:x.chave,rotulo:x.rotulo,valor:x.valorPorRank*M}));return{valida:r.length===0,erros:r,limites:i,custoBase:p,orcamentoDePoder:G,alvosEsperados:H,impactoTotal:S,impactoPorAlvo:vo,impactoPorSegundo:U,invocacoes:J,perfil:X,propriedades:Q,eficiencia:S/a.energia}}var V="class-system-simulador-v1";function Ao(){return{nome:"Nova Skill",elemento:"fogo",escola:"conjuracao",recurso:"mana",energia:20,tempoConjuracaoSegundos:1.5,area:{tipo:"unico"},entrega:{tipo:"instantaneo"}}}function z(){return{personagem:oo("Meu Personagem"),orcamentoAtributos:100,orcamentoTalentos:20,skill:Ao(),skillsSalvas:[],filtroDerivados:""}}function To(){try{let e=localStorage.getItem(V);if(!e)return z();let o=JSON.parse(e),a=z();return{...a,...o,personagem:{...a.personagem,...o.personagem},skill:{...a.skill,...o.skill}}}catch{return z()}}var c=To();function j(){localStorage.setItem(V,JSON.stringify(c))}var jo={fogo:"#e2603f",agua:"#4f8fd0",terra:"#a07840",ar:"#8fc4c9",eletricidade:"#d9bd3e",arcano:"#8b7ad6",sombra:"#6b5a8a",luz:"#d9c878",vileza:"#b04a6e",morte:"#8a9184",vida:"#5fae82",vigor:"#c07a50"},v=e=>document.getElementById(e),m=e=>e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"),k=e=>(Math.round(e*10)/10).toLocaleString("pt-BR"),L=e=>`${Math.round(e*100)}%`,no;function $(e){let o=v("toast");o.textContent=e,o.classList.add("visivel"),clearTimeout(no),no=setTimeout(()=>o.classList.remove("visivel"),3200)}function zo(){let e=o=>Object.values(o).reduce((a,r)=>a+(r??0),0);return e(c.personagem.elementos)+e(c.personagem.escolas)+e(c.personagem.recursos)}function to(){return Object.values(c.personagem.talentos).reduce((e,o)=>e+(o??0),0)}function O(){let e=T(c.personagem);w(),Oo(e),yo(),Lo(),Fo(),co(e),wo(e),lo(e),mo(e),Vo(),j()}function w(){let e=zo(),o=to(),a=e>c.orcamentoAtributos||o>c.orcamentoTalentos,r=v("gastos");r.textContent=`atributos ${e}/${c.orcamentoAtributos} \xB7 talentos ${o}/${c.orcamentoTalentos}`,r.classList.toggle("excedido",a)}function Oo(e){v("conta-elementos").textContent=`${e.elementosDisponiveis.length} com n\xEDvel efetivo`,v("elementos").innerHTML=Y().map(o=>{let a=o.id,r=c.personagem.elementos[a]??0,i=e.niveisEfetivos[a]??0,n=i-r;return`<div class="carta">
+        <div class="nome"><span class="ponto-cor" style="background:${jo[a]}"></span>${m(o.nome)}</div>
+        <div class="desc">${m(o.descricao)}</div>
+        <div class="controles">
+          <button type="button" data-acao="dec-elemento" data-id="${a}" aria-label="Remover ponto de ${m(o.nome)}">\u2212</button>
+          <span class="valor num">${r}</span>
+          <button type="button" data-acao="inc-elemento" data-id="${a}" aria-label="Adicionar ponto em ${m(o.nome)}">+</button>
+          ${n>0?`<span class="efetivo num">efetivo ${i} (+${n} sinergia)</span>`:""}
+        </div>
+      </div>`}).join("")}function yo(){v("escolas").innerHTML=Object.values(b).map(e=>{let o=c.personagem.escolas[e.id]??0;return`<div class="carta">
+        <div class="nome">${m(e.nome)}</div>
+        <div class="desc">${m(e.descricao)}</div>
+        <div class="controles">
+          <button type="button" data-acao="dec-escola" data-id="${e.id}" aria-label="Remover ponto de ${m(e.nome)}">\u2212</button>
+          <span class="valor num">${o}</span>
+          <button type="button" data-acao="inc-escola" data-id="${e.id}" aria-label="Adicionar ponto em ${m(e.nome)}">+</button>
+        </div>
+      </div>`}).join("")}function Lo(){v("recursos").innerHTML=Object.values(h).map(e=>{let o=c.personagem.recursos[e.id]??0;return`<div class="carta">
+        <div class="nome">${m(e.nome)}</div>
+        <div class="desc">${m(e.descricao)}</div>
+        <div class="controles">
+          <button type="button" data-acao="dec-recurso" data-id="${e.id}" aria-label="Remover profici\xEAncia de ${m(e.nome)}">\u2212</button>
+          <span class="valor num">${o}</span>
+          <button type="button" data-acao="inc-recurso" data-id="${e.id}" aria-label="Adicionar profici\xEAncia em ${m(e.nome)}">+</button>
+        </div>
+      </div>`}).join("")}var Do=[{titulo:"Gerais",ids:["area_ampliada","conjuracao_rapida","alcance_estendido","canalizacao_profunda","economia_de_recurso","persistencia"]},{titulo:"Entrega (exclusivos)",ids:["impacto_imediato","dano_ao_longo_do_tempo"]},{titulo:"Conjura\xE7\xE3o",ids:["perfuracao","estilhaco","eco_arcano"]},{titulo:"Evoca\xE7\xE3o",ids:["enxame","colosso","vinculo_marcial","simbiose","autonomia","comando"]},{titulo:"Maldi\xE7\xE3o",ids:["contagio","aflicao_profunda"]},{titulo:"B\xEAn\xE7\xE3o",ids:["egide","exaltacao","vinculo_de_grupo"]},{titulo:"Combate F\xEDsico",ids:["sequencia_marcial","golpe_devastador","postura_inabalavel"]},{titulo:"Longo Alcance",ids:["olho_de_aguia","rajada"]},{titulo:"Recursos",ids:["devocao","fluxo_constante","sede_de_batalha"]}];function No(e){if(!e.requisito)return"";let{escola:o,recurso:a,nivelMinimo:r}=e.requisito,i=o?b[o].nome:h[a].nome;return`requer ${m(i)} ${r}`}function Fo(){v("conta-talentos").textContent=`${to()} ranks distribu\xEDdos`,v("talentos").innerHTML=Do.map(e=>{let o=e.ids.map(a=>{let r=P[a],i=c.personagem.talentos[a]??0,n="\u25CF".repeat(i)+"\u25CB".repeat(r.ranksMaximos-i),t=No(r),l=r.exclusivoCom?.length?`exclusivo com ${r.exclusivoCom.map(d=>m(P[d].nome)).join(", ")}`:"";return`<div class="carta">
+          <div class="nome">${m(r.nome)} <span class="ranks" aria-label="${i} de ${r.ranksMaximos} ranks">${n}</span></div>
+          <div class="desc">${m(r.descricao)}</div>
+          ${t?`<div class="req">${t}</div>`:""}
+          ${l?`<div class="exclusivo">${l}</div>`:""}
+          <div class="controles">
+            <button type="button" data-acao="dec-talento" data-id="${a}" aria-label="Remover rank de ${m(r.nome)}">\u2212</button>
+            <span class="valor num">${i}</span>
+            <button type="button" data-acao="inc-talento" data-id="${a}" aria-label="Adicionar rank em ${m(r.nome)}">+</button>
+          </div>
+        </div>`}).join("");return`<div class="talento-grupo"><h3>${m(e.titulo)}</h3><div class="lista-cartas">${o}</div></div>`}).join("")}function Bo(e,o){return Math.min(...e.receita.map(a=>Math.min(1,(o.niveisEfetivos[a.elemento]??0)/a.nivelMinimo)))}function co(e){let o=c.filtroDerivados.trim().toLowerCase(),a=F().map(i=>({def:i,nivel:e.niveisEfetivos[i.id]??0,progresso:Bo(i,e)})).filter(({def:i})=>o?[i.nome,...i.receita.map(t=>g[t.elemento].nome)].join(" ").toLowerCase().includes(o):!0).sort((i,n)=>n.progresso-i.progresso||i.def.nome.localeCompare(n.def.nome)),r=a.filter(i=>i.nivel>0).length;v("conta-derivados").textContent=`${r}/${F().length} liberados`,v("derivados").innerHTML=a.map(({def:i,nivel:n,progresso:t})=>{let l=i.receita.map(p=>{let q=e.niveisEfetivos[p.elemento]??0;return`<span style="${q>=p.nivelMinimo?"":"opacity:.65"}">${m(g[p.elemento].nome)} <span class="num">${q}/${p.nivelMinimo}</span></span>`}).join(" + "),d=n>0?`<span class="rotulo-nivel liberado num">nv ${n}</span>`:`<span class="rotulo-nivel num">${L(t)}</span>`;return`<div class="linha-derivado" title="${m(i.descricao)}">
+          <div class="info">
+            <div><strong>${m(i.nome)}</strong> <span class="receita">\xB7 ${l}</span></div>
+            <div class="barra ${n>0?"cheia":""}"><i style="width:${L(Math.max(t,n>0?1:0))}"></i></div>
+          </div>
+          ${d}
+        </div>`}).join("")||'<div class="vazio">Nenhum derivado corresponde ao filtro.</div>'}function wo(e){let o=new Set(e.arquetipos.map(r=>r.id)),a=Object.values(A).map(r=>{let i=o.has(r.id),n=[];for(let[t,l]of Object.entries(r.condicao.elementos??{})){let d=e.niveisEfetivos[t]??0;n.push(`<span class="${d>=l?"":"falta"}">${m(g[t]?.nome??t)} <span class="num">${d}/${l}</span></span>`)}for(let[t,l]of Object.entries(r.condicao.escolas??{})){let d=c.personagem.escolas[t]??0;n.push(`<span class="${d>=l?"":"falta"}">${m(b[t].nome)} <span class="num">${d}/${l}</span></span>`)}for(let[t,l]of Object.entries(r.condicao.recursos??{})){let d=c.personagem.recursos[t]??0;n.push(`<span class="${d>=l?"":"falta"}">${m(h[t].nome)} <span class="num">${d}/${l}</span></span>`)}return{arq:r,aberto:i,html:n.join(" \xB7 ")}}).sort((r,i)=>Number(i.aberto)-Number(r.aberto)||r.arq.nome.localeCompare(i.arq.nome));v("conta-arquetipos").textContent=`${e.arquetipos.length}/${Object.keys(A).length} desbloqueados`,v("arquetipos").innerHTML=a.map(({arq:r,aberto:i,html:n})=>`<div class="arquetipo">
+        <div class="titulo">${m(r.nome)} <span class="selo ${i?"":"bloqueado"}">${i?"desbloqueado":"bloqueado"}</span></div>
+        <div class="condicoes">${n}</div>
+        ${i?`<div class="capacidades-lista">libera: ${r.capacidades.map(m).join(", ")}</div>`:`<div class="condicoes">${m(r.descricao)}</div>`}
+      </div>`).join("")}function lo(e){let o=c.skill,a=e.elementosDisponiveis,r=(a.length?a:["fogo"]).map(d=>`<option value="${d}" ${d===o.elemento?"selected":""}>${m(g[d].nome)} (nv ${e.niveisEfetivos[d]??0})</option>`).join(""),i=Object.values(b).map(d=>`<option value="${d.id}" ${d.id===o.escola?"selected":""}>${m(d.nome)} (${c.personagem.escolas[d.id]??0} pts)</option>`).join(""),n=Object.values(h).map(d=>`<option value="${d.id}" ${d.id===o.recurso?"selected":""}>${m(d.nome)}</option>`).join(""),l='<option value="">\u2014 nenhuma \u2014</option>'+[...e.capacidades].sort().map(d=>`<option value="${m(d)}" ${d===o.capacidadeExigida?"selected":""}>${m(d)}</option>`).join("");v("form-skill").innerHTML=`
+    <div class="linha-campo"><label for="sk-nome">Nome</label><input id="sk-nome" type="text" value="${m(o.nome)}"><span></span></div>
+    <div class="linha-campo"><label for="sk-elemento">Elemento</label><select id="sk-elemento">${r}</select><span></span></div>
+    <div class="linha-campo"><label for="sk-escola">Escola</label><select id="sk-escola">${i}</select><span></span></div>
+    <div class="linha-campo"><label for="sk-recurso">Recurso</label><select id="sk-recurso">${n}</select><span></span></div>
+    <div class="linha-campo"><label for="sk-capacidade">Capacidade</label><select id="sk-capacidade">${l}</select><span></span></div>
+    <div class="linha-campo"><label for="sk-energia">Energia</label>
+      <input id="sk-energia" type="range" min="1" max="120" step="1" value="${o.energia}">
+      <span class="num">${o.energia}</span></div>
+    <div class="linha-campo"><label for="sk-tempo">Conjura\xE7\xE3o (s)</label>
+      <input id="sk-tempo" type="range" min="0.1" max="10" step="0.1" value="${o.tempoConjuracaoSegundos}">
+      <span class="num">${k(o.tempoConjuracaoSegundos)}s</span></div>
+    <div class="linha-campo"><label>\xC1rea</label>
+      <div class="radios">
+        <label><input type="radio" name="sk-area" value="unico" ${o.area.tipo==="unico"?"checked":""}>Alvo \xFAnico</label>
+        <label><input type="radio" name="sk-area" value="circulo" ${o.area.tipo==="circulo"?"checked":""}>C\xEDrculo</label>
+      </div><span></span></div>
+    ${o.area.tipo==="circulo"?`
+    <div class="linha-campo"><label for="sk-raio">Raio (m)</label>
+      <input id="sk-raio" type="range" min="1" max="16" step="1" value="${o.area.raioMetros}">
+      <span class="num">${o.area.raioMetros}m</span></div>`:""}
+    <div class="linha-campo"><label>Entrega</label>
+      <div class="radios">
+        <label><input type="radio" name="sk-entrega" value="instantaneo" ${o.entrega.tipo==="instantaneo"?"checked":""}>Instant\xE2nea</label>
+        <label><input type="radio" name="sk-entrega" value="continuo" ${o.entrega.tipo==="continuo"?"checked":""}>Cont\xEDnua</label>
+      </div><span></span></div>
+    ${o.entrega.tipo==="continuo"?`
+    <div class="linha-campo"><label for="sk-duracao">Dura\xE7\xE3o (s)</label>
+      <input id="sk-duracao" type="range" min="1" max="20" step="1" value="${o.entrega.duracaoSegundos}">
+      <span class="num">${o.entrega.duracaoSegundos}s</span></div>`:""}
+    <div><button type="button" class="botao-primario" id="btn-salvar-skill">Salvar skill na build</button></div>
+  `}function mo(e){let o=B(c.personagem,e,c.skill),a=v("resultado-skill");if(!o.valida){a.innerHTML=`<div class="resultado-skill">
+      <h3>${m(c.skill.nome)}</h3>
+      <ul class="erros">${o.erros.map(n=>`<li>${m(n)}</li>`).join("")}</ul>
+    </div>`;return}let r=["dano","controle","cura","defesa","suporte"].filter(n=>o.perfil[n]>.01).map(n=>{let t=o.impactoTotal>0?o.perfil[n]/o.impactoTotal:0;return`<div class="perfil-linha"><span>${n}</span>
+        <div class="barra"><i style="width:${L(t)}"></i></div>
+        <span class="num">${k(o.perfil[n])}</span></div>`}).join(""),i=o.propriedades.length?`<ul class="propriedades">${o.propriedades.map(n=>`<li>${m(n.rotulo)}: <strong class="num">${n.valor<1?L(n.valor):k(n.valor)}</strong></li>`).join("")}</ul>`:"";a.innerHTML=`<div class="resultado-skill">
+    <h3>${m(c.skill.nome)}</h3>
+    <div class="metricas">
+      <div class="metrica"><div class="rotulo">Custo (${m(h[c.skill.recurso].nome)})</div><div class="valor num">${k(o.custoBase)}</div></div>
+      <div class="metrica"><div class="rotulo">Impacto total</div><div class="valor num">${k(o.impactoTotal)}</div></div>
+      <div class="metrica"><div class="rotulo">Por alvo (${k(o.alvosEsperados)} alvos)</div><div class="valor num">${k(o.impactoPorAlvo)}</div></div>
+      ${o.impactoPorSegundo?`<div class="metrica"><div class="rotulo">Por segundo</div><div class="valor num">${k(o.impactoPorSegundo)}</div></div>`:""}
+      ${o.invocacoes?`<div class="metrica"><div class="rotulo">Criaturas</div><div class="valor num">${o.invocacoes.quantidade} \xD7 ${k(o.invocacoes.poderPorCriatura)}</div></div>`:""}
+      <div class="metrica"><div class="rotulo">Efici\xEAncia</div><div class="valor num">${k(o.eficiencia)}</div></div>
+    </div>
+    ${r}
+    ${i}
+  </div>`}function Vo(){v("conta-skills").textContent=String(c.skillsSalvas.length),v("skills-salvas").innerHTML=c.skillsSalvas.map((e,o)=>`<div class="item-skill">
+          <span><strong>${m(e.nome)}</strong> \xB7 ${m(g[e.elemento]?.nome??e.elemento)} + ${m(b[e.escola].nome)} @ ${m(h[e.recurso].nome)}</span>
+          <span><button type="button" data-acao="carregar-skill" data-idx="${o}">editar</button>
+          <button type="button" data-acao="remover-skill" data-idx="${o}">remover</button></span>
+        </div>`).join("")||'<div class="vazio">Nenhuma skill salva ainda.</div>'}function y(e,o){let a=e[o]??0;a<=1?delete e[o]:e[o]=a-1}document.addEventListener("click",e=>{let o=e.target.closest("[data-acao]");if(!o)return;let a=o.dataset.acao,r=o.dataset.id??"",i=c.personagem;try{switch(a){case"inc-elemento":ao(i,r,1);break;case"dec-elemento":y(i.elementos,r);break;case"inc-escola":eo(i,r,1);break;case"dec-escola":y(i.escolas,r);break;case"inc-recurso":ro(i,r,1);break;case"dec-recurso":y(i.recursos,r);break;case"inc-talento":io(i,r,1);break;case"dec-talento":y(i.talentos,r);break;case"carregar-skill":c.skill=structuredClone(c.skillsSalvas[Number(o.dataset.idx)]);break;case"remover-skill":c.skillsSalvas.splice(Number(o.dataset.idx),1);break;default:return}O()}catch(n){$(n.message)}});document.addEventListener("input",e=>{let o=e.target,a=c.skill;switch(o.id){case"orc-atributos":c.orcamentoAtributos=Number(o.value)||0,w(),j();return;case"orc-talentos":c.orcamentoTalentos=Number(o.value)||0,w(),j();return;case"sk-nome":a.nome=o.value||"Skill";break;case"sk-elemento":a.elemento=o.value;break;case"sk-escola":a.escola=o.value;break;case"sk-recurso":a.recurso=o.value;break;case"sk-capacidade":a.capacidadeExigida=o.value||void 0;break;case"sk-energia":a.energia=Number(o.value);break;case"sk-tempo":a.tempoConjuracaoSegundos=Number(o.value);break;case"sk-raio":a.area={tipo:"circulo",raioMetros:Number(o.value)};break;case"sk-duracao":a.entrega={tipo:"continuo",duracaoSegundos:Number(o.value)};break;default:if(o.name==="sk-area")a.area=o.value==="unico"?{tipo:"unico"}:{tipo:"circulo",raioMetros:4};else if(o.name==="sk-entrega")a.entrega=o.value==="instantaneo"?{tipo:"instantaneo"}:{tipo:"continuo",duracaoSegundos:8};else if(o.id==="filtro-derivados"){c.filtroDerivados=o.value,co(T(c.personagem)),j();return}else return}let r=T(c.personagem);if(o.type==="range"){let i=o.parentElement?.querySelector(".num");if(i){let n=o.id==="sk-tempo"?"s":o.id==="sk-raio"?"m":o.id==="sk-duracao"?"s":"";i.textContent=`${k(Number(o.value))}${n}`}}else(o.type==="select-one"||o.type==="radio")&&lo(r);mo(r),j()});v("btn-exportar").addEventListener("click",()=>{let e={formato:"class-system-build",versao:1,exportadoEm:new Date().toISOString(),orcamentos:{atributos:c.orcamentoAtributos,talentos:c.orcamentoTalentos},personagem:c.personagem,skills:c.skillsSalvas,skillAtual:c.skill},o=JSON.stringify(e,null,2),a=new Blob([o],{type:"application/json"}),r=document.createElement("a");r.href=URL.createObjectURL(a),r.download=`build-${c.personagem.nome.toLowerCase().replace(/\s+/g,"-")}.json`,r.click(),URL.revokeObjectURL(r.href),navigator.clipboard?.writeText(o).then(()=>$("Build exportada: arquivo baixado e JSON copiado."),()=>$("Build exportada: arquivo baixado."))});v("input-importar").addEventListener("change",async e=>{let o=e.target.files?.[0];if(o)try{let a=JSON.parse(await o.text());if(a.formato!=="class-system-build")throw new Error("Arquivo n\xE3o \xE9 uma build exportada.");let r=z();c={...r,personagem:{...r.personagem,...a.personagem},orcamentoAtributos:a.orcamentos?.atributos??r.orcamentoAtributos,orcamentoTalentos:a.orcamentos?.talentos??r.orcamentoTalentos,skillsSalvas:Array.isArray(a.skills)?a.skills:[],skill:a.skillAtual??r.skill},v("orc-atributos").value=String(c.orcamentoAtributos),v("orc-talentos").value=String(c.orcamentoTalentos),O(),$("Build importada.")}catch(a){$(`Falha ao importar: ${a.message}`)}finally{e.target.value=""}});v("btn-resetar").addEventListener("click",()=>{confirm("Resetar todos os pontos, talentos e skills salvas?")&&(c=z(),localStorage.removeItem(V),v("orc-atributos").value=String(c.orcamentoAtributos),v("orc-talentos").value=String(c.orcamentoTalentos),O(),$("Build resetada."))});document.addEventListener("click",e=>{if(e.target.id==="btn-salvar-skill"){let o=T(c.personagem);if(!B(c.personagem,o,c.skill).valida){$("Corrija os erros antes de salvar a skill.");return}c.skillsSalvas.push(structuredClone(c.skill)),c.skill={...structuredClone(c.skill),nome:"Nova Skill"},O(),$("Skill salva na build.")}});O();})();
+</script>
+</body>
+</html>

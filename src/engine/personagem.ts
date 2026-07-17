@@ -57,10 +57,13 @@ export function investirTalento(p: Personagem, talento: TalentoId, ranks: number
     throw new Error(`"${def.nome}" tem no máximo ${def.ranksMaximos} ranks.`);
   }
   if (def.requisito) {
-    const nivelEscola = p.escolas[def.requisito.escola] ?? 0;
-    if (nivelEscola < def.requisito.nivelMinimo) {
+    const { escola, recurso, nivelMinimo } = def.requisito;
+    if (escola && (p.escolas[escola] ?? 0) < nivelMinimo) {
+      throw new Error(`"${def.nome}" exige ${nivelMinimo} pontos em ${ESCOLAS[escola].nome}.`);
+    }
+    if (recurso && (p.recursos[recurso] ?? 0) < nivelMinimo) {
       throw new Error(
-        `"${def.nome}" exige ${def.requisito.nivelMinimo} pontos em ${ESCOLAS[def.requisito.escola].nome}.`,
+        `"${def.nome}" exige proficiência ${nivelMinimo} no recurso ${RECURSOS[recurso].nome}.`,
       );
     }
   }

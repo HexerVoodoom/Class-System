@@ -17,7 +17,7 @@
  * mecânico similar.
  */
 
-import { ELEMENTOS, type ElementoId } from '../registry/elementos';
+import { ELEMENTOS, type ElementoId, type PerfilPesos } from '../registry/elementos';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import type { RecursoId } from '../registry/recursos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
@@ -68,6 +68,13 @@ export interface ResultadoSkill {
   impactoPorSegundo?: number;
   /** Presente quando a escola é evocação. */
   invocacoes?: { quantidade: number; poderPorCriatura: number; poderTotal: number };
+  /**
+   * Como o impacto se distribui mecanicamente — média dos perfis do
+   * elemento e da escola aplicada ao impacto total.
+   */
+  perfil: PerfilPesos;
+  /** Propriedades qualitativas vindas de talentos (penetração, contágio...). */
+  propriedades: { chave: string; rotulo: string; valor: number }[];
   /** Métrica de balanceamento: impacto total ÷ energia investida. */
   eficiencia: number;
 }
@@ -234,6 +241,29 @@ export function calcularSkill(
     };
   }
 
+  // perfil mecânico: média dos pesos do elemento e da escola × impacto
+  const pesosElemento = ELEMENTOS[cfg.elemento]!.pesos;
+  const pesosEscola = ESCOLAS[cfg.escola].pesos;
+  const perfil = {} as PerfilPesos;
+  for (const k of ['dano', 'controle', 'cura', 'defesa', 'suporte'] as const) {
+    perfil[k] = ((pesosElemento[k] + pesosEscola[k]) / 2) * impactoTotal;
+  }
+
+  // propriedades qualitativas de talentos (gerais ou da escola da skill)
+  const propriedades: ResultadoSkill['propriedades'] = [];
+  for (const [id, ranks] of Object.entries(p.talentos) as [TalentoId, number][]) {
+    if (!ranks) continue;
+    for (const efeito of TALENTOS[id].efeitos) {
+      if (efeito.tipo !== 'propriedade') continue;
+      if (efeito.escola && efeito.escola !== cfg.escola) continue;
+      propriedades.push({
+        chave: efeito.chave,
+        rotulo: efeito.rotulo,
+        valor: efeito.valorPorRank * ranks,
+      });
+    }
+  }
+
   return {
     valida: erros.length === 0,
     erros,
@@ -245,6 +275,8 @@ export function calcularSkill(
     impactoPorAlvo,
     impactoPorSegundo,
     invocacoes,
+    perfil,
+    propriedades,
     eficiencia: impactoTotal / cfg.energia,
   };
 }

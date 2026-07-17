@@ -1,0 +1,274 @@
+<title>Simulador de Classes</title>
+<style>
+  :root {
+    --bg: #f3efe4;
+    --surface: #fbf8f0;
+    --surface-2: #eee8d8;
+    --linha: #d8cfb8;
+    --ink: #2a2433;
+    --ink-2: #6c6479;
+    --acento: #8a6d1f;
+    --arcano: #5b4bb0;
+    --ok: #3d7d5a;
+    --alerta: #b4622d;
+    --erro: #a8443a;
+    --barra-fundo: #e2dac6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14121c;
+      --surface: #1d1a28;
+      --surface-2: #262233;
+      --linha: #363048;
+      --ink: #e8e3d8;
+      --ink-2: #9a92a8;
+      --acento: #c9a84c;
+      --arcano: #9d8ce0;
+      --ok: #6fbf8f;
+      --alerta: #d08a4a;
+      --erro: #d06a5a;
+      --barra-fundo: #2c2739;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #14121c;
+    --surface: #1d1a28;
+    --surface-2: #262233;
+    --linha: #363048;
+    --ink: #e8e3d8;
+    --ink-2: #9a92a8;
+    --acento: #c9a84c;
+    --arcano: #9d8ce0;
+    --ok: #6fbf8f;
+    --alerta: #d08a4a;
+    --erro: #d06a5a;
+    --barra-fundo: #2c2739;
+  }
+  :root[data-theme='light'] {
+    --bg: #f3efe4;
+    --surface: #fbf8f0;
+    --surface-2: #eee8d8;
+    --linha: #d8cfb8;
+    --ink: #2a2433;
+    --ink-2: #6c6479;
+    --acento: #8a6d1f;
+    --arcano: #5b4bb0;
+    --ok: #3d7d5a;
+    --alerta: #b4622d;
+    --erro: #a8443a;
+    --barra-fundo: #e2dac6;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  h1, h2, h3 {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    text-wrap: balance;
+    margin: 0;
+  }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 1px;
+  }
+  .num { font-variant-numeric: tabular-nums; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.92em; }
+
+  .app { max-width: 1280px; margin: 0 auto; padding: 20px 16px 80px; }
+
+  header.topo {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+    justify-content: space-between; padding-bottom: 14px; margin-bottom: 18px;
+    border-bottom: 2px solid var(--acento);
+  }
+  header.topo h1 { font-size: 26px; letter-spacing: 0.2px; }
+  header.topo .sub { margin: 2px 0 0; color: var(--ink-2); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .orcamentos { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .orcamento { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--ink-2); }
+  .orcamento input { width: 70px; background: var(--surface); color: var(--ink); border: 1px solid var(--linha); border-radius: 4px; padding: 3px 6px; }
+  .gasto { font-size: 13px; }
+  .gasto.excedido { color: var(--erro); font-weight: 600; }
+  .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+  .acoes button, .acoes label {
+    background: var(--surface); border: 1px solid var(--linha); color: var(--ink);
+    border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+  }
+  .acoes button:hover, .acoes label:hover { border-color: var(--acento); }
+  .acoes .perigo:hover { border-color: var(--erro); color: var(--erro); }
+
+  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
+  @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
+
+  section.bloco { margin-bottom: 24px; }
+  section.bloco > h2 {
+    font-size: 17px; margin-bottom: 10px; color: var(--acento);
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  section.bloco > h2 .conta { font-size: 12px; color: var(--ink-2); font-family: system-ui, sans-serif; }
+
+  .grade-elementos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .carta {
+    background: var(--surface); border: 1px solid var(--linha); border-radius: 8px;
+    padding: 8px 10px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .carta .nome { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13.5px; }
+  .ponto-cor { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .carta .desc { font-size: 11.5px; color: var(--ink-2); line-height: 1.35; }
+  .controles { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+  .controles button {
+    width: 24px; height: 24px; border-radius: 5px; border: 1px solid var(--linha);
+    background: var(--surface-2); color: var(--ink); line-height: 1; padding: 0;
+  }
+  .controles button:hover { border-color: var(--acento); }
+  .controles .valor { min-width: 26px; text-align: center; font-weight: 600; }
+  .efetivo { font-size: 11px; color: var(--arcano); }
+
+  .lista-cartas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+
+  .talento-grupo { margin-bottom: 10px; }
+  .talento-grupo h3 { font-size: 13px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-family: system-ui, sans-serif; }
+  .req { font-size: 11px; color: var(--alerta); }
+  .exclusivo { font-size: 11px; color: var(--arcano); }
+  .ranks { letter-spacing: 2px; color: var(--acento); font-size: 12px; }
+
+  .filtro { width: 100%; margin-bottom: 8px; background: var(--surface); color: var(--ink); border: 1px solid var(--linha); border-radius: 6px; padding: 6px 10px; }
+
+  .linha-derivado {
+    display: flex; align-items: center; gap: 10px; padding: 6px 8px;
+    border-bottom: 1px solid var(--linha); font-size: 13px;
+  }
+  .linha-derivado:last-child { border-bottom: none; }
+  .linha-derivado .info { flex: 1; min-width: 0; }
+  .linha-derivado .receita { font-size: 11px; color: var(--ink-2); }
+  .rotulo-nivel { flex: none; font-size: 12px; }
+  .rotulo-nivel.liberado { color: var(--ok); font-weight: 600; }
+  .barra { height: 5px; border-radius: 3px; background: var(--barra-fundo); overflow: hidden; margin-top: 3px; }
+  .barra > i { display: block; height: 100%; background: var(--arcano); border-radius: 3px; }
+  .barra.cheia > i { background: var(--ok); }
+  .painel { background: var(--surface); border: 1px solid var(--linha); border-radius: 8px; padding: 4px 8px; max-height: 340px; overflow-y: auto; }
+
+  .arquetipo { padding: 8px 10px; border-bottom: 1px solid var(--linha); font-size: 13px; }
+  .arquetipo:last-child { border-bottom: none; }
+  .arquetipo .titulo { font-weight: 600; display: flex; gap: 8px; align-items: baseline; }
+  .selo { font-size: 10.5px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--ok); color: var(--ok); letter-spacing: 0.05em; }
+  .selo.bloqueado { border-color: var(--linha); color: var(--ink-2); }
+  .condicoes { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
+  .condicoes .falta { color: var(--alerta); }
+  .capacidades-lista { font-size: 11.5px; color: var(--arcano); margin-top: 2px; }
+
+  form.skill { background: var(--surface); border: 1px solid var(--linha); border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
+  form.skill .linha-campo { display: grid; grid-template-columns: 118px 1fr auto; gap: 8px; align-items: center; font-size: 13px; }
+  form.skill label { color: var(--ink-2); }
+  form.skill select, form.skill input[type='text'] {
+    background: var(--surface-2); color: var(--ink); border: 1px solid var(--linha);
+    border-radius: 5px; padding: 5px 8px; width: 100%; font: inherit;
+  }
+  form.skill input[type='range'] { width: 100%; accent-color: var(--acento); }
+  .radios { display: flex; gap: 12px; }
+  .radios label { color: var(--ink); display: flex; gap: 4px; align-items: center; font-size: 13px; }
+
+  .resultado-skill { margin-top: 12px; background: var(--surface); border: 1px solid var(--acento); border-radius: 8px; padding: 12px; }
+  .resultado-skill h3 { font-size: 16px; margin-bottom: 6px; }
+  .metricas { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 8px 0; }
+  .metrica { background: var(--surface-2); border-radius: 6px; padding: 6px 8px; }
+  .metrica .rotulo { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-2); }
+  .metrica .valor { font-size: 17px; font-weight: 600; }
+  .perfil-linha { display: grid; grid-template-columns: 72px 1fr 48px; gap: 8px; align-items: center; font-size: 12px; margin: 3px 0; }
+  .perfil-linha .barra { margin-top: 0; height: 8px; }
+  .erros { color: var(--erro); font-size: 13px; margin: 0; padding-left: 18px; }
+  .propriedades li { font-size: 12.5px; }
+  .lista-skills .item-skill {
+    display: flex; justify-content: space-between; gap: 8px; align-items: center;
+    padding: 6px 8px; border-bottom: 1px solid var(--linha); font-size: 13px;
+  }
+  .lista-skills .item-skill:last-child { border-bottom: none; }
+  .lista-skills button { background: none; border: none; color: var(--erro); font-size: 12px; }
+  .botao-primario {
+    background: var(--acento); color: var(--bg); border: none; border-radius: 6px;
+    padding: 7px 14px; font-weight: 600;
+  }
+  .botao-primario:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    max-width: 90vw;
+  }
+  #toast.visivel { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+  .vazio { color: var(--ink-2); font-size: 13px; padding: 8px; }
+</style>
+<!--BODY-->
+<div class="app">
+  <header class="topo">
+    <div>
+      <h1>Simulador de Classes</h1>
+      <p class="sub">elementos · recursos · escolas · talentos</p>
+    </div>
+    <div class="orcamentos">
+      <div class="orcamento">
+        <span>Pontos de atributo</span>
+        <input id="orc-atributos" type="number" min="0" step="5" value="100">
+      </div>
+      <div class="orcamento">
+        <span>Pontos de talento</span>
+        <input id="orc-talentos" type="number" min="0" step="1" value="20">
+      </div>
+      <div id="gastos" class="gasto num"></div>
+    </div>
+    <div class="acoes">
+      <button id="btn-exportar" type="button">Exportar build</button>
+      <label>Importar<input id="input-importar" type="file" accept=".json,application/json" hidden></label>
+      <button id="btn-resetar" type="button" class="perigo">Resetar</button>
+    </div>
+  </header>
+
+  <main>
+    <div>
+      <section class="bloco">
+        <h2>Elementos base <span class="conta" id="conta-elementos"></span></h2>
+        <div id="elementos" class="grade-elementos"></div>
+      </section>
+      <section class="bloco">
+        <h2>Escolas</h2>
+        <div id="escolas" class="lista-cartas"></div>
+      </section>
+      <section class="bloco">
+        <h2>Recursos</h2>
+        <div id="recursos" class="lista-cartas"></div>
+      </section>
+      <section class="bloco">
+        <h2>Talentos <span class="conta" id="conta-talentos"></span></h2>
+        <div id="talentos"></div>
+      </section>
+    </div>
+
+    <div>
+      <section class="bloco">
+        <h2>Elementos combinados <span class="conta" id="conta-derivados"></span></h2>
+        <input id="filtro-derivados" class="filtro" type="search" placeholder="Filtrar por nome ou componente…">
+        <div id="derivados" class="painel"></div>
+      </section>
+      <section class="bloco">
+        <h2>Arquétipos <span class="conta" id="conta-arquetipos"></span></h2>
+        <div id="arquetipos" class="painel"></div>
+      </section>
+      <section class="bloco">
+        <h2>Construtor de skill</h2>
+        <form class="skill" id="form-skill"></form>
+        <div id="resultado-skill"></div>
+      </section>
+      <section class="bloco">
+        <h2>Skills salvas <span class="conta" id="conta-skills"></span></h2>
+        <div id="skills-salvas" class="painel lista-skills"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div id="toast" role="status"></div>
+<script>/*__APP__*/</script>
