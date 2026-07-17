@@ -202,6 +202,46 @@
   #toast.visivel { opacity: 1; }
   @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
   .vazio { color: var(--ink-2); font-size: 13px; padding: 8px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button {
+    background: var(--surface); border: 1px solid var(--linha); color: var(--ink);
+    border-radius: 14px; padding: 5px 12px; font-size: 12.5px;
+  }
+  .chips button:hover { border-color: var(--acento); }
+
+  .resultado-corpo { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+  .resultado-corpo .coluna-metricas { flex: 1 1 220px; min-width: 0; }
+  .radar { flex: 0 0 auto; }
+  .radar text { font: 10px system-ui, sans-serif; fill: var(--ink-2); }
+  .radar .anel { fill: none; stroke: var(--linha); }
+  .radar .eixo { stroke: var(--linha); }
+  .radar .forma { fill: var(--arcano); fill-opacity: 0.28; stroke: var(--arcano); stroke-width: 1.5; }
+
+  .acoes-inline { margin-bottom: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .acoes-inline button {
+    background: var(--surface); border: 1px solid var(--linha); color: var(--ink);
+    border-radius: 6px; padding: 5px 10px; font-size: 12.5px;
+  }
+  .acoes-inline button:hover { border-color: var(--acento); }
+
+  .tabela-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--linha); border-radius: 8px; }
+  .tabela-scroll table { border-collapse: collapse; width: 100%; font-size: 12.5px; min-width: 430px; }
+  .tabela-scroll th, .tabela-scroll td { padding: 5px 10px; border-bottom: 1px solid var(--linha); text-align: left; white-space: nowrap; }
+  .tabela-scroll th { color: var(--ink-2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .tabela-scroll tr:last-child td { border-bottom: none; }
+  .tabela-scroll td button { background: none; border: none; color: var(--erro); font-size: 11.5px; padding: 0 4px; }
+  .tabela-scroll td button.neutro { color: var(--acento); }
+
+  .bancada {
+    background: var(--surface); border: 1px solid var(--linha); border-radius: 8px;
+    padding: 12px; font-size: 13px; display: grid; gap: 8px;
+  }
+  .bancada .pool { display: flex; align-items: center; gap: 8px; }
+  .bancada .pool .barra { flex: 1; height: 10px; margin: 0; }
+  .bancada .pool .barra > i { background: var(--acento); }
+  .badge { font-size: 10.5px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--linha); color: var(--ink-2); }
+  .badge.on { border-color: var(--erro); color: var(--erro); }
 </style>
 <!--BODY-->
 <div class="app">
@@ -230,6 +270,10 @@
 
   <main>
     <div>
+      <section class="bloco">
+        <h2>Builds de exemplo <span class="conta">substitui a build atual</span></h2>
+        <div id="presets" class="chips"></div>
+      </section>
       <section class="bloco">
         <h2>Elementos base <span class="conta" id="conta-elementos"></span></h2>
         <div id="elementos" class="grade-elementos"></div>
@@ -266,6 +310,15 @@
       <section class="bloco">
         <h2>Skills salvas <span class="conta" id="conta-skills"></span></h2>
         <div id="skills-salvas" class="painel lista-skills"></div>
+      </section>
+      <section class="bloco">
+        <h2>Bancada de recursos <span class="conta">simula o recurso da skill atual</span></h2>
+        <div id="bancada" class="bancada"></div>
+      </section>
+      <section class="bloco">
+        <h2>Comparar builds <span class="conta" id="conta-snapshots"></span></h2>
+        <div class="acoes-inline"><button id="btn-snapshot" type="button">Fotografar build atual</button></div>
+        <div id="comparacao" class="tabela-scroll"></div>
       </section>
     </div>
   </main>

@@ -23,9 +23,17 @@ import {
   type Personagem,
 } from '../engine/personagem';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
-import { calcularSkill, type SkillConfig } from '../engine/skills';
+import { calcularSkill, type ResultadoSkill, type SkillConfig } from '../engine/skills';
+import { criarEstadoRecurso, FeEstado, FuriaEstado, type EstadoRecurso } from '../engine/recursos';
 
 // ---------------------------------------------------------------- estado
+
+interface Snapshot {
+  nome: string;
+  criadoEm: string;
+  personagem: Personagem;
+  skill: SkillConfig;
+}
 
 interface Estado {
   personagem: Personagem;
@@ -34,6 +42,7 @@ interface Estado {
   skill: SkillConfig;
   skillsSalvas: SkillConfig[];
   filtroDerivados: string;
+  snapshots: Snapshot[];
 }
 
 const CHAVE_STORAGE = 'class-system-simulador-v1';
@@ -59,6 +68,7 @@ function estadoPadrao(): Estado {
     skill: skillPadrao(),
     skillsSalvas: [],
     filtroDerivados: '',
+    snapshots: [],
   };
 }
 
@@ -127,11 +137,173 @@ function pontosTalentosGastos(): number {
   return Object.values(estado.personagem.talentos).reduce((a: number, b) => a + (b ?? 0), 0);
 }
 
+// ---------------------------------------------------------------- presets
+
+interface Preset {
+  id: string;
+  nome: string;
+  descricao: string;
+  montar(): { p: Personagem; skill: SkillConfig };
+}
+
+function sk(extra: Partial<SkillConfig> & Pick<SkillConfig, 'nome' | 'elemento' | 'escola' | 'recurso'>): SkillConfig {
+  return {
+    energia: 20,
+    tempoConjuracaoSegundos: 1.5,
+    area: { tipo: 'unico' },
+    entrega: { tipo: 'instantaneo' },
+    ...extra,
+  };
+}
+
+const PRESETS: Preset[] = [
+  {
+    id: 'necromante',
+    nome: 'Necromante',
+    descricao: 'Morte + Evocação, enxame de mortos-vivos.',
+    montar() {
+      const p = criarPersonagem('Vesper, a Necromante');
+      investirElemento(p, 'morte', 18);
+      investirElemento(p, 'sombra', 6);
+      investirEscola(p, 'evocacao', 14);
+      investirEscola(p, 'maldicao', 6);
+      investirRecurso(p, 'mana', 10);
+      investirTalento(p, 'enxame', 3);
+      return { p, skill: sk({ nome: 'Legião de Ossos', elemento: 'morte', escola: 'evocacao', recurso: 'mana', energia: 30, tempoConjuracaoSegundos: 3, capacidadeExigida: 'evocar_mortos_vivos' }) };
+    },
+  },
+  {
+    id: 'lavamante',
+    nome: 'Lavamante',
+    descricao: 'Fogo + Terra em erupções de área.',
+    montar() {
+      const p = criarPersonagem('Brasa, o Lavamante');
+      investirElemento(p, 'fogo', 14);
+      investirElemento(p, 'terra', 14);
+      investirEscola(p, 'conjuracao', 14);
+      investirRecurso(p, 'mana', 10);
+      investirTalento(p, 'area_ampliada', 3);
+      investirTalento(p, 'impacto_imediato', 2);
+      return { p, skill: sk({ nome: 'Erupção', elemento: 'lava', escola: 'conjuracao', recurso: 'mana', energia: 28, tempoConjuracaoSegundos: 2.5, area: { tipo: 'circulo', raioMetros: 6 } }) };
+    },
+  },
+  {
+    id: 'paladino',
+    nome: 'Paladino',
+    descricao: 'Bravura + Fé: o muro sagrado.',
+    montar() {
+      const p = criarPersonagem('Aurelia, a Paladina');
+      investirElemento(p, 'luz', 12);
+      investirElemento(p, 'vigor', 12);
+      investirEscola(p, 'combate_fisico', 12);
+      investirEscola(p, 'benca', 8);
+      investirRecurso(p, 'fe', 10);
+      investirTalento(p, 'egide', 2);
+      investirTalento(p, 'postura_inabalavel', 2);
+      return { p, skill: sk({ nome: 'Aura da Bravura', elemento: 'bravura', escola: 'benca', recurso: 'fe', tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 4 }, entrega: { tipo: 'continuo', duracaoSegundos: 10 } }) };
+    },
+  },
+  {
+    id: 'berserker',
+    nome: 'Berserker',
+    descricao: 'Fervor + Fúria: sangue fervente.',
+    montar() {
+      const p = criarPersonagem('Korg, o Berserker');
+      investirElemento(p, 'vigor', 14);
+      investirElemento(p, 'fogo', 10);
+      investirEscola(p, 'combate_fisico', 14);
+      investirRecurso(p, 'furia', 10);
+      investirTalento(p, 'golpe_devastador', 2);
+      investirTalento(p, 'sede_de_batalha', 2);
+      return { p, skill: sk({ nome: 'Golpe Fervente', elemento: 'fervor', escola: 'combate_fisico', recurso: 'furia', energia: 25, tempoConjuracaoSegundos: 1 }) };
+    },
+  },
+  {
+    id: 'tempestario',
+    nome: 'Tempestário',
+    descricao: 'Ar + Eletricidade: o céu em fúria.',
+    montar() {
+      const p = criarPersonagem('Zael, o Tempestário');
+      investirElemento(p, 'ar', 13);
+      investirElemento(p, 'eletricidade', 13);
+      investirEscola(p, 'conjuracao', 12);
+      investirRecurso(p, 'mana', 8);
+      investirTalento(p, 'area_ampliada', 2);
+      return { p, skill: sk({ nome: 'Céu Partido', elemento: 'tempestade', escola: 'conjuracao', recurso: 'mana', energia: 26, tempoConjuracaoSegundos: 2.5, area: { tipo: 'circulo', raioMetros: 8 } }) };
+    },
+  },
+  {
+    id: 'santo',
+    nome: 'Santo Guardião',
+    descricao: 'Santidade: a cura mais pura.',
+    montar() {
+      const p = criarPersonagem('Ilya, a Santa Guardiã');
+      investirElemento(p, 'luz', 14);
+      investirElemento(p, 'vida', 14);
+      investirEscola(p, 'benca', 14);
+      investirRecurso(p, 'fe', 10);
+      investirTalento(p, 'vinculo_de_grupo', 2);
+      investirTalento(p, 'egide', 2);
+      return { p, skill: sk({ nome: 'Graça Plena', elemento: 'santidade', escola: 'benca', recurso: 'fe', energia: 24, tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 4 }, entrega: { tipo: 'continuo', duracaoSegundos: 10 } }) };
+    },
+  },
+  {
+    id: 'arsenal',
+    nome: 'Arsenal Espectral',
+    descricao: 'Armas evocadas que lutam sozinhas.',
+    montar() {
+      const p = criarPersonagem('Kael, Arsenal Espectral');
+      investirElemento(p, 'vigor', 12);
+      investirElemento(p, 'arcano', 8);
+      investirEscola(p, 'evocacao', 13);
+      investirEscola(p, 'combate_fisico', 13);
+      investirRecurso(p, 'furia', 9);
+      investirTalento(p, 'colosso', 2);
+      investirTalento(p, 'vinculo_marcial', 2);
+      return { p, skill: sk({ nome: 'Armas Dançantes', elemento: 'vigor', escola: 'evocacao', recurso: 'furia', energia: 35, tempoConjuracaoSegundos: 2, capacidadeExigida: 'evocar_armas_autonomas' }) };
+    },
+  },
+  {
+    id: 'nulo',
+    nome: 'Portador do Nulo',
+    descricao: 'Nível 8 em tudo: o elemento que nega.',
+    montar() {
+      const p = criarPersonagem('O Sem-Nome');
+      for (const def of elementosBase()) investirElemento(p, def.id, 8);
+      investirEscola(p, 'conjuracao', 10);
+      investirRecurso(p, 'mana', 10);
+      return { p, skill: sk({ nome: 'Anulação', elemento: 'nulo', escola: 'conjuracao', recurso: 'mana', energia: 30, tempoConjuracaoSegundos: 2 }) };
+    },
+  },
+];
+
+function aplicarPreset(id: string): void {
+  const preset = PRESETS.find((x) => x.id === id);
+  if (!preset) return;
+  try {
+    const { p, skill } = preset.montar();
+    estado.personagem = p;
+    estado.skill = skill;
+    estado.skillsSalvas = [];
+    const gastoA = pontosAtributosGastos();
+    const gastoT = pontosTalentosGastos();
+    estado.orcamentoAtributos = Math.max(estado.orcamentoAtributos, Math.ceil(gastoA / 10) * 10);
+    estado.orcamentoTalentos = Math.max(estado.orcamentoTalentos, gastoT);
+    (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);
+    (el('orc-talentos') as HTMLInputElement).value = String(estado.orcamentoTalentos);
+    render();
+    toast(`Preset "${preset.nome}" aplicado.`);
+  } catch (e) {
+    toast(`Preset falhou: ${(e as Error).message}`);
+  }
+}
+
 // ---------------------------------------------------------------- render
 
 function render(): void {
   const prog = calcularProgressao(estado.personagem);
   renderCabecalho();
+  renderPresets();
   renderElementos(prog);
   renderEscolas();
   renderRecursos();
@@ -141,7 +313,15 @@ function render(): void {
   renderFormSkill(prog);
   renderResultadoSkill(prog);
   renderSkillsSalvas();
+  renderBancada();
+  renderComparacao();
   salvar();
+}
+
+function renderPresets(): void {
+  el('presets').innerHTML = PRESETS.map(
+    (pr) => `<button type="button" data-acao="preset" data-id="${pr.id}" title="${esc(pr.descricao)}">${esc(pr.nome)}</button>`,
+  ).join('');
 }
 
 function renderCabecalho(): void {
@@ -388,6 +568,36 @@ function renderFormSkill(prog: Progressao): void {
   `;
 }
 
+const CHAVES_PERFIL = ['dano', 'controle', 'cura', 'defesa', 'suporte'] as const;
+
+function radarSVG(r: ResultadoSkill): string {
+  const fracoes = CHAVES_PERFIL.map((k) => (r.impactoTotal > 0 ? r.perfil[k] / r.impactoTotal : 0));
+  const maxF = Math.max(...fracoes, 0.001);
+  const cx = 105;
+  const cy = 94;
+  const R = 58;
+  const ponto = (i: number, escala: number): string => {
+    const ang = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    return `${(cx + Math.cos(ang) * R * escala).toFixed(1)},${(cy + Math.sin(ang) * R * escala).toFixed(1)}`;
+  };
+  const aneis = [0.33, 0.66, 1]
+    .map((s) => `<polygon class="anel" points="${CHAVES_PERFIL.map((_, i) => ponto(i, s)).join(' ')}"/>`)
+    .join('');
+  const eixos = CHAVES_PERFIL.map((_, i) => {
+    const [x, y] = ponto(i, 1).split(',');
+    return `<line class="eixo" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
+  }).join('');
+  const forma = `<polygon class="forma" points="${CHAVES_PERFIL.map((_, i) => ponto(i, fracoes[i] / maxF)).join(' ')}"/>`;
+  const rotulos = CHAVES_PERFIL.map((k, i) => {
+    const ang = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const x = cx + Math.cos(ang) * (R + 12);
+    const y = cy + Math.sin(ang) * (R + 12);
+    const anchor = Math.abs(Math.cos(ang)) < 0.3 ? 'middle' : Math.cos(ang) > 0 ? 'start' : 'end';
+    return `<text x="${x.toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="${anchor}">${k}</text>`;
+  }).join('');
+  return `<svg class="radar" width="220" height="186" viewBox="0 0 210 188" role="img" aria-label="Radar do perfil da skill">${aneis}${eixos}${forma}${rotulos}</svg>`;
+}
+
 function renderResultadoSkill(prog: Progressao): void {
   const r = calcularSkill(estado.personagem, prog, estado.skill);
   const alvo = el('resultado-skill');
@@ -414,16 +624,21 @@ function renderResultadoSkill(prog: Progressao): void {
     : '';
   alvo.innerHTML = `<div class="resultado-skill">
     <h3>${esc(estado.skill.nome)}</h3>
-    <div class="metricas">
-      <div class="metrica"><div class="rotulo">Custo (${esc(RECURSOS[estado.skill.recurso].nome)})</div><div class="valor num">${f1(r.custoBase)}</div></div>
-      <div class="metrica"><div class="rotulo">Impacto total</div><div class="valor num">${f1(r.impactoTotal)}</div></div>
-      <div class="metrica"><div class="rotulo">Por alvo (${f1(r.alvosEsperados)} alvos)</div><div class="valor num">${f1(r.impactoPorAlvo)}</div></div>
-      ${r.impactoPorSegundo ? `<div class="metrica"><div class="rotulo">Por segundo</div><div class="valor num">${f1(r.impactoPorSegundo)}</div></div>` : ''}
-      ${r.invocacoes ? `<div class="metrica"><div class="rotulo">Criaturas</div><div class="valor num">${r.invocacoes.quantidade} × ${f1(r.invocacoes.poderPorCriatura)}</div></div>` : ''}
-      <div class="metrica"><div class="rotulo">Eficiência</div><div class="valor num">${f1(r.eficiencia)}</div></div>
+    <div class="resultado-corpo">
+      <div class="coluna-metricas">
+        <div class="metricas">
+          <div class="metrica"><div class="rotulo">Custo (${esc(RECURSOS[estado.skill.recurso].nome)})</div><div class="valor num">${f1(r.custoBase)}</div></div>
+          <div class="metrica"><div class="rotulo">Impacto total</div><div class="valor num">${f1(r.impactoTotal)}</div></div>
+          <div class="metrica"><div class="rotulo">Por alvo (${f1(r.alvosEsperados)} alvos)</div><div class="valor num">${f1(r.impactoPorAlvo)}</div></div>
+          ${r.impactoPorSegundo ? `<div class="metrica"><div class="rotulo">Por segundo</div><div class="valor num">${f1(r.impactoPorSegundo)}</div></div>` : ''}
+          ${r.invocacoes ? `<div class="metrica"><div class="rotulo">Criaturas</div><div class="valor num">${r.invocacoes.quantidade} × ${f1(r.invocacoes.poderPorCriatura)}</div></div>` : ''}
+          <div class="metrica"><div class="rotulo">Eficiência</div><div class="valor num">${f1(r.eficiencia)}</div></div>
+        </div>
+        ${perfilLinhas}
+        ${propriedades}
+      </div>
+      ${radarSVG(r)}
     </div>
-    ${perfilLinhas}
-    ${propriedades}
   </div>`;
 }
 
@@ -439,6 +654,129 @@ function renderSkillsSalvas(): void {
         </div>`,
       )
       .join('') || '<div class="vazio">Nenhuma skill salva ainda.</div>';
+}
+
+// ------------------------------------------------------- bancada de recursos
+
+let bancada: { chave: string; estado: EstadoRecurso; tempo: number } | null = null;
+
+function garantirBancada(): { estado: EstadoRecurso; tempo: number } {
+  const recurso = estado.skill.recurso;
+  const prof = estado.personagem.recursos[recurso] ?? 0;
+  const chave = `${recurso}:${prof}`;
+  if (!bancada || bancada.chave !== chave) {
+    bancada = { chave, estado: criarEstadoRecurso(recurso, prof), tempo: 0 };
+  }
+  return bancada;
+}
+
+function custoDaSkillAtual(): number {
+  const prog = calcularProgressao(estado.personagem);
+  return calcularSkill(estado.personagem, prog, estado.skill).custoBase;
+}
+
+function renderBancada(): void {
+  const b = garantirBancada();
+  const e = b.estado;
+  const recurso = RECURSOS[estado.skill.recurso];
+  const fracao = e.maximo > 0 ? e.atual / e.maximo : 0;
+  const custo = custoDaSkillAtual();
+
+  let extras = '';
+  if (e instanceof FeEstado) {
+    extras = `<div>Multiplicador de custo: <strong class="num">×${f1(e.multiplicadorAtual)}</strong>
+      <span class="badge">penalidade ${f1(e.penalidade)}</span></div>`;
+  } else if (e instanceof FuriaEstado) {
+    extras = `<div><span class="badge ${e.emCombate ? 'on' : ''}">${e.emCombate ? 'em combate' : 'fora de combate'}</span></div>`;
+  }
+  const botoesCombate =
+    e instanceof FuriaEstado
+      ? `<button type="button" data-acao="banc-dano">Causar 30 de dano</button>
+         <button type="button" data-acao="banc-recebe">Receber 20 de dano</button>`
+      : '';
+
+  el('bancada').innerHTML = `
+    <div class="pool">
+      <strong>${esc(recurso.nome)}</strong>
+      <div class="barra"><i style="width:${pct(fracao)}"></i></div>
+      <span class="num">${f1(e.atual)}/${f1(e.maximo)}</span>
+    </div>
+    <div>Custo efetivo da skill agora: <strong class="num">${f1(e.custoEfetivo(custo))}</strong>
+      · tempo simulado: <span class="num">${f1(b.tempo)}s</span></div>
+    ${extras}
+    <div class="acoes-inline">
+      <button type="button" data-acao="banc-usar">Usar skill</button>
+      <button type="button" data-acao="banc-tick" data-dt="1">+1s</button>
+      <button type="button" data-acao="banc-tick" data-dt="5">+5s</button>
+      ${botoesCombate}
+      <button type="button" data-acao="banc-reiniciar">Reiniciar</button>
+    </div>`;
+}
+
+// ------------------------------------------------------- comparação de builds
+
+function resumoBuild(personagem: Personagem, skill: SkillConfig) {
+  const prog = calcularProgressao(personagem);
+  const r = calcularSkill(personagem, prog, skill);
+  const soma = (obj: Partial<Record<string, number>>) =>
+    Object.values(obj).reduce((a: number, b) => a + (b ?? 0), 0);
+  const derivadosLiberados = elementosDerivados().filter((d) => (prog.niveisEfetivos[d.id] ?? 0) > 0).length;
+  const perfilTop = r.valida
+    ? [...CHAVES_PERFIL].sort((a, b) => r.perfil[b] - r.perfil[a])[0]
+    : '—';
+  return {
+    pontos: `${soma(personagem.elementos) + soma(personagem.escolas) + soma(personagem.recursos)}+${soma(personagem.talentos)}t`,
+    elementos: prog.elementosDisponiveis.length,
+    derivados: derivadosLiberados,
+    arquetipos: prog.arquetipos.length,
+    skillNome: skill.nome,
+    custo: r.valida ? f1(r.custoBase) : '—',
+    impacto: r.valida ? f1(r.impactoTotal) : 'inválida',
+    eficiencia: r.valida ? f1(r.eficiencia) : '—',
+    perfilTop,
+  };
+}
+
+function renderComparacao(): void {
+  el('conta-snapshots').textContent = `${estado.snapshots.length}/4 snapshots`;
+  const colunas = [
+    { titulo: 'Atual', resumo: resumoBuild(estado.personagem, estado.skill), idx: -1 },
+    ...estado.snapshots.map((s, idx) => ({
+      titulo: s.nome,
+      resumo: resumoBuild(s.personagem, s.skill),
+      idx,
+    })),
+  ];
+  const linhas: { rotulo: string; campo: keyof ReturnType<typeof resumoBuild> }[] = [
+    { rotulo: 'Pontos (atrib+talento)', campo: 'pontos' },
+    { rotulo: 'Elementos com nível', campo: 'elementos' },
+    { rotulo: 'Derivados liberados', campo: 'derivados' },
+    { rotulo: 'Arquétipos', campo: 'arquetipos' },
+    { rotulo: 'Skill', campo: 'skillNome' },
+    { rotulo: 'Custo', campo: 'custo' },
+    { rotulo: 'Impacto total', campo: 'impacto' },
+    { rotulo: 'Eficiência', campo: 'eficiencia' },
+    { rotulo: 'Perfil dominante', campo: 'perfilTop' },
+  ];
+  const cabecalho = colunas
+    .map(
+      (c) =>
+        `<th>${esc(String(c.titulo))}${
+          c.idx >= 0
+            ? ` <button type="button" class="neutro" data-acao="snap-carregar" data-idx="${c.idx}">carregar</button><button type="button" data-acao="snap-remover" data-idx="${c.idx}">×</button>`
+            : ''
+        }</th>`,
+    )
+    .join('');
+  const corpo = linhas
+    .map(
+      (l) =>
+        `<tr><td>${esc(l.rotulo)}</td>${colunas
+          .map((c) => `<td class="num">${esc(String(c.resumo[l.campo]))}</td>`)
+          .join('')}</tr>`,
+    )
+    .join('');
+  el('comparacao').innerHTML = `<table><thead><tr><th></th>${cabecalho}</tr></thead><tbody>${corpo}</tbody></table>`;
 }
 
 // ---------------------------------------------------------------- ações
@@ -471,12 +809,72 @@ document.addEventListener('click', (ev) => {
       case 'remover-skill':
         estado.skillsSalvas.splice(Number(alvo.dataset.idx), 1);
         break;
+      case 'preset':
+        aplicarPreset(id);
+        return; // aplicarPreset já renderiza
+      case 'banc-usar': {
+        const b = garantirBancada();
+        if (!b.estado.usar(custoDaSkillAtual())) toast('Recurso insuficiente para usar a skill.');
+        renderBancada();
+        return;
+      }
+      case 'banc-tick': {
+        const b = garantirBancada();
+        const dt = Number(alvo.dataset.dt) || 1;
+        b.estado.tick(dt);
+        b.tempo += dt;
+        renderBancada();
+        return;
+      }
+      case 'banc-dano': {
+        const b = garantirBancada();
+        if (b.estado instanceof FuriaEstado) b.estado.aoCausarDano(30);
+        renderBancada();
+        return;
+      }
+      case 'banc-recebe': {
+        const b = garantirBancada();
+        if (b.estado instanceof FuriaEstado) b.estado.aoReceberDano(20);
+        renderBancada();
+        return;
+      }
+      case 'banc-reiniciar':
+        bancada = null;
+        renderBancada();
+        return;
+      case 'snap-carregar': {
+        const s = estado.snapshots[Number(alvo.dataset.idx)];
+        estado.personagem = structuredClone(s.personagem);
+        estado.skill = structuredClone(s.skill);
+        toast(`Snapshot "${s.nome}" carregado.`);
+        break;
+      }
+      case 'snap-remover':
+        estado.snapshots.splice(Number(alvo.dataset.idx), 1);
+        break;
       default: return;
     }
     render();
   } catch (e) {
     toast((e as Error).message);
   }
+});
+
+el('btn-snapshot').addEventListener('click', () => {
+  if (estado.snapshots.length >= 4) {
+    toast('Máximo de 4 snapshots — remova um para fotografar de novo.');
+    return;
+  }
+  const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  estado.snapshots.push({
+    nome: `#${estado.snapshots.length + 1} · ${hora}`,
+    criadoEm: new Date().toISOString(),
+    personagem: structuredClone(estado.personagem),
+    skill: structuredClone(estado.skill),
+  });
+  renderComparacao();
+  salvar();
+  toast('Build fotografada.');
 });
 
 document.addEventListener('input', (ev) => {
@@ -530,6 +928,7 @@ el('btn-exportar').addEventListener('click', () => {
     personagem: estado.personagem,
     skills: estado.skillsSalvas,
     skillAtual: estado.skill,
+    snapshots: estado.snapshots,
   };
   const json = JSON.stringify(exportado, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -558,6 +957,7 @@ el('input-importar').addEventListener('change', async (ev) => {
       orcamentoTalentos: dados.orcamentos?.talentos ?? base.orcamentoTalentos,
       skillsSalvas: Array.isArray(dados.skills) ? dados.skills : [],
       skill: dados.skillAtual ?? base.skill,
+      snapshots: Array.isArray(dados.snapshots) ? dados.snapshots : [],
     };
     (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);
     (el('orc-talentos') as HTMLInputElement).value = String(estado.orcamentoTalentos);
@@ -571,8 +971,21 @@ el('input-importar').addEventListener('change', async (ev) => {
 });
 
 el('btn-resetar').addEventListener('click', () => {
-  if (!confirm('Resetar todos os pontos, talentos e skills salvas?')) return;
+  // confirmação em dois cliques (diálogos nativos são bloqueados em iframes)
+  const btn = el('btn-resetar') as HTMLButtonElement;
+  if (btn.dataset.armado !== '1') {
+    btn.dataset.armado = '1';
+    btn.textContent = 'Confirmar reset?';
+    setTimeout(() => {
+      btn.dataset.armado = '';
+      btn.textContent = 'Resetar';
+    }, 3000);
+    return;
+  }
+  btn.dataset.armado = '';
+  btn.textContent = 'Resetar';
   estado = estadoPadrao();
+  bancada = null;
   localStorage.removeItem(CHAVE_STORAGE);
   (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);
   (el('orc-talentos') as HTMLInputElement).value = String(estado.orcamentoTalentos);
