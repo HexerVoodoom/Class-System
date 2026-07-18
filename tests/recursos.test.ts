@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { FeEstado, FuriaEstado, ManaEstado } from '../src/engine/recursos';
+import {
+  FeEstado,
+  FuriaEstado,
+  ManaEstado,
+  RessonanciaEstado,
+  SoullinkEstado,
+} from '../src/engine/recursos';
 
 describe('mana', () => {
   it('custo previsível e regen constante', () => {
@@ -74,5 +80,63 @@ describe('fúria', () => {
     expect(fu.usar(10)).toBe(false);
     fu.aoCausarDano(100);
     expect(fu.usar(10)).toBe(true);
+  });
+});
+
+describe('soullink', () => {
+  it('consome a própria vida ao usar', () => {
+    const s = new SoullinkEstado(0);
+    expect(s.atual).toBe(100);
+    expect(s.usar(30)).toBe(true);
+    expect(s.atual).toBe(70);
+  });
+
+  it('recusa consumir abaixo do limiar vital (10%)', () => {
+    const s = new SoullinkEstado(0);
+    s.usar(80); // fica com 20
+    expect(s.usar(15)).toBe(false); // 20 - 15 = 5 < 10
+    expect(s.atual).toBe(20);
+    expect(s.usar(10)).toBe(true); // 20 - 10 = 10 = limiar exato
+  });
+
+  it('vida regenera devagar', () => {
+    const s = new SoullinkEstado(0);
+    s.usar(50);
+    s.tick(10); // 1/s
+    expect(s.atual).toBe(60);
+  });
+});
+
+describe('ressonância', () => {
+  it('começa fraca e fica mais forte a cada uso, até o teto', () => {
+    const r = new RessonanciaEstado(0);
+    expect(r.multiplicadorAtual).toBe(1);
+    r.usar(10);
+    r.usar(10);
+    expect(r.multiplicadorAtual).toBeCloseTo(1.2, 10);
+    for (let i = 0; i < 10; i++) {
+      r.usar(5);
+      r.tick(1); // segue usando dentro da janela
+    }
+    expect(r.multiplicadorAtual).toBeCloseTo(1.5, 10); // teto
+  });
+
+  it('ficar sem usar além da janela reseta para o estado fraco', () => {
+    const r = new RessonanciaEstado(0);
+    r.usar(10);
+    r.usar(10);
+    r.tick(5); // dentro da janela de 8s: mantém
+    expect(r.multiplicadorAtual).toBeCloseTo(1.2, 10);
+    r.tick(4); // 9s acumulados sem usar: reset
+    expect(r.multiplicadorAtual).toBe(1);
+  });
+
+  it('usar dentro da janela zera o relógio do reset', () => {
+    const r = new RessonanciaEstado(0);
+    r.usar(10);
+    r.tick(6);
+    r.usar(10); // relógio volta a zero
+    r.tick(6); // ainda dentro da nova janela
+    expect(r.multiplicadorAtual).toBeCloseTo(1.2, 10);
   });
 });

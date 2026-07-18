@@ -106,6 +106,18 @@ export const ARQUETIPOS: Record<string, ArquetipoDef> = Object.fromEntries(
     a('atirador_fantasma', 'Atirador Fantasma', 'Espectro + Longo Alcance: projéteis que atravessam paredes.',
       { elementos: { espectro: 10 }, escolas: { longo_alcance: 12 } },
       ['tiro_fantasma']),
+    a('mestre_de_armas', 'Mestre de Armas', 'Marcial + Combate Físico: domina qualquer arma que toca.',
+      { elementos: { marcial: 12 }, escolas: { combate_fisico: 10 } },
+      ['maestria_de_armas']),
+    a('forjador_de_guerra', 'Forjador de Guerra', 'Forja + Evocação: evoca armas incandescentes recém-saídas da bigorna.',
+      { elementos: { forja: 12 }, escolas: { evocacao: 10 } },
+      ['evocar_armas_flamejantes']),
+    a('arsenal_arcano', 'Arsenal Arcano', 'Arsenal + Evocação: um enxame de armas etéreas conjuradas.',
+      { elementos: { arsenal: 12 }, escolas: { evocacao: 10 } },
+      ['evocar_arsenal_arcano']),
+    a('avatar_da_guerra', 'Avatar da Guerra', 'Avatar de Guerra + Soullink: paga com a alma para SER a guerra.',
+      { elementos: { avatar_de_guerra: 15 }, recursos: { soullink: 10 } },
+      ['forma_avatar_de_guerra']),
 
     // ---------- suporte / híbridos ----------
     a('santo_guardiao', 'Santo Guardião', 'Santidade + Bênção: a cura mais pura do sistema.',

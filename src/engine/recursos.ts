@@ -5,6 +5,10 @@
  *  - Fé: penalidade acumulada a cada uso encarece os próximos; decai
  *    exponencialmente enquanto você não usa.
  *  - Fúria: só nasce do combate (dano causado/recebido) e escoa fora dele.
+ *  - Soullink: o pool É a sua vida; consome-a em troca de mais poder e
+ *    trava no limiar vital.
+ *  - Ressonância: cada uso empilha um multiplicador de poder; ficar sem
+ *    usar além da janela reseta o acúmulo para o estado fraco.
  */
 
 import { RECURSOS, type RecursoId } from '../registry/recursos';
@@ -150,6 +154,85 @@ export class FuriaEstado implements EstadoRecurso {
   }
 }
 
+export class SoullinkEstado implements EstadoRecurso {
+  readonly recurso: RecursoId = 'soullink';
+  /** O pool é a própria vida do personagem. */
+  readonly maximo: number;
+  atual: number;
+  readonly limiarVital: number;
+  private readonly regen: number;
+
+  constructor(proficiencia = 0) {
+    const def = RECURSOS.soullink;
+    const par = def.parametros;
+    this.maximo = def.poolBase + def.poolPorProficiencia * proficiencia;
+    this.atual = this.maximo;
+    this.limiarVital = this.maximo * par.limiarVidaFracao!;
+    this.regen = par.regenBasePorSegundo! + par.regenPorProficiencia! * proficiencia;
+  }
+
+  custoEfetivo(custoBase: number): number {
+    return custoBase;
+  }
+
+  usar(custoBase: number): boolean {
+    if (this.atual - custoBase < this.limiarVital) return false;
+    this.atual -= custoBase;
+    return true;
+  }
+
+  tick(dt: number): void {
+    this.atual = Math.min(this.maximo, this.atual + this.regen * dt);
+  }
+}
+
+export class RessonanciaEstado implements EstadoRecurso {
+  readonly recurso: RecursoId = 'ressonancia';
+  readonly maximo: number;
+  atual: number;
+  /** Multiplicador de poder acumulado (começa fraco em 1.0). */
+  multiplicadorAtual = 1;
+  private segundosDesdeUltimoUso = 0;
+  private readonly regen: number;
+  private readonly acumuloPorUso: number;
+  private readonly multiplicadorMaximo: number;
+  private readonly janelaReset: number;
+
+  constructor(proficiencia = 0) {
+    const def = RECURSOS.ressonancia;
+    const par = def.parametros;
+    this.maximo = def.poolBase + def.poolPorProficiencia * proficiencia;
+    this.atual = this.maximo;
+    this.regen = par.regenBasePorSegundo! + par.regenPorProficiencia! * proficiencia;
+    this.acumuloPorUso = par.acumuloPorUso!;
+    this.multiplicadorMaximo = par.multiplicadorPoderMaximo!;
+    this.janelaReset = par.janelaResetSegundos!;
+  }
+
+  custoEfetivo(custoBase: number): number {
+    return custoBase;
+  }
+
+  usar(custoBase: number): boolean {
+    if (this.atual < custoBase) return false;
+    this.atual -= custoBase;
+    this.multiplicadorAtual = Math.min(
+      this.multiplicadorMaximo,
+      this.multiplicadorAtual + this.acumuloPorUso,
+    );
+    this.segundosDesdeUltimoUso = 0;
+    return true;
+  }
+
+  tick(dt: number): void {
+    this.atual = Math.min(this.maximo, this.atual + this.regen * dt);
+    this.segundosDesdeUltimoUso += dt;
+    if (this.segundosDesdeUltimoUso >= this.janelaReset) {
+      this.multiplicadorAtual = 1; // o "cooldown" venceu: volta ao estado fraco
+    }
+  }
+}
+
 export function criarEstadoRecurso(recurso: RecursoId, proficiencia = 0): EstadoRecurso {
   switch (recurso) {
     case 'mana':
@@ -158,5 +241,9 @@ export function criarEstadoRecurso(recurso: RecursoId, proficiencia = 0): Estado
       return new FeEstado(proficiencia);
     case 'furia':
       return new FuriaEstado(proficiencia);
+    case 'soullink':
+      return new SoullinkEstado(proficiencia);
+    case 'ressonancia':
+      return new RessonanciaEstado(proficiencia);
   }
 }

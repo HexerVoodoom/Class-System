@@ -7,9 +7,13 @@
  *    quando você fica um tempo sem usar).
  *  - furia: não regenera sozinha; é gerada ao causar e ao receber dano em
  *    combate, e decai fora de combate.
+ *  - soullink: paga o custo com a própria VIDA e amplifica o poder da
+ *    skill; trava num limiar mínimo para não se matar.
+ *  - ressonancia: começa fraca e fica mais forte a cada uso (multiplicador
+ *    de poder acumulado); ficar um tempo sem usar reseta o acúmulo.
  */
 
-export type RecursoId = 'mana' | 'fe' | 'furia';
+export type RecursoId = 'mana' | 'fe' | 'furia' | 'soullink' | 'ressonancia';
 
 export interface RecursoDef {
   id: RecursoId;
@@ -67,6 +71,41 @@ export const RECURSOS: Record<RecursoId, RecursoDef> = {
       ganhoPorProficiencia: 0.02,
       decaimentoForaDeCombatePorSegundo: 3,
       segundosParaSairDeCombate: 5,
+    },
+  },
+  soullink: {
+    id: 'soullink',
+    nome: 'Soullink',
+    descricao:
+      'Paga o custo com a própria vida e amplifica o poder; nunca desce do limiar vital.',
+    poolBase: 100,
+    poolPorProficiencia: 10,
+    parametros: {
+      /** Regeneração de vida lenta. */
+      regenBasePorSegundo: 1,
+      regenPorProficiencia: 0.2,
+      /** Skills pagas com vida rendem mais poder. */
+      multiplicadorPoder: 1.3,
+      /** Fração da vida abaixo da qual o elo se recusa a consumir. */
+      limiarVidaFracao: 0.1,
+    },
+  },
+  ressonancia: {
+    id: 'ressonancia',
+    nome: 'Ressonância',
+    descricao:
+      'Começa fraca e amplifica a cada uso consecutivo; parar de usar reseta o acúmulo.',
+    poolBase: 100,
+    poolPorProficiencia: 8,
+    parametros: {
+      regenBasePorSegundo: 5,
+      regenPorProficiencia: 0.4,
+      /** Quanto de multiplicador cada uso acumula. */
+      acumuloPorUso: 0.1,
+      /** Teto do multiplicador de poder acumulado. */
+      multiplicadorPoderMaximo: 1.5,
+      /** Segundos sem usar até o acúmulo resetar para o estado fraco. */
+      janelaResetSegundos: 8,
     },
   },
 };

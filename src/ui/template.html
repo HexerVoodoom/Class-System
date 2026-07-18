@@ -282,6 +282,37 @@
   }
   .talento-detalhe .req-ok { color: var(--ok); }
   .talento-detalhe .req-falta { color: var(--alerta); }
+
+  /* Constelação: um céu noturno deliberadamente single-theme */
+  .constelacao {
+    background: radial-gradient(ellipse at 50% 42%, #221d38 0%, #171327 55%, #100d1c 100%);
+    border: 1px solid var(--linha); border-radius: 10px; overflow: hidden;
+  }
+  .constelacao svg { display: block; width: 100%; height: auto; }
+  .constelacao .fundo-estrela { fill: #cfc8e6; }
+  .constelacao .liga { stroke: #6f649c; stroke-width: 1; opacity: 0.5; }
+  .constelacao .liga-centro { stroke: #6f649c; stroke-width: 0.7; opacity: 0.18; }
+  .constelacao .liga-ou { stroke: #d06a5a; stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; }
+  .constelacao .estrela-halo { fill: #cfc8e6; opacity: 0.10; }
+  .constelacao .estrela-nucleo { fill: #b9b0d6; }
+  .constelacao .rotulo-estrela { font: 8.5px system-ui, sans-serif; fill: #8d84ad; text-anchor: middle; }
+  .constelacao .rotulo-constelacao {
+    font: 600 9.5px system-ui, sans-serif; fill: #c9a84c; text-anchor: middle;
+    letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85;
+  }
+  .constelacao [data-acao='no-talento'] { cursor: pointer; }
+  .constelacao [data-acao='no-talento']:focus-visible { outline: none; }
+  .constelacao [data-acao='no-talento']:focus-visible .estrela-nucleo { stroke: #c9a84c; stroke-width: 2; }
+  .constelacao .investido .estrela-nucleo { fill: #e9c95e; }
+  .constelacao .investido .estrela-halo { fill: #e9c95e; opacity: 0.25; }
+  .constelacao .investido .rotulo-estrela { fill: #d8c78a; }
+  .constelacao .max .anel-max { fill: none; stroke: #e9c95e; stroke-width: 1; opacity: 0.8; }
+  .constelacao .bloqueado .estrela-nucleo { fill: #55506b; }
+  .constelacao .bloqueado .estrela-halo { opacity: 0.04; }
+  .constelacao .bloqueado .rotulo-estrela { fill: #5d5776; }
+  .constelacao .excluido .estrela-nucleo { fill: #7c4a44; }
+  .constelacao .excluido .anel-excluido { fill: none; stroke: #d06a5a; stroke-width: 1; stroke-dasharray: 2 2; }
+  .constelacao .selecionado .anel-selecao { fill: none; stroke: #9d8ce0; stroke-width: 1.6; }
 </style>
 <!--BODY-->
 <div class="app">
@@ -330,6 +361,7 @@
         <h2>Talentos <span class="conta" id="conta-talentos"></span>
           <span class="vista-toggle">
             <button type="button" data-acao="vista-talentos" data-id="arvore">Árvore</button>
+            <button type="button" data-acao="vista-talentos" data-id="constelacao">Constelação</button>
             <button type="button" data-acao="vista-talentos" data-id="cartas">Cartas</button>
           </span>
         </h2>

@@ -26,7 +26,8 @@ export type ElementoBaseId =
   | 'vileza'
   | 'morte'
   | 'vida'
-  | 'vigor';
+  | 'vigor'
+  | 'marcial';
 
 export interface PerfilPesos {
   dano: number;
@@ -167,6 +168,14 @@ const ELEMENTOS_BASE: Record<ElementoBaseId, ElementoDef> = {
     pesos: pesos(0.6, 0, 0, 0.3, 0.1),
     descricao: 'O espírito do corpo; potencializa o combate físico.',
   },
+  marcial: {
+    id: 'marcial',
+    nome: 'Marcial',
+    tipo: 'base',
+    fatorPotencia: 1.0,
+    pesos: pesos(0.7, 0.1, 0, 0.2, 0),
+    descricao: 'A arte das armas: maestria, técnica e armas evocadas.',
+  },
 };
 
 interface OpcoesDerivado {
@@ -297,6 +306,20 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   // ---- vida + X ----
   derivado('vitalidade', 'Vitalidade', ['vida', 'vigor'], 'Regeneração contínua: o corpo que não aceita cair.'),
 
+  // ---- marcial + X ----
+  derivado('forja', 'Forja', ['marcial', 'fogo'], 'Armas nascidas do fogo: lâminas incandescentes e martelos de brasa.'),
+  derivado('tempera', 'Têmpera', ['marcial', 'agua'], 'O fio perfeito: lâminas temperadas que nunca perdem o corte.'),
+  derivado('aco', 'Aço', ['marcial', 'terra'], 'Metal da terra: armas pesadas e armaduras vivas.'),
+  derivado('esgrima', 'Esgrima', ['marcial', 'ar'], 'A dança da lâmina leve: estocadas rápidas como o vento.'),
+  derivado('aco_voltaico', 'Aço Voltaico', ['marcial', 'eletricidade'], 'Armas condutoras: cada golpe descarrega um relâmpago.'),
+  derivado('arsenal', 'Arsenal', ['marcial', 'arcano'], 'Armas conjuradas do nada: um arsenal etéreo ao seu dispor.'),
+  derivado('lamina_oculta', 'Lâmina Oculta', ['marcial', 'sombra'], 'A arma que ninguém vê: golpes das sombras.'),
+  derivado('lamina_radiante', 'Lâmina Radiante', ['marcial', 'luz'], 'A espada-voto: arde contra o profano e protege o portador.'),
+  derivado('serrilha', 'Serrilha', ['marcial', 'vileza'], 'Armas cruéis: feridas que não fecham.'),
+  derivado('fio_funebre', 'Fio Fúnebre', ['marcial', 'morte'], 'A lâmina que colhe: cada abate fortalece o próximo golpe.'),
+  derivado('lamina_viva', 'Lâmina Viva', ['marcial', 'vida'], 'Armas que crescem: madeira viva, espinhos e seiva.'),
+  derivado('maestria', 'Maestria', ['marcial', 'vigor'], 'Corpo e arma como um só: a técnica além da perfeição.'),
+
   // ---- triplas ----
   derivado('chama_demoniaca', 'Chama Demoníaca', ['fogo', 'vileza', 'morte'], 'Fogo alimentado por pacto e morte: queima corpo, alma e contrato.'),
   derivado('furacao', 'Furacão', ['agua', 'ar', 'eletricidade'], 'A tempestade perfeita: área devastadora que se move sozinha.'),
@@ -307,6 +330,7 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado('sobrecarga', 'Sobrecarga', ['eletricidade', 'arcano', 'vigor'], 'Corpo-condutor: velocidade e poder além do limite seguro.'),
   derivado('ascensao', 'Ascensão', ['luz', 'vida', 'vigor'], 'Forma exaltada: transcende brevemente a condição mortal.'),
   derivado('nucleo', 'Núcleo', ['fogo', 'terra', 'eletricidade'], 'O coração do mundo: erupções magnéticas e magma pressurizado.'),
+  derivado('avatar_de_guerra', 'Avatar de Guerra', ['marcial', 'vigor', 'arcano'], 'A guerra encarnada: cem armas orbitando um corpo perfeito.'),
 
   // ---- amplas e especiais ----
   derivado(
@@ -326,7 +350,7 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado(
     'nulo',
     'Nulo',
-    ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'arcano', 'sombra', 'luz', 'vileza', 'morte', 'vida', 'vigor'],
+    ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'arcano', 'sombra', 'luz', 'vileza', 'morte', 'vida', 'vigor', 'marcial'],
     'O elemento de quem dominou todos: nega, absorve e devolve qualquer coisa.',
     { fator: 1.4, minimo: 8, tipo: 'especial' },
   ),
@@ -371,6 +395,8 @@ export const SINERGIAS: Sinergia[] = [
   { de: 'vida', para: ['luz'], razao: 0.1 },
   { de: 'vigor', para: ['vida'], razao: 0.1 },
   { de: 'vida', para: ['vigor'], razao: 0.1 },
+  { de: 'marcial', para: ['vigor'], razao: 0.1 },
+  { de: 'vigor', para: ['marcial'], razao: 0.1 },
   { de: 'terra', para: ['vigor'], razao: 0.05 },
   { de: 'eletricidade', para: ['ar'], razao: 0.05 },
   // Arcano é magia pura: alimenta de leve tudo que não é físico.

@@ -13,7 +13,7 @@ npm run build:sim  # regenera o simulador interativo (simulador.html)
 
 Abra **`simulador.html`** no navegador (arquivo único, auto-contido — o motor real é empacotado dentro dele). Nele você pode:
 
-- distribuir pontos em elementos, escolas, recursos e talentos, com orçamento configurável;
+- distribuir pontos em elementos, escolas, recursos e talentos, com orçamento configurável — talentos em três visualizações: **árvore** (trilhas e tiers), **constelação** (céu noturno interativo) e cartas;
 - ver ao vivo os níveis efetivos (com sinergia), o progresso de **todos os elementos combinados** e dos arquétipos;
 - montar skills no construtor (elemento + escola + recurso + energia + tempo + área + entrega) e ver custo, impacto, perfil e propriedades calculados na hora;
 - salvar skills na build, **exportar/importar** tudo em JSON e **resetar**.
@@ -41,7 +41,7 @@ A separação é deliberada: **adicionar um elemento, uma receita, uma sinergia 
 
 ## Camada 1 — Elementos
 
-**Base** (recebem pontos diretos): fogo, água, terra, ar, eletricidade, arcano, sombra, luz, vileza, morte, vida, vigor.
+**Base** (recebem pontos diretos): fogo, água, terra, ar, eletricidade, arcano, sombra, luz, vileza, morte, vida, vigor, **marcial** (maestria de armas e armas evocadas).
 
 **Sinergias de transbordo** — investir num elemento vaza para os vizinhos:
 
@@ -60,7 +60,7 @@ Cada elemento (e escola) tem um **perfil mecânico** — pesos de dano/controle/
 
 **Derivados** (não aceitam ponto direto; nível = **menor** nível efetivo entre os componentes, exigindo o mínimo da receita — ou seja, evoluem quando os componentes evoluem *juntos*):
 
-- **Todos os 66 pares** dos 12 elementos base existem — Vapor (fogo+água), Lava (fogo+terra), Plasma (fogo+eletricidade), Fênix (fogo+vida), Pântano (água+terra), Gelo (água+ar), Veneno (água+morte), Ácido (água+vileza), Abismo (água+sombra), Areia (terra+ar), Magnetismo (terra+eletricidade), Flora (terra+vida), Titã (terra+vigor), Tempestade (ar+eletricidade), Éter (ar+arcano), Miasma (ar+morte), Galvanismo (eletricidade+morte), Runa (arcano+luz), Pacto (arcano+vileza), Alma (arcano+morte), Espectro (sombra+morte), Parasita (sombra+vida), Assassínio (sombra+vigor), Julgamento (luz+morte), Santidade (luz+vida), Praga (vileza+morte), Mutação (vileza+vida), Carnificina (vileza+vigor), Equilíbrio (morte+vida), Ceifa (morte+vigor)… — a lista completa (com descrição de cada um) está em `src/registry/elementos.ts`, e um teste garante que nenhum par falte.
+- **Todos os 78 pares** dos 13 elementos base existem — Vapor (fogo+água), Lava (fogo+terra), Plasma (fogo+eletricidade), Fênix (fogo+vida), Pântano (água+terra), Gelo (água+ar), Veneno (água+morte), Ácido (água+vileza), Abismo (água+sombra), Areia (terra+ar), Magnetismo (terra+eletricidade), Flora (terra+vida), Titã (terra+vigor), Tempestade (ar+eletricidade), Éter (ar+arcano), Miasma (ar+morte), Galvanismo (eletricidade+morte), Runa (arcano+luz), Pacto (arcano+vileza), Alma (arcano+morte), Espectro (sombra+morte), Parasita (sombra+vida), Assassínio (sombra+vigor), Julgamento (luz+morte), Santidade (luz+vida), Praga (vileza+morte), Mutação (vileza+vida), Carnificina (vileza+vigor), Equilíbrio (morte+vida), Ceifa (morte+vigor)… — a lista completa (com descrição de cada um) está em `src/registry/elementos.ts`, e um teste garante que nenhum par falte.
 - **Triplas**: Chama Demoníaca (fogo+vileza+morte), Furacão (água+ar+eletricidade), Selva (água+terra+vida), Abominação (sombra+morte+vileza), Eclipse (luz+sombra+arcano), Reencarnação (vida+morte+arcano), Sobrecarga (eletricidade+arcano+vigor), Ascensão (luz+vida+vigor), Núcleo (fogo+terra+eletricidade) — fator 1.30.
 - **Amplas**: Primordial (os 5 primais, fator 1.35), Ciclo (vida+morte+luz+sombra, fator 1.35) e **Nulo** (nível 8+ em **todos** os 12 base, fator 1.40).
 
@@ -73,6 +73,8 @@ Pares têm fator de potência 1.15 (opostos como Equilíbrio e Crepúsculo, 1.20
 | **Mana** | Gasto contínuo e previsível: custo fixo, regen constante. |
 | **Fé** | Cada uso acumula penalidade que multiplica o custo dos próximos (`custo × (1 + penalidade)`, teto 4×). A penalidade decai com meia-vida de 20s enquanto você não usa. |
 | **Fúria** | Não regenera: nasce de dano causado (×0.5) e recebido (×0.8), decai 3/s após 5s fora de combate. |
+| **Soullink** | Paga o custo com a própria **vida** e amplifica o poder da skill em +30%; recusa consumir abaixo do limiar vital (10%). |
+| **Ressonância** | Começa fraca (×1.0) e cada uso acumula +10% de poder até ×1.5; ficar **8s sem usar reseta** o acúmulo para o estado fraco (o inverso da fé). |
 
 Proficiência em recurso (pontos investidos) aumenta pool/regen e suaviza as penalidades — e também conta para desbloquear arquétipos.
 

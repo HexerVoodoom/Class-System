@@ -36,7 +36,7 @@ describe('matriz completa de combinações', () => {
       }
     }
     expect(faltando).toEqual([]);
-    expect(paresRegistrados.size).toBe(66);
+    expect(paresRegistrados.size).toBe(78); // C(13,2) com marcial incluído
   });
 
   it('derivados herdam perfil como média dos componentes', () => {
@@ -51,7 +51,7 @@ describe('matriz completa de combinações', () => {
     expect(ELEMENTOS.chama_demoniaca.receita).toHaveLength(3);
     expect(ELEMENTOS.primordial.receita).toHaveLength(5);
     expect(ELEMENTOS.ciclo.receita).toHaveLength(4);
-    expect(ELEMENTOS.nulo.receita).toHaveLength(12);
+    expect(ELEMENTOS.nulo.receita).toHaveLength(13);
   });
 
   it('primordial: 12+ em todos os primais libera o elemento', () => {
@@ -87,6 +87,79 @@ describe('arquétipos por elemento derivado', () => {
     for (const e of elementosBase()) investirElemento(p, e.id as ElementoBaseId, 8);
     const prog = calcularProgressao(p);
     expect(prog.arquetipos.map((x) => x.id)).toContain('portador_do_nulo');
+  });
+});
+
+describe('elemento marcial', () => {
+  it('marcial + vigor → maestria, com sinergia mútua', () => {
+    const p = criarPersonagem('t');
+    investirElemento(p, 'marcial', 12);
+    investirElemento(p, 'vigor', 10);
+    const prog = calcularProgressao(p);
+    // vigor efetivo 10 + floor(12*0.1) = 11; maestria = min(12, 11)
+    expect(prog.niveisEfetivos.vigor).toBe(11);
+    expect(prog.niveisEfetivos.maestria).toBe(11);
+  });
+
+  it('marcial + combate físico → mestre de armas', () => {
+    const p = criarPersonagem('t');
+    investirElemento(p, 'marcial', 12);
+    investirEscola(p, 'combate_fisico', 10);
+    expect(calcularProgressao(p).capacidades.has('maestria_de_armas')).toBe(true);
+  });
+
+  it('arsenal (marcial+arcano) + evocação → arsenal arcano', () => {
+    const p = criarPersonagem('t');
+    investirElemento(p, 'marcial', 12);
+    investirElemento(p, 'arcano', 12);
+    investirEscola(p, 'evocacao', 10);
+    const prog = calcularProgressao(p);
+    expect(prog.niveisEfetivos.arsenal).toBe(12);
+    expect(prog.capacidades.has('evocar_arsenal_arcano')).toBe(true);
+  });
+});
+
+describe('recursos soullink e ressonância na calculadora', () => {
+  it('soullink amplifica o poder da mesma skill em relação à mana', () => {
+    const p = criarPersonagem('t');
+    investirElemento(p, 'marcial', 12);
+    investirEscola(p, 'combate_fisico', 10);
+    const prog = calcularProgressao(p);
+    const base: SkillConfig = {
+      nome: 't',
+      elemento: 'marcial',
+      escola: 'combate_fisico',
+      recurso: 'mana',
+      energia: 20,
+      tempoConjuracaoSegundos: 1,
+      area: { tipo: 'unico' },
+      entrega: { tipo: 'instantaneo' },
+    };
+    const comMana = calcularSkill(p, prog, base);
+    const comVida = calcularSkill(p, prog, { ...base, recurso: 'soullink' });
+    expect(comVida.impactoTotal).toBeCloseTo(comMana.impactoTotal * 1.3, 5);
+    expect(comVida.propriedades.map((x) => x.chave)).toContain('custo_em_vida');
+  });
+
+  it('ressonância começa no poder base e anuncia o teto', () => {
+    const p = criarPersonagem('t');
+    investirElemento(p, 'fogo', 10);
+    investirEscola(p, 'conjuracao', 10);
+    const prog = calcularProgressao(p);
+    const base: SkillConfig = {
+      nome: 't',
+      elemento: 'fogo',
+      escola: 'conjuracao',
+      recurso: 'ressonancia',
+      energia: 20,
+      tempoConjuracaoSegundos: 1,
+      area: { tipo: 'unico' },
+      entrega: { tipo: 'instantaneo' },
+    };
+    const r = calcularSkill(p, prog, base);
+    const comMana = calcularSkill(p, prog, { ...base, recurso: 'mana' });
+    expect(r.impactoTotal).toBeCloseTo(comMana.impactoTotal, 5); // baseline fraco
+    expect(r.propriedades.map((x) => x.chave)).toContain('ressonancia_maxima');
   });
 });
 

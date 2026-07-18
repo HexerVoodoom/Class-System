@@ -24,7 +24,14 @@ import {
 } from '../engine/personagem';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
 import { calcularSkill, type ResultadoSkill, type SkillConfig } from '../engine/skills';
-import { criarEstadoRecurso, FeEstado, FuriaEstado, type EstadoRecurso } from '../engine/recursos';
+import {
+  criarEstadoRecurso,
+  FeEstado,
+  FuriaEstado,
+  RessonanciaEstado,
+  SoullinkEstado,
+  type EstadoRecurso,
+} from '../engine/recursos';
 
 // ---------------------------------------------------------------- estado
 
@@ -43,7 +50,7 @@ interface Estado {
   skillsSalvas: SkillConfig[];
   filtroDerivados: string;
   snapshots: Snapshot[];
-  vistaTalentos: 'arvore' | 'cartas';
+  vistaTalentos: 'arvore' | 'constelacao' | 'cartas';
 }
 
 const CHAVE_STORAGE = 'class-system-simulador-v1';
@@ -112,6 +119,7 @@ const CORES: Record<ElementoBaseId, string> = {
   morte: '#8a9184',
   vida: '#5fae82',
   vigor: '#c07a50',
+  marcial: '#9aa3b5',
 };
 
 const el = (id: string) => document.getElementById(id)!;
@@ -266,6 +274,21 @@ const PRESETS: Preset[] = [
     },
   },
   {
+    id: 'mestre_de_armas',
+    nome: 'Mestre de Armas',
+    descricao: 'Marcial + Soullink: paga com a vida por golpes perfeitos.',
+    montar() {
+      const p = criarPersonagem('Cem-Lâminas');
+      investirElemento(p, 'marcial', 14);
+      investirElemento(p, 'vigor', 10);
+      investirEscola(p, 'combate_fisico', 12);
+      investirRecurso(p, 'soullink', 8);
+      investirTalento(p, 'sequencia_marcial', 2);
+      investirTalento(p, 'elo_profundo', 2);
+      return { p, skill: sk({ nome: 'Dança de Mil Cortes', elemento: 'maestria', escola: 'combate_fisico', recurso: 'soullink', energia: 25, tempoConjuracaoSegundos: 1.5 }) };
+    },
+  },
+  {
     id: 'nulo',
     nome: 'Portador do Nulo',
     descricao: 'Nível 8 em tudo: o elemento que nega.',
@@ -400,7 +423,7 @@ const GRUPOS_TALENTOS: { titulo: string; ids: TalentoId[] }[] = [
   { titulo: 'Bênção', ids: ['egide', 'exaltacao', 'vinculo_de_grupo'] },
   { titulo: 'Combate Físico', ids: ['sequencia_marcial', 'golpe_devastador', 'postura_inabalavel'] },
   { titulo: 'Longo Alcance', ids: ['olho_de_aguia', 'rajada'] },
-  { titulo: 'Recursos', ids: ['devocao', 'fluxo_constante', 'sede_de_batalha'] },
+  { titulo: 'Recursos', ids: ['devocao', 'fluxo_constante', 'sede_de_batalha', 'elo_profundo', 'afinacao'] },
 ];
 
 function requisitoTexto(def: TalentoDef): string {
@@ -499,6 +522,125 @@ function renderArvoreTalentos(): void {
   el('talentos').innerHTML = `<div class="arvore">${trilhas}</div>${renderDetalheTalento()}`;
 }
 
+function renderConstelacaoTalentos(): void {
+  const W = 700;
+  const H = 660;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // céu de fundo determinístico
+  let seed = 42;
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+  let fundo = '';
+  for (let i = 0; i < 80; i++) {
+    fundo += `<circle class="fundo-estrela" cx="${(rnd() * W).toFixed(1)}" cy="${(rnd() * H).toFixed(1)}" r="${(0.5 + rnd() * 0.9).toFixed(2)}" opacity="${(0.12 + rnd() * 0.3).toFixed(2)}"/>`;
+  }
+
+  const nG = GRUPOS_TALENTOS.length;
+  let ligas = '';
+  let nos = '';
+  let rotulos = '';
+
+  GRUPOS_TALENTOS.forEach((grupo, gi) => {
+    const ang = -Math.PI / 2 + (gi * 2 * Math.PI) / nG;
+    const dx = Math.cos(ang);
+    const dy = Math.sin(ang);
+    const px = -dy; // perpendicular
+    const py = dx;
+
+    // tiers pelo nível de requisito, como na árvore
+    const porNivel = new Map<number, TalentoId[]>();
+    for (const id of grupo.ids) {
+      const nivel = TALENTOS[id].requisito?.nivelMinimo ?? 0;
+      porNivel.set(nivel, [...(porNivel.get(nivel) ?? []), id]);
+    }
+    const niveis = [...porNivel.keys()].sort((a, b) => a - b);
+
+    // anéis de até 2 estrelas para a constelação não invadir as vizinhas
+    const aneisIds: TalentoId[][] = [];
+    for (const nivel of niveis) {
+      const ids = porNivel.get(nivel)!;
+      for (let i = 0; i < ids.length; i += 2) aneisIds.push(ids.slice(i, i + 2));
+    }
+
+    const posDe = new Map<TalentoId, { x: number; y: number; lado: number }>();
+    const ancoraInicial = { x: cx + dx * 52, y: cy + dy * 52 };
+    ligas += `<line class="liga-centro" x1="${cx}" y1="${cy}" x2="${ancoraInicial.x.toFixed(1)}" y2="${ancoraInicial.y.toFixed(1)}"/>`;
+
+    const distBase = 92 + (gi % 2) * 26; // raios alternados entre vizinhas
+    let ancoraAnterior = ancoraInicial;
+    aneisIds.forEach((ids, ti) => {
+      const dist = distBase + ti * 60;
+      const membros: { id: TalentoId; x: number; y: number; lado: number }[] = ids.map((id, j) => {
+        const desloc = (j - (ids.length - 1) / 2) * 44;
+        return {
+          id,
+          x: cx + dx * dist + px * desloc,
+          y: cy + dy * dist + py * desloc,
+          lado: j % 2, // alterna o rótulo abaixo/acima para pares não colidirem
+        };
+      });
+      for (const m of membros) {
+        posDe.set(m.id, m);
+        ligas += `<line class="liga" x1="${ancoraAnterior.x.toFixed(1)}" y1="${ancoraAnterior.y.toFixed(1)}" x2="${m.x.toFixed(1)}" y2="${m.y.toFixed(1)}"/>`;
+      }
+      // linha tracejada entre rivais exclusivos adjacentes
+      for (let j = 0; j < membros.length - 1; j++) {
+        const a = TALENTOS[membros[j].id];
+        if ((a.exclusivoCom ?? []).includes(membros[j + 1].id)) {
+          ligas += `<line class="liga-ou" x1="${membros[j].x.toFixed(1)}" y1="${membros[j].y.toFixed(1)}" x2="${membros[j + 1].x.toFixed(1)}" y2="${membros[j + 1].y.toFixed(1)}"/>`;
+        }
+      }
+      const centroide = {
+        x: membros.reduce((s, m) => s + m.x, 0) / membros.length,
+        y: membros.reduce((s, m) => s + m.y, 0) / membros.length,
+      };
+      ancoraAnterior = centroide;
+    });
+
+    // rótulo da constelação na ponta externa, como em mapas celestes
+    const distRotulo = distBase + (aneisIds.length - 1) * 60 + 38;
+    const rx = cx + dx * distRotulo;
+    const ry = cy + dy * distRotulo;
+    rotulos += `<text class="rotulo-constelacao" x="${rx.toFixed(1)}" y="${ry.toFixed(1)}">${esc(grupo.titulo.replace(' (exclusivos)', ''))}</text>`;
+
+    // estrelas
+    for (const [id, pos] of posDe) {
+      const def = TALENTOS[id];
+      const { bloqueado, excluido, ranks } = estadoDoTalento(def);
+      const classes = [
+        ranks > 0 ? 'investido' : '',
+        ranks === def.ranksMaximos ? 'max' : '',
+        bloqueado ? 'bloqueado' : '',
+        excluido ? 'excluido' : '',
+        talentoSelecionado === id ? 'selecionado' : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+      const rNucleo = 3 + ranks * 0.7;
+      const rotuloRanks = ranks > 0 ? ` ${ranks}/${def.ranksMaximos}` : '';
+      const yRotulo = pos.lado === 0 ? pos.y + rNucleo + 11 : pos.y - rNucleo - 7;
+      nos += `<g class="${classes}" data-acao="no-talento" data-id="${id}" tabindex="0" role="button"
+        aria-label="${esc(def.nome)} (${ranks}/${def.ranksMaximos} ranks)">
+        <title>${esc(def.nome)} — ${esc(def.descricao)}</title>
+        <circle class="estrela-halo" cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="12"/>
+        <circle class="anel-selecao anel-max anel-excluido" cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="${(rNucleo + 3.5).toFixed(1)}" fill="none"/>
+        <circle class="estrela-nucleo" cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="${rNucleo.toFixed(1)}"/>
+        <text class="rotulo-estrela" x="${pos.x.toFixed(1)}" y="${yRotulo.toFixed(1)}">${esc(def.nome)}${rotuloRanks}</text>
+      </g>`;
+    }
+  });
+
+  const nucleoCentral = `<circle class="estrela-halo" cx="${cx}" cy="${cy}" r="16"/>
+    <circle class="estrela-nucleo" cx="${cx}" cy="${cy}" r="4.5"/>`;
+
+  el('talentos').innerHTML = `<div class="constelacao">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Constelação de talentos">
+      ${fundo}${ligas}${nucleoCentral}${nos}${rotulos}
+    </svg>
+  </div>${renderDetalheTalento()}`;
+}
+
 function renderTalentos(): void {
   el('conta-talentos').textContent = `${pontosTalentosGastos()} ranks distribuídos`;
   document.querySelectorAll<HTMLButtonElement>('[data-acao="vista-talentos"]').forEach((b) => {
@@ -506,6 +648,10 @@ function renderTalentos(): void {
   });
   if (estado.vistaTalentos === 'arvore') {
     renderArvoreTalentos();
+    return;
+  }
+  if (estado.vistaTalentos === 'constelacao') {
+    renderConstelacaoTalentos();
     return;
   }
   el('talentos').innerHTML = GRUPOS_TALENTOS.map((grupo) => {
@@ -786,6 +932,12 @@ function renderBancada(): void {
       <span class="badge">penalidade ${f1(e.penalidade)}</span></div>`;
   } else if (e instanceof FuriaEstado) {
     extras = `<div><span class="badge ${e.emCombate ? 'on' : ''}">${e.emCombate ? 'em combate' : 'fora de combate'}</span></div>`;
+  } else if (e instanceof SoullinkEstado) {
+    extras = `<div><span class="badge on">o custo é a sua vida</span>
+      <span class="badge">limiar vital ${f1(e.limiarVital)}</span></div>`;
+  } else if (e instanceof RessonanciaEstado) {
+    extras = `<div>Poder acumulado: <strong class="num">×${f1(e.multiplicadorAtual)}</strong>
+      <span class="badge">reseta após 8s sem usar</span></div>`;
   }
   const botoesCombate =
     e instanceof FuriaEstado
@@ -955,7 +1107,7 @@ document.addEventListener('click', (ev) => {
         renderTalentos();
         return;
       case 'vista-talentos':
-        estado.vistaTalentos = id as 'arvore' | 'cartas';
+        estado.vistaTalentos = id as Estado['vistaTalentos'];
         renderTalentos();
         salvar();
         return;
@@ -1023,6 +1175,7 @@ document.addEventListener('input', (ev) => {
     renderFormSkill(prog);
   }
   renderResultadoSkill(prog);
+  if (t.id === 'sk-recurso') renderBancada(); // a bancada segue o recurso da skill
   salvar();
 });
 

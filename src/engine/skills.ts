@@ -19,7 +19,7 @@
 
 import { ELEMENTOS, type ElementoId, type PerfilPesos } from '../registry/elementos';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
-import type { RecursoId } from '../registry/recursos';
+import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
 import type { Personagem } from './personagem';
 import type { Progressao } from './progressao';
@@ -199,7 +199,9 @@ export function calcularSkill(
       ? e.bonusFracaoPorRank * r
       : 0,
   );
-  const orcamento = cfg.energia * multTempo * multNivel * (1 + bonusFoco);
+  // recursos com custo "caro" (soullink paga em vida) amplificam o poder
+  const multRecurso = RECURSOS[cfg.recurso].parametros.multiplicadorPoder ?? 1;
+  const orcamento = cfg.energia * multTempo * multNivel * (1 + bonusFoco) * multRecurso;
 
   // área: espalhar o orçamento entre alvos esperados
   const alvosEsperados =
@@ -262,6 +264,23 @@ export function calcularSkill(
         valor: efeito.valorPorRank * ranks,
       });
     }
+  }
+
+  // notas da dinâmica do recurso escolhido
+  const parRecurso = RECURSOS[cfg.recurso].parametros;
+  if (cfg.recurso === 'soullink') {
+    propriedades.push({
+      chave: 'custo_em_vida',
+      rotulo: 'Custo pago com a própria vida (poder amplificado)',
+      valor: (parRecurso.multiplicadorPoder ?? 1) - 1,
+    });
+  }
+  if (cfg.recurso === 'ressonancia') {
+    propriedades.push({
+      chave: 'ressonancia_maxima',
+      rotulo: 'Poder extra com ressonância no máximo',
+      valor: (parRecurso.multiplicadorPoderMaximo ?? 1) - 1,
+    });
   }
 
   return {

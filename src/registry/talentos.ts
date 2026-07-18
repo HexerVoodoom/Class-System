@@ -56,7 +56,9 @@ export type TalentoId =
   // recursos
   | 'devocao'
   | 'fluxo_constante'
-  | 'sede_de_batalha';
+  | 'sede_de_batalha'
+  | 'elo_profundo'
+  | 'afinacao';
 
 export type EfeitoTalento =
   | { tipo: 'raio_maximo_bonus'; valorPorRank: number }
@@ -349,5 +351,21 @@ export const TALENTOS: Record<TalentoId, TalentoDef> = {
     ranksMaximos: 3,
     requisito: { recurso: 'furia', nivelMinimo: 5 },
     efeitos: [{ tipo: 'propriedade', chave: 'furia_ganho_bonus', rotulo: 'Ganho de fúria', valorPorRank: 0.12 }],
+  },
+  elo_profundo: {
+    id: 'elo_profundo',
+    nome: 'Elo Profundo',
+    descricao: 'Soullink: +5% de poder extra por rank ao pagar com vida.',
+    ranksMaximos: 3,
+    requisito: { recurso: 'soullink', nivelMinimo: 5 },
+    efeitos: [{ tipo: 'propriedade', chave: 'soullink_poder_extra', rotulo: 'Poder extra do Soullink', valorPorRank: 0.05 }],
+  },
+  afinacao: {
+    id: 'afinacao',
+    nome: 'Afinação',
+    descricao: 'Ressonância: a janela antes do reset dura +2s por rank.',
+    ranksMaximos: 3,
+    requisito: { recurso: 'ressonancia', nivelMinimo: 5 },
+    efeitos: [{ tipo: 'propriedade', chave: 'ressonancia_janela_extra', rotulo: 'Janela extra antes do reset (s)', valorPorRank: 2 }],
   },
 };
