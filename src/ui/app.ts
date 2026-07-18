@@ -43,6 +43,7 @@ interface Estado {
   skillsSalvas: SkillConfig[];
   filtroDerivados: string;
   snapshots: Snapshot[];
+  vistaTalentos: 'arvore' | 'cartas';
 }
 
 const CHAVE_STORAGE = 'class-system-simulador-v1';
@@ -69,6 +70,7 @@ function estadoPadrao(): Estado {
     skillsSalvas: [],
     filtroDerivados: '',
     snapshots: [],
+    vistaTalentos: 'arvore',
   };
 }
 
@@ -408,8 +410,104 @@ function requisitoTexto(def: TalentoDef): string {
   return `requer ${esc(alvo)} ${nivelMinimo}`;
 }
 
+let talentoSelecionado: TalentoId | null = null;
+
+function estadoDoTalento(def: TalentoDef): { bloqueado: boolean; excluido: boolean; ranks: number } {
+  const p = estado.personagem;
+  const ranks = p.talentos[def.id] ?? 0;
+  let bloqueado = false;
+  if (def.requisito) {
+    const { escola, recurso, nivelMinimo } = def.requisito;
+    if (escola && (p.escolas[escola] ?? 0) < nivelMinimo) bloqueado = true;
+    if (recurso && (p.recursos[recurso] ?? 0) < nivelMinimo) bloqueado = true;
+  }
+  const excluido = (def.exclusivoCom ?? []).some((rival) => (p.talentos[rival] ?? 0) > 0);
+  return { bloqueado, excluido, ranks };
+}
+
+function renderDetalheTalento(): string {
+  if (!talentoSelecionado) {
+    return `<div class="talento-detalhe vazio">Clique num talento da árvore para ver detalhes e investir ranks.</div>`;
+  }
+  const def = TALENTOS[talentoSelecionado];
+  const { bloqueado, excluido, ranks } = estadoDoTalento(def);
+  const bolinhas = '●'.repeat(ranks) + '○'.repeat(def.ranksMaximos - ranks);
+  const req = def.requisito
+    ? `<div class="${bloqueado ? 'req-falta' : 'req-ok'}">${requisitoTexto(def)} ${bloqueado ? '(não atendido)' : '✓'}</div>`
+    : '';
+  const excl = def.exclusivoCom?.length
+    ? `<div class="${excluido ? 'req-falta' : 'exclusivo'}">exclusivo com ${def.exclusivoCom.map((r) => esc(TALENTOS[r].nome)).join(', ')}${excluido ? ' — bloqueado pelo rival' : ''}</div>`
+    : '';
+  return `<div class="talento-detalhe">
+    <div class="nome">${esc(def.nome)} <span class="ranks">${bolinhas}</span></div>
+    <div class="desc">${esc(def.descricao)}</div>
+    ${req}${excl}
+    <div class="controles">
+      <button type="button" data-acao="dec-talento" data-id="${def.id}" aria-label="Remover rank">−</button>
+      <span class="valor num">${ranks}/${def.ranksMaximos}</span>
+      <button type="button" data-acao="inc-talento" data-id="${def.id}" aria-label="Adicionar rank">+</button>
+    </div>
+  </div>`;
+}
+
+function renderArvoreTalentos(): void {
+  const trilhas = GRUPOS_TALENTOS.map((grupo) => {
+    // tiers pelo nível exigido no requisito (0 = raiz da trilha)
+    const porNivel = new Map<number, TalentoId[]>();
+    for (const id of grupo.ids) {
+      const nivel = TALENTOS[id].requisito?.nivelMinimo ?? 0;
+      porNivel.set(nivel, [...(porNivel.get(nivel) ?? []), id]);
+    }
+    const niveis = [...porNivel.keys()].sort((a, b) => a - b);
+
+    const colunas = niveis
+      .map((nivel, idx) => {
+        const ids = porNivel.get(nivel)!;
+        const nos: string[] = [];
+        for (let i = 0; i < ids.length; i++) {
+          const def = TALENTOS[ids[i]];
+          const { bloqueado, excluido, ranks } = estadoDoTalento(def);
+          const classes = [
+            'no',
+            ranks > 0 ? 'investido' : '',
+            ranks === def.ranksMaximos ? 'max' : '',
+            bloqueado ? 'bloqueado' : '',
+            excluido ? 'excluido' : '',
+            talentoSelecionado === def.id ? 'selecionado' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          const pips = '●'.repeat(ranks) + '○'.repeat(def.ranksMaximos - ranks);
+          nos.push(
+            `<button type="button" class="${classes}" data-acao="no-talento" data-id="${def.id}" title="${esc(def.descricao)}">${esc(def.nome)}<span class="pips">${pips}</span></button>`,
+          );
+          const proximo = ids[i + 1];
+          if (proximo && (def.exclusivoCom ?? []).includes(proximo)) {
+            nos.push(`<div class="ou">— ou —</div>`);
+          }
+        }
+        const conector =
+          idx > 0 || nivel > 0
+            ? `<div class="conector">${nivel > 0 ? `<span class="tier-req num">nv ${nivel}</span>` : ''}</div>`
+            : '';
+        return `${conector}<div class="tier">${nos.join('')}</div>`;
+      })
+      .join('');
+    return `<div class="trilha"><div class="trilha-titulo">${esc(grupo.titulo)}</div>${colunas}</div>`;
+  }).join('');
+
+  el('talentos').innerHTML = `<div class="arvore">${trilhas}</div>${renderDetalheTalento()}`;
+}
+
 function renderTalentos(): void {
   el('conta-talentos').textContent = `${pontosTalentosGastos()} ranks distribuídos`;
+  document.querySelectorAll<HTMLButtonElement>('[data-acao="vista-talentos"]').forEach((b) => {
+    b.classList.toggle('ativo', b.dataset.id === estado.vistaTalentos);
+  });
+  if (estado.vistaTalentos === 'arvore') {
+    renderArvoreTalentos();
+    return;
+  }
   el('talentos').innerHTML = GRUPOS_TALENTOS.map((grupo) => {
     const cartas = grupo.ids
       .map((id) => {
@@ -852,6 +950,15 @@ document.addEventListener('click', (ev) => {
       case 'snap-remover':
         estado.snapshots.splice(Number(alvo.dataset.idx), 1);
         break;
+      case 'no-talento':
+        talentoSelecionado = talentoSelecionado === id ? null : (id as TalentoId);
+        renderTalentos();
+        return;
+      case 'vista-talentos':
+        estado.vistaTalentos = id as 'arvore' | 'cartas';
+        renderTalentos();
+        salvar();
+        return;
       default: return;
     }
     render();
