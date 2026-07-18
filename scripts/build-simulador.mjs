@@ -1,6 +1,7 @@
 /**
  * Gera o simulador auto-contido:
- *  - simulador.html            → arquivo completo, abre direto no navegador
+ *  - simulador.html               → arquivo completo, abre direto no navegador
+ *  - public/index.html            → cópia para deploy estático (Cloudflare Workers)
  *  - dist/simulador-artifact.html → fragmento (sem <html>/<head>/<body>)
  */
 import { build } from 'esbuild';
@@ -39,6 +40,9 @@ ${corpoComApp.trim()}
 </html>
 `;
 writeFileSync(join(raiz, 'simulador.html'), completo);
+
+mkdirSync(join(raiz, 'public'), { recursive: true });
+writeFileSync(join(raiz, 'public/index.html'), completo);
 
 mkdirSync(join(raiz, 'dist'), { recursive: true });
 writeFileSync(join(raiz, 'dist/simulador-artifact.html'), `${cabeca.trim()}\n${corpoComApp.trim()}\n`);

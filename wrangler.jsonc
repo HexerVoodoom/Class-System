@@ -1,0 +1,10 @@
+{
+  // Deploy estático do simulador no Cloudflare Workers (assets-only).
+  // O diretório public/ é gerado por `npm run build:sim` e vai versionado,
+  // então `npx wrangler deploy` funciona sem etapa de build no pipeline.
+  "name": "class-system",
+  "compatibility_date": "2026-07-01",
+  "assets": {
+    "directory": "./public"
+  }
+}
