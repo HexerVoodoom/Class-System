@@ -3,6 +3,7 @@ import {
   criarPersonagem,
   investirElemento,
   investirEscola,
+  investirRecurso,
   investirTalento,
   type Personagem,
 } from '../src/engine/personagem';
@@ -15,6 +16,7 @@ function magoBase(): Personagem {
   investirElemento(p, 'terra', 12);
   investirEscola(p, 'conjuracao', 10);
   investirEscola(p, 'evocacao', 10);
+  investirRecurso(p, 'mana', 5);
   return p;
 }
 
@@ -23,9 +25,10 @@ function skillBase(extra: Partial<SkillConfig> = {}): SkillConfig {
     nome: 'teste',
     elemento: 'fogo',
     escola: 'conjuracao',
-    recurso: 'mana',
+    fontes: [{ recurso: 'mana', proporcao: 100 }],
     energia: 20,
     tempoConjuracaoSegundos: 1,
+    alcanceMetros: 10,
     area: { tipo: 'unico' },
     entrega: { tipo: 'instantaneo' },
     ...extra,
@@ -170,6 +173,87 @@ describe('balanceamento: formas diferentes, impacto similar', () => {
     const max = Math.max(...eficiencias);
     const min = Math.min(...eficiencias);
     expect(max / min).toBeLessThan(1.35);
+  });
+
+  it('fontes combinadas dividem o custo na proporção escolhida', () => {
+    const p = magoBase();
+    investirRecurso(p, 'furia', 5);
+    const prog = calcularProgressao(p);
+    const r = calcularSkill(
+      p,
+      prog,
+      skillBase({
+        fontes: [
+          { recurso: 'mana', proporcao: 60 },
+          { recurso: 'furia', proporcao: 40 },
+        ],
+      }),
+    );
+    expect(r.valida).toBe(true);
+    expect(r.custoPorFonte).toHaveLength(2);
+    const mana = r.custoPorFonte.find((c) => c.recurso === 'mana')!;
+    const furia = r.custoPorFonte.find((c) => c.recurso === 'furia')!;
+    expect(mana.custo / furia.custo).toBeCloseTo(60 / 40, 5);
+    expect(mana.custo + furia.custo).toBeCloseTo(r.custoTotal, 5);
+  });
+
+  it('fonte sem proficiência invalida a skill', () => {
+    const p = magoBase(); // só tem mana
+    const prog = calcularProgressao(p);
+    const r = calcularSkill(
+      p,
+      prog,
+      skillBase({ fontes: [{ recurso: 'furia', proporcao: 100 }] }),
+    );
+    expect(r.valida).toBe(false);
+    expect(r.erros.join(' ')).toMatch(/Sem proficiência em Fúria/);
+  });
+
+  it('mais proficiência na fonte: custo menor, impacto maior, conjuração mínima menor', () => {
+    const novato = magoBase(); // mana 5
+    const mestre = magoBase();
+    investirRecurso(mestre, 'mana', 15); // mana 20
+    const cfg = skillBase();
+    const rNovato = calcularSkill(novato, calcularProgressao(novato), cfg);
+    const rMestre = calcularSkill(mestre, calcularProgressao(mestre), cfg);
+    expect(rMestre.custoTotal).toBeLessThan(rNovato.custoTotal);
+    expect(rMestre.impactoTotal).toBeGreaterThan(rNovato.impactoTotal);
+    expect(rMestre.limites.tempoConjuracaoMinimo).toBeLessThan(
+      rNovato.limites.tempoConjuracaoMinimo,
+    );
+  });
+
+  it('soullink parcial amplifica o poder na proporção da mistura', () => {
+    const p = magoBase();
+    investirRecurso(p, 'soullink', 5);
+    const prog = calcularProgressao(p);
+    const puroMana = calcularSkill(p, prog, skillBase());
+    const misto = calcularSkill(
+      p,
+      prog,
+      skillBase({
+        fontes: [
+          { recurso: 'mana', proporcao: 50 },
+          { recurso: 'soullink', proporcao: 50 },
+        ],
+      }),
+    );
+    // multFontes = 0.5×1.0 + 0.5×1.3 = 1.15, mas a proficiência ponderada
+    // muda (mana 5 / soullink 5 → mesma média), então razão ≈ 1.15
+    expect(misto.impactoTotal / puroMana.impactoTotal).toBeCloseTo(1.15, 2);
+  });
+
+  it('alcance maior encarece a skill e é limitado por talento', () => {
+    const p = magoBase();
+    const prog = calcularProgressao(p);
+    const curto = calcularSkill(p, prog, skillBase({ alcanceMetros: 0 }));
+    const longo = calcularSkill(p, prog, skillBase({ alcanceMetros: 20 }));
+    expect(longo.custoTotal).toBeGreaterThan(curto.custoTotal);
+    const invalido = calcularSkill(p, prog, skillBase({ alcanceMetros: 30 }));
+    expect(invalido.valida).toBe(false);
+    investirTalento(p, 'alcance_estendido', 2); // +10m
+    const r = calcularSkill(p, calcularProgressao(p), skillBase({ alcanceMetros: 30 }));
+    expect(r.valida).toBe(true);
   });
 
   it('elementos derivados pagam melhor por nível (fator de potência)', () => {

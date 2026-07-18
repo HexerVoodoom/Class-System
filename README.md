@@ -11,14 +11,15 @@ npm run build:sim  # regenera o simulador interativo (simulador.html)
 
 ## Simulador interativo
 
-Abra **`simulador.html`** no navegador (arquivo único, auto-contido — o motor real é empacotado dentro dele). Nele você pode:
+Abra **`simulador.html`** no navegador (arquivo único, auto-contido — o motor real é empacotado dentro dele). Está organizado em **abas**, no espírito do License Board do FFXII:
 
-- distribuir pontos em elementos, escolas, recursos e talentos, com orçamento configurável — talentos em três visualizações: **árvore** (trilhas e tiers), **constelação** (céu noturno interativo) e cartas;
-- ver ao vivo os níveis efetivos (com sinergia), o progresso de **todos os elementos combinados** e dos arquétipos;
-- montar skills no construtor (elemento + escola + recurso + energia + tempo + área + entrega) e ver custo, impacto, perfil e propriedades calculados na hora;
-- salvar skills na build, **exportar/importar** tudo em JSON e **resetar**.
+- **Elementos — o Céu dos Elementos**: um tabuleiro celeste onde os 13 elementos base formam o anel externo e as 78 combinações orbitam em anéis concêntricos rumo ao centro (pares de vizinhos na borda, pares de opostos mais fundo), triplas num anel interno e o **Nulo no coração do céu**. Clique numa estrela para investir; derivados acendem quando os componentes evoluem juntos, e as linhas de receita se iluminam.
+- **Escolas**: pontos por escola + os arquétipos que emergem da combinação.
+- **Recursos**: proficiência nas cinco fontes de energia (mana, fé, fúria, soullink, ressonância). Cada ponto reduz custo, aumenta regeneração/impacto e encurta a conjuração — e a bancada simula as fontes da skill atual em tempo real.
+- **Talentos**: em **árvore** (trilhas e tiers) ou **cartas**.
+- **Criar Skill**: sliders para energia, tempo de conjuração, **alcance**, raio e duração — cada um **limitado pelos talentos investidos** (o máximo aparece ao lado). Você **combina várias fontes de energia em proporções livres** (só recursos com proficiência), e **custo, impacto, perfil e propriedades recalculam em tempo real**. Compare até 4 builds lado a lado.
 
-O estado persiste no `localStorage` entre visitas.
+O estado persiste no `localStorage` entre visitas; dá para **exportar/importar** tudo em JSON e **resetar**.
 
 ## Arquitetura
 
@@ -26,7 +27,7 @@ O estado persiste no `localStorage` entre visitas.
 src/
   registry/     ← DADOS: o conteúdo do jogo, editável sem tocar no motor
     elementos.ts   elementos base, derivados, sinergias de transbordo
-    recursos.ts    mana, fé, fúria e seus parâmetros
+    recursos.ts    mana, fé, fúria, soullink, ressonância e seus parâmetros
     escolas.ts     combate físico, longo alcance, evocação, conjuração, bênção, maldição
     talentos.ts    talentos com ranks, requisitos e ramos exclusivos
     arquetipos.ts  identidades desbloqueadas por combinação (necromante etc.)
@@ -109,7 +110,9 @@ Skills podem exigir uma capacidade de arquétipo (`capacidadeExigida`), e as con
 
 ## Camada 5 — Construtor de skills e balanceamento
 
-O jogador configura cada skill: elemento + escola + recurso + **energia investida** + **tempo de conjuração** + **área** (único ou círculo com raio) + **entrega** (instantânea ou contínua).
+O jogador configura cada skill: elemento + escola + **fontes de energia** + **energia investida** + **tempo de conjuração** + **alcance** + **área** (único ou círculo com raio) + **entrega** (instantânea ou contínua).
+
+**Fontes de energia combinadas** — uma skill pode misturar recursos em proporções livres (ex.: 60% mana + 40% fúria), desde que o personagem tenha proficiência em cada fonte. O custo é dividido entre as fontes na proporção escolhida, e a **proficiência ponderada** escala tudo: custo −1%/ponto (até −30%), impacto +0.8%/ponto e conjuração mínima −0.01s/ponto.
 
 A regra central é um **orçamento único de poder**:
 
@@ -118,18 +121,21 @@ orçamento = energia × √(tempo de conjuração)
                     × fatorPotência(elemento)
                     × (1 + 0.04·nívelElemento) × (1 + 0.03·nívelEscola)
                     × (1 + bônus de foco de talento)
+                    × multFontes            (soullink amplia +30%, na proporção)
+                    × (1 + 0.008·proficiência ponderada)
 ```
 
 Toda escolha de forma apenas **redistribui** o orçamento:
 
 - **Área**: alvos esperados = `1 + 0.15·π·raio²`; o total leva taxa de 10% e é dividido entre os alvos → área nunca é dano grátis.
+- **Alcance**: encarece de leve (+0.5%/metro), limitado pelo talento Alcance Estendido.
 - **Contínuo (DoT)**: até +30% de total, porém diluído na duração.
 - **Evocação**: o orçamento vira criaturas; *Enxame* divide por `quantidade^0.9`, *Colosso* concentra.
 - **Perfil**: o impacto se distribui em dano/controle/cura/defesa/suporte pela média dos perfis do elemento e da escola — Água+Maldição pende para controle, Santidade+Bênção para cura, sem mudar o total.
 
 Resultado: `impacto ÷ energia` fica estável entre builds (testado com tolerância <1.35× entre configurações extremas) — **escolhas diferentes, impacto similar**, que era o requisito de design.
 
-Limites configuráveis (energia máx., tempo mín., raio máx.) crescem com escola e talentos, e a validação explica exatamente qual talento destrava o que.
+Limites configuráveis (energia máx., tempo mín., raio máx., alcance máx.) crescem com escola, talentos e proficiência nas fontes; no simulador, cada slider mostra seu teto e a validação explica exatamente o que destrava mais.
 
 ## Estendendo
 

@@ -129,14 +129,18 @@ describe('recursos soullink e ressonância na calculadora', () => {
       nome: 't',
       elemento: 'marcial',
       escola: 'combate_fisico',
-      recurso: 'mana',
+      fontes: [{ recurso: 'mana', proporcao: 100 }],
       energia: 20,
       tempoConjuracaoSegundos: 1,
+      alcanceMetros: 0,
       area: { tipo: 'unico' },
       entrega: { tipo: 'instantaneo' },
     };
     const comMana = calcularSkill(p, prog, base);
-    const comVida = calcularSkill(p, prog, { ...base, recurso: 'soullink' });
+    const comVida = calcularSkill(p, prog, {
+      ...base,
+      fontes: [{ recurso: 'soullink', proporcao: 100 }],
+    });
     expect(comVida.impactoTotal).toBeCloseTo(comMana.impactoTotal * 1.3, 5);
     expect(comVida.propriedades.map((x) => x.chave)).toContain('custo_em_vida');
   });
@@ -150,14 +154,18 @@ describe('recursos soullink e ressonância na calculadora', () => {
       nome: 't',
       elemento: 'fogo',
       escola: 'conjuracao',
-      recurso: 'ressonancia',
+      fontes: [{ recurso: 'ressonancia', proporcao: 100 }],
       energia: 20,
       tempoConjuracaoSegundos: 1,
+      alcanceMetros: 0,
       area: { tipo: 'unico' },
       entrega: { tipo: 'instantaneo' },
     };
     const r = calcularSkill(p, prog, base);
-    const comMana = calcularSkill(p, prog, { ...base, recurso: 'mana' });
+    const comMana = calcularSkill(p, prog, {
+      ...base,
+      fontes: [{ recurso: 'mana', proporcao: 100 }],
+    });
     expect(r.impactoTotal).toBeCloseTo(comMana.impactoTotal, 5); // baseline fraco
     expect(r.propriedades.map((x) => x.chave)).toContain('ressonancia_maxima');
   });
@@ -183,9 +191,10 @@ describe('talentos de recurso e propriedades', () => {
       nome: 't',
       elemento: 'fogo',
       escola: 'conjuracao',
-      recurso: 'mana',
+      fontes: [{ recurso: 'mana', proporcao: 100 }],
       energia: 10,
       tempoConjuracaoSegundos: 1,
+      alcanceMetros: 0,
       area: { tipo: 'unico' },
       entrega: { tipo: 'instantaneo' },
     };
@@ -213,9 +222,10 @@ describe('talentos de recurso e propriedades', () => {
       nome: 't',
       elemento: 'agua',
       escola: 'maldicao',
-      recurso: 'mana',
+      fontes: [{ recurso: 'mana', proporcao: 100 }],
       energia: 20,
       tempoConjuracaoSegundos: 1,
+      alcanceMetros: 0,
       area: { tipo: 'unico' },
       entrega: { tipo: 'instantaneo' },
     });

@@ -1,6 +1,15 @@
 /**
  * App do simulador. Importa o MOTOR REAL (mesmo código dos testes) — a UI
  * apenas coleta pontos e exibe os cálculos.
+ *
+ * Organização em abas (estilo tabuleiro de licenças do FFXII):
+ *  1. Elementos — o Céu dos Elementos: tabuleiro celeste onde os 13 base
+ *     formam o anel externo e as combinações orbitam o centro.
+ *  2. Escolas — pontos + arquétipos emergentes.
+ *  3. Recursos — proficiência nas fontes de energia + bancada de simulação.
+ *  4. Talentos — árvore/cartas.
+ *  5. Criar Skill — sliders limitados por talentos, fontes de energia
+ *     combinadas em proporções, custo e impacto em tempo real.
  */
 
 import {
@@ -9,6 +18,7 @@ import {
   elementosDerivados,
   type ElementoBaseId,
   type ElementoDef,
+  type ElementoId,
 } from '../registry/elementos';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
@@ -23,7 +33,14 @@ import {
   type Personagem,
 } from '../engine/personagem';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
-import { calcularSkill, type ResultadoSkill, type SkillConfig } from '../engine/skills';
+import {
+  calcularLimites,
+  calcularSkill,
+  normalizarFontes,
+  type FonteEnergia,
+  type ResultadoSkill,
+  type SkillConfig,
+} from '../engine/skills';
 import {
   criarEstadoRecurso,
   FeEstado,
@@ -42,6 +59,8 @@ interface Snapshot {
   skill: SkillConfig;
 }
 
+type AbaId = 'elementos' | 'escolas' | 'recursos' | 'talentos' | 'skill';
+
 interface Estado {
   personagem: Personagem;
   orcamentoAtributos: number;
@@ -50,7 +69,8 @@ interface Estado {
   skillsSalvas: SkillConfig[];
   filtroDerivados: string;
   snapshots: Snapshot[];
-  vistaTalentos: 'arvore' | 'constelacao' | 'cartas';
+  vistaTalentos: 'arvore' | 'cartas';
+  abaAtiva: AbaId;
 }
 
 const CHAVE_STORAGE = 'class-system-simulador-v1';
@@ -60,9 +80,10 @@ function skillPadrao(): SkillConfig {
     nome: 'Nova Skill',
     elemento: 'fogo',
     escola: 'conjuracao',
-    recurso: 'mana',
+    fontes: [{ recurso: 'mana', proporcao: 100 }],
     energia: 20,
     tempoConjuracaoSegundos: 1.5,
+    alcanceMetros: 10,
     area: { tipo: 'unico' },
     entrega: { tipo: 'instantaneo' },
   };
@@ -78,7 +99,21 @@ function estadoPadrao(): Estado {
     filtroDerivados: '',
     snapshots: [],
     vistaTalentos: 'arvore',
+    abaAtiva: 'elementos',
   };
+}
+
+/** Migra skills salvas no formato antigo (recurso único) para fontes. */
+function migrarSkill(s: any): SkillConfig {
+  const base = skillPadrao();
+  const skill: SkillConfig = { ...base, ...s };
+  if (!Array.isArray(skill.fontes) || skill.fontes.length === 0) {
+    const recursoAntigo = (s?.recurso as RecursoId) ?? 'mana';
+    skill.fontes = [{ recurso: recursoAntigo, proporcao: 100 }];
+  }
+  if (typeof skill.alcanceMetros !== 'number') skill.alcanceMetros = base.alcanceMetros;
+  delete (skill as any).recurso;
+  return skill;
 }
 
 function carregar(): Estado {
@@ -87,12 +122,21 @@ function carregar(): Estado {
     if (!bruto) return estadoPadrao();
     const salvo = JSON.parse(bruto);
     const base = estadoPadrao();
-    return {
+    const estado: Estado = {
       ...base,
       ...salvo,
       personagem: { ...base.personagem, ...salvo.personagem },
-      skill: { ...base.skill, ...salvo.skill },
+      skill: migrarSkill(salvo.skill),
+      skillsSalvas: Array.isArray(salvo.skillsSalvas) ? salvo.skillsSalvas.map(migrarSkill) : [],
+      snapshots: Array.isArray(salvo.snapshots)
+        ? salvo.snapshots.map((sn: any) => ({ ...sn, skill: migrarSkill(sn.skill) }))
+        : [],
     };
+    if ((estado.vistaTalentos as string) === 'constelacao') estado.vistaTalentos = 'arvore';
+    if (!['elementos', 'escolas', 'recursos', 'talentos', 'skill'].includes(estado.abaAtiva)) {
+      estado.abaAtiva = 'elementos';
+    }
+    return estado;
   } catch {
     return estadoPadrao();
   }
@@ -156,15 +200,20 @@ interface Preset {
   montar(): { p: Personagem; skill: SkillConfig };
 }
 
-function sk(extra: Partial<SkillConfig> & Pick<SkillConfig, 'nome' | 'elemento' | 'escola' | 'recurso'>): SkillConfig {
+function sk(
+  extra: Partial<SkillConfig> & Pick<SkillConfig, 'nome' | 'elemento' | 'escola' | 'fontes'>,
+): SkillConfig {
   return {
     energia: 20,
     tempoConjuracaoSegundos: 1.5,
+    alcanceMetros: 10,
     area: { tipo: 'unico' },
     entrega: { tipo: 'instantaneo' },
     ...extra,
   };
 }
+
+const fonte = (recurso: RecursoId, proporcao = 100): FonteEnergia => ({ recurso, proporcao });
 
 const PRESETS: Preset[] = [
   {
@@ -179,7 +228,7 @@ const PRESETS: Preset[] = [
       investirEscola(p, 'maldicao', 6);
       investirRecurso(p, 'mana', 10);
       investirTalento(p, 'enxame', 3);
-      return { p, skill: sk({ nome: 'Legião de Ossos', elemento: 'morte', escola: 'evocacao', recurso: 'mana', energia: 30, tempoConjuracaoSegundos: 3, capacidadeExigida: 'evocar_mortos_vivos' }) };
+      return { p, skill: sk({ nome: 'Legião de Ossos', elemento: 'morte', escola: 'evocacao', fontes: [fonte('mana')], energia: 30, tempoConjuracaoSegundos: 3, capacidadeExigida: 'evocar_mortos_vivos' }) };
     },
   },
   {
@@ -194,7 +243,7 @@ const PRESETS: Preset[] = [
       investirRecurso(p, 'mana', 10);
       investirTalento(p, 'area_ampliada', 3);
       investirTalento(p, 'impacto_imediato', 2);
-      return { p, skill: sk({ nome: 'Erupção', elemento: 'lava', escola: 'conjuracao', recurso: 'mana', energia: 28, tempoConjuracaoSegundos: 2.5, area: { tipo: 'circulo', raioMetros: 6 } }) };
+      return { p, skill: sk({ nome: 'Erupção', elemento: 'lava', escola: 'conjuracao', fontes: [fonte('mana')], energia: 28, tempoConjuracaoSegundos: 2.5, area: { tipo: 'circulo', raioMetros: 6 } }) };
     },
   },
   {
@@ -210,7 +259,7 @@ const PRESETS: Preset[] = [
       investirRecurso(p, 'fe', 10);
       investirTalento(p, 'egide', 2);
       investirTalento(p, 'postura_inabalavel', 2);
-      return { p, skill: sk({ nome: 'Aura da Bravura', elemento: 'bravura', escola: 'benca', recurso: 'fe', tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 4 }, entrega: { tipo: 'continuo', duracaoSegundos: 10 } }) };
+      return { p, skill: sk({ nome: 'Aura da Bravura', elemento: 'bravura', escola: 'benca', fontes: [fonte('fe')], tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 4 }, entrega: { tipo: 'continuo', duracaoSegundos: 10 } }) };
     },
   },
   {
@@ -225,7 +274,7 @@ const PRESETS: Preset[] = [
       investirRecurso(p, 'furia', 10);
       investirTalento(p, 'golpe_devastador', 2);
       investirTalento(p, 'sede_de_batalha', 2);
-      return { p, skill: sk({ nome: 'Golpe Fervente', elemento: 'fervor', escola: 'combate_fisico', recurso: 'furia', energia: 25, tempoConjuracaoSegundos: 1 }) };
+      return { p, skill: sk({ nome: 'Golpe Fervente', elemento: 'fervor', escola: 'combate_fisico', fontes: [fonte('furia')], energia: 25, tempoConjuracaoSegundos: 1, alcanceMetros: 0 }) };
     },
   },
   {
@@ -239,7 +288,7 @@ const PRESETS: Preset[] = [
       investirEscola(p, 'conjuracao', 12);
       investirRecurso(p, 'mana', 8);
       investirTalento(p, 'area_ampliada', 2);
-      return { p, skill: sk({ nome: 'Céu Partido', elemento: 'tempestade', escola: 'conjuracao', recurso: 'mana', energia: 26, tempoConjuracaoSegundos: 2.5, area: { tipo: 'circulo', raioMetros: 8 } }) };
+      return { p, skill: sk({ nome: 'Céu Partido', elemento: 'tempestade', escola: 'conjuracao', fontes: [fonte('mana')], energia: 26, tempoConjuracaoSegundos: 2.5, area: { tipo: 'circulo', raioMetros: 8 } }) };
     },
   },
   {
@@ -254,7 +303,7 @@ const PRESETS: Preset[] = [
       investirRecurso(p, 'fe', 10);
       investirTalento(p, 'vinculo_de_grupo', 2);
       investirTalento(p, 'egide', 2);
-      return { p, skill: sk({ nome: 'Graça Plena', elemento: 'santidade', escola: 'benca', recurso: 'fe', energia: 24, tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 4 }, entrega: { tipo: 'continuo', duracaoSegundos: 10 } }) };
+      return { p, skill: sk({ nome: 'Graça Plena', elemento: 'santidade', escola: 'benca', fontes: [fonte('fe')], energia: 24, tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 4 }, entrega: { tipo: 'continuo', duracaoSegundos: 10 } }) };
     },
   },
   {
@@ -270,22 +319,23 @@ const PRESETS: Preset[] = [
       investirRecurso(p, 'furia', 9);
       investirTalento(p, 'colosso', 2);
       investirTalento(p, 'vinculo_marcial', 2);
-      return { p, skill: sk({ nome: 'Armas Dançantes', elemento: 'vigor', escola: 'evocacao', recurso: 'furia', energia: 35, tempoConjuracaoSegundos: 2, capacidadeExigida: 'evocar_armas_autonomas' }) };
+      return { p, skill: sk({ nome: 'Armas Dançantes', elemento: 'vigor', escola: 'evocacao', fontes: [fonte('furia')], energia: 35, tempoConjuracaoSegundos: 2, alcanceMetros: 0, capacidadeExigida: 'evocar_armas_autonomas' }) };
     },
   },
   {
     id: 'mestre_de_armas',
     nome: 'Mestre de Armas',
-    descricao: 'Marcial + Soullink: paga com a vida por golpes perfeitos.',
+    descricao: 'Marcial + Soullink/Fúria: paga com a vida por golpes perfeitos.',
     montar() {
       const p = criarPersonagem('Cem-Lâminas');
       investirElemento(p, 'marcial', 14);
       investirElemento(p, 'vigor', 10);
       investirEscola(p, 'combate_fisico', 12);
       investirRecurso(p, 'soullink', 8);
+      investirRecurso(p, 'furia', 6);
       investirTalento(p, 'sequencia_marcial', 2);
       investirTalento(p, 'elo_profundo', 2);
-      return { p, skill: sk({ nome: 'Dança de Mil Cortes', elemento: 'maestria', escola: 'combate_fisico', recurso: 'soullink', energia: 25, tempoConjuracaoSegundos: 1.5 }) };
+      return { p, skill: sk({ nome: 'Dança de Mil Cortes', elemento: 'maestria', escola: 'combate_fisico', fontes: [fonte('soullink', 60), fonte('furia', 40)], energia: 25, tempoConjuracaoSegundos: 1.5, alcanceMetros: 0 }) };
     },
   },
   {
@@ -297,7 +347,7 @@ const PRESETS: Preset[] = [
       for (const def of elementosBase()) investirElemento(p, def.id, 8);
       investirEscola(p, 'conjuracao', 10);
       investirRecurso(p, 'mana', 10);
-      return { p, skill: sk({ nome: 'Anulação', elemento: 'nulo', escola: 'conjuracao', recurso: 'mana', energia: 30, tempoConjuracaoSegundos: 2 }) };
+      return { p, skill: sk({ nome: 'Anulação', elemento: 'nulo', escola: 'conjuracao', fontes: [fonte('mana')], energia: 30, tempoConjuracaoSegundos: 2 }) };
     },
   },
 ];
@@ -328,8 +378,9 @@ function aplicarPreset(id: string): void {
 function render(): void {
   const prog = calcularProgressao(estado.personagem);
   renderCabecalho();
-  renderPresets();
-  renderElementos(prog);
+  renderAbas();
+  renderCeuElementos(prog);
+  renderDetalheElemento(prog);
   renderEscolas();
   renderRecursos();
   renderTalentos();
@@ -343,12 +394,6 @@ function render(): void {
   salvar();
 }
 
-function renderPresets(): void {
-  el('presets').innerHTML = PRESETS.map(
-    (pr) => `<button type="button" data-acao="preset" data-id="${pr.id}" title="${esc(pr.descricao)}">${esc(pr.nome)}</button>`,
-  ).join('');
-}
-
 function renderCabecalho(): void {
   const ga = pontosAtributosGastos();
   const gt = pontosTalentosGastos();
@@ -358,27 +403,216 @@ function renderCabecalho(): void {
   g.classList.toggle('excedido', excedido);
 }
 
-function renderElementos(prog: Progressao): void {
-  el('conta-elementos').textContent = `${prog.elementosDisponiveis.length} com nível efetivo`;
-  el('elementos').innerHTML = elementosBase()
-    .map((def) => {
-      const id = def.id as ElementoBaseId;
-      const direto = estado.personagem.elementos[id] ?? 0;
-      const efetivo = prog.niveisEfetivos[id] ?? 0;
-      const bonus = efetivo - direto;
-      return `<div class="carta">
-        <div class="nome"><span class="ponto-cor" style="background:${CORES[id]}"></span>${esc(def.nome)}</div>
-        <div class="desc">${esc(def.descricao)}</div>
-        <div class="controles">
-          <button type="button" data-acao="dec-elemento" data-id="${id}" aria-label="Remover ponto de ${esc(def.nome)}">−</button>
-          <span class="valor num">${direto}</span>
-          <button type="button" data-acao="inc-elemento" data-id="${id}" aria-label="Adicionar ponto em ${esc(def.nome)}">+</button>
-          ${bonus > 0 ? `<span class="efetivo num">efetivo ${efetivo} (+${bonus} sinergia)</span>` : ''}
-        </div>
-      </div>`;
+function renderAbas(): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-acao="aba"]').forEach((b) => {
+    b.classList.toggle('ativo', b.dataset.id === estado.abaAtiva);
+  });
+  document.querySelectorAll<HTMLElement>('.aba').forEach((s) => {
+    s.classList.toggle('ativa', s.id === `aba-${estado.abaAtiva}`);
+  });
+}
+
+// ------------------------------------------------- céu dos elementos
+
+let elementoSelecionado: ElementoId | null = null;
+
+interface PosEstrela {
+  x: number;
+  y: number;
+  r: number;
+}
+
+function posicoesDoCeu(): Map<ElementoId, PosEstrela> {
+  const W = 760;
+  const c = W / 2;
+  const bases = elementosBase().map((e) => e.id as ElementoBaseId);
+  const n = bases.length; // 13
+  const passo = (2 * Math.PI) / n;
+  const angulo = (i: number) => -Math.PI / 2 + i * passo;
+  const R_BASE = 300;
+  const pos = new Map<ElementoId, PosEstrela>();
+
+  bases.forEach((id, i) => {
+    pos.set(id, {
+      x: c + Math.cos(angulo(i)) * R_BASE,
+      y: c + Math.sin(angulo(i)) * R_BASE,
+      r: 6,
+    });
+  });
+
+  const idx = new Map(bases.map((id, i) => [id, i]));
+  const triplas: ElementoDef[] = [];
+  for (const def of elementosDerivados()) {
+    const comps = def.receita!.map((r) => r.elemento);
+    if (comps.length === 2) {
+      let i = idx.get(comps[0])!;
+      let j = idx.get(comps[1])!;
+      let s = (j - i + n) % n;
+      if (s > n / 2) {
+        [i, j] = [j, i];
+        s = n - s;
+      }
+      // anéis concêntricos: pares de componentes vizinhos ficam na borda,
+      // pares de opostos mergulham em direção ao centro — uma mandala 13×6
+      const raio = 300 - 36 * s;
+      const ang = angulo(i) + (s * passo) / 2;
+      pos.set(def.id, { x: c + Math.cos(ang) * raio, y: c + Math.sin(ang) * raio, r: 3 });
+    } else if (comps.length === 3) {
+      triplas.push(def);
+    }
+  }
+
+  // triplas: ordenadas pelo ângulo médio dos componentes, espaçadas num anel interno
+  const anguloMedio = (def: ElementoDef): number => {
+    let sx = 0;
+    let sy = 0;
+    for (const r of def.receita!) {
+      const a = angulo(idx.get(r.elemento)!);
+      sx += Math.cos(a);
+      sy += Math.sin(a);
+    }
+    return Math.atan2(sy, sx);
+  };
+  triplas
+    .map((def) => ({ def, ang: anguloMedio(def) }))
+    .sort((a, b) => a.ang - b.ang)
+    .forEach(({ def }, k, arr) => {
+      const ang = -Math.PI / 2 + (k * 2 * Math.PI) / arr.length;
+      pos.set(def.id, { x: c + Math.cos(ang) * 52, y: c + Math.sin(ang) * 52, r: 3.5 });
+    });
+
+  // amplas: primordial no zênite interno, ciclo no nadir; nulo no coração
+  pos.set('primordial', { x: c, y: c - 26, r: 4 });
+  pos.set('ciclo', { x: c, y: c + 26, r: 4 });
+  pos.set('nulo', { x: c, y: c, r: 5 });
+  return pos;
+}
+
+function classeEstrela(def: ElementoDef, prog: Progressao): string {
+  if (def.tipo === 'base') return 'base';
+  const nivel = prog.niveisEfetivos[def.id] ?? 0;
+  if (nivel > 0) return 'liberado';
+  const progresso = progressoReceita(def, prog);
+  return progresso >= 0.5 ? 'proximo' : 'distante';
+}
+
+function renderCeuElementos(prog: Progressao): void {
+  el('conta-elementos').textContent =
+    `${prog.elementosDisponiveis.length} elementos com nível efetivo`;
+
+  const W = 760;
+  const c = W / 2;
+  const pos = posicoesDoCeu();
+
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+  let fundo = '';
+  for (let i = 0; i < 90; i++) {
+    fundo += `<circle class="fundo-estrela" cx="${(rnd() * W).toFixed(1)}" cy="${(rnd() * W).toFixed(1)}" r="${(0.4 + rnd() * 0.9).toFixed(2)}" opacity="${(0.1 + rnd() * 0.28).toFixed(2)}"/>`;
+  }
+
+  // anel do zodíaco ligando os 13 elementos base
+  const bases = elementosBase();
+  const anelPontos = bases
+    .map((b) => {
+      const p = pos.get(b.id)!;
+      return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+    })
+    .join(' ');
+  let ligas = `<polygon class="anel-zodiaco" points="${anelPontos}"/>`;
+
+  // linhas de receita: derivados liberados sempre; selecionado em destaque
+  for (const def of elementosDerivados()) {
+    const nivel = prog.niveisEfetivos[def.id] ?? 0;
+    const selecionada = elementoSelecionado === def.id;
+    if (nivel <= 0 && !selecionada) continue;
+    const de = pos.get(def.id);
+    if (!de) continue;
+    for (const comp of def.receita!) {
+      const ate = pos.get(comp.elemento)!;
+      ligas += `<line class="${selecionada ? 'liga-selecao' : 'liga-receita'}" x1="${de.x.toFixed(1)}" y1="${de.y.toFixed(1)}" x2="${ate.x.toFixed(1)}" y2="${ate.y.toFixed(1)}"/>`;
+    }
+  }
+
+  let estrelas = '';
+  let rotulos = '';
+  for (const def of [...bases, ...elementosDerivados()]) {
+    const p = pos.get(def.id);
+    if (!p) continue;
+    const nivel = prog.niveisEfetivos[def.id] ?? 0;
+    const classe = classeEstrela(def, prog);
+    const selecionado = elementoSelecionado === def.id ? ' selecionado' : '';
+    const raio = def.tipo === 'base' ? p.r + Math.min(5, nivel * 0.25) : p.r + Math.min(3, nivel * 0.12);
+    const corBase = def.tipo === 'base' ? ` style="fill:${CORES[def.id as ElementoBaseId]}"` : '';
+    estrelas += `<g class="${classe}${selecionado}" data-acao="estrela-ceu" data-id="${def.id}" tabindex="0" role="button"
+      aria-label="${esc(def.nome)} (nível ${nivel})">
+      <title>${esc(def.nome)} — ${esc(def.descricao)}</title>
+      <circle class="halo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(raio + 8).toFixed(1)}"/>
+      <circle class="anel-sel" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(raio + 4).toFixed(1)}" fill="none"/>
+      <circle class="nucleo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${raio.toFixed(1)}"${corBase}/>
+    </g>`;
+    if (def.tipo === 'base') {
+      const ang = Math.atan2(p.y - c, p.x - c);
+      const lx = c + Math.cos(ang) * 336;
+      const ly = c + Math.sin(ang) * 336;
+      const anchor = Math.abs(Math.cos(ang)) < 0.3 ? 'middle' : Math.cos(ang) > 0 ? 'start' : 'end';
+      rotulos += `<text class="rotulo-base" x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}">${esc(def.nome)}${nivel > 0 ? ` ${nivel}` : ''}</text>`;
+    } else if (nivel > 0 || elementoSelecionado === def.id) {
+      rotulos += `<text class="rotulo-deriv" x="${p.x.toFixed(1)}" y="${(p.y + raio + 10).toFixed(1)}">${esc(def.nome)}${nivel > 0 ? ` ${nivel}` : ''}</text>`;
+    }
+  }
+
+  el('ceu-elementos').innerHTML = `<svg viewBox="0 0 ${W} ${W}" role="img" aria-label="Céu dos Elementos">
+    ${fundo}${ligas}${estrelas}${rotulos}
+  </svg>`;
+}
+
+function renderDetalheElemento(prog: Progressao): void {
+  const alvo = el('elemento-detalhe');
+  if (!elementoSelecionado || !ELEMENTOS[elementoSelecionado]) {
+    alvo.innerHTML = `<div class="talento-detalhe vazio">Clique numa estrela do céu para ver detalhes e investir pontos.</div>`;
+    return;
+  }
+  const def = ELEMENTOS[elementoSelecionado];
+  const nivel = prog.niveisEfetivos[def.id] ?? 0;
+
+  if (def.tipo === 'base') {
+    const direto = estado.personagem.elementos[def.id] ?? 0;
+    const bonus = nivel - direto;
+    alvo.innerHTML = `<div class="talento-detalhe">
+      <div class="nome"><span class="ponto-cor" style="background:${CORES[def.id as ElementoBaseId]};display:inline-block"></span> ${esc(def.nome)}
+        <span class="conta">elemento base</span></div>
+      <div class="desc">${esc(def.descricao)}</div>
+      <div>Nível efetivo <strong class="num">${nivel}</strong>${bonus > 0 ? ` <span class="efetivo">(${direto} diretos + ${bonus} de sinergia)</span>` : ''}</div>
+      <div class="controles">
+        <button type="button" data-acao="dec-elemento" data-id="${def.id}" aria-label="Remover ponto">−</button>
+        <span class="valor num">${direto}</span>
+        <button type="button" data-acao="inc-elemento" data-id="${def.id}" aria-label="Adicionar ponto">+</button>
+      </div>
+    </div>`;
+    return;
+  }
+
+  const receita = def
+    .receita!.map((comp) => {
+      const atual = prog.niveisEfetivos[comp.elemento] ?? 0;
+      const okMin = atual >= comp.nivelMinimo;
+      const fracao = Math.min(1, atual / comp.nivelMinimo);
+      return `<div class="perfil-linha"><span>${esc(ELEMENTOS[comp.elemento].nome)}</span>
+        <div class="barra ${okMin ? 'cheia' : ''}"><i style="width:${pct(fracao)}"></i></div>
+        <span class="num">${atual}/${comp.nivelMinimo}</span></div>`;
     })
     .join('');
+  alvo.innerHTML = `<div class="talento-detalhe">
+    <div class="nome">${esc(def.nome)} <span class="conta">${def.tipo} · potência ×${def.fatorPotencia}</span></div>
+    <div class="desc">${esc(def.descricao)}</div>
+    <div>${nivel > 0 ? `Nível <strong class="num">${nivel}</strong> — igual ao menor componente.` : 'Ainda não liberado — todos os componentes precisam atingir o mínimo.'}</div>
+    ${receita}
+    <div class="desc">Elementos combinados não aceitam pontos diretos: evoluem quando os componentes sobem juntos.</div>
+  </div>`;
 }
+
+// ------------------------------------------------- escolas / recursos
 
 function renderEscolas(): void {
   el('escolas').innerHTML = Object.values(ESCOLAS)
@@ -401,9 +635,13 @@ function renderRecursos(): void {
   el('recursos').innerHTML = Object.values(RECURSOS)
     .map((def) => {
       const pontos = estado.personagem.recursos[def.id] ?? 0;
+      const escala = pontos > 0
+        ? `<div class="efetivo num">custo −${Math.min(30, pontos)}% · impacto +${Math.round(pontos * 0.8)}% · conjuração −${(pontos * 0.01).toFixed(2)}s</div>`
+        : `<div class="req">sem proficiência: não pode ser usado como fonte</div>`;
       return `<div class="carta">
         <div class="nome">${esc(def.nome)}</div>
         <div class="desc">${esc(def.descricao)}</div>
+        ${escala}
         <div class="controles">
           <button type="button" data-acao="dec-recurso" data-id="${def.id}" aria-label="Remover proficiência de ${esc(def.nome)}">−</button>
           <span class="valor num">${pontos}</span>
@@ -413,6 +651,8 @@ function renderRecursos(): void {
     })
     .join('');
 }
+
+// ------------------------------------------------- talentos (árvore/cartas)
 
 const GRUPOS_TALENTOS: { titulo: string; ids: TalentoId[] }[] = [
   { titulo: 'Gerais', ids: ['area_ampliada', 'conjuracao_rapida', 'alcance_estendido', 'canalizacao_profunda', 'economia_de_recurso', 'persistencia'] },
@@ -475,7 +715,6 @@ function renderDetalheTalento(): string {
 
 function renderArvoreTalentos(): void {
   const trilhas = GRUPOS_TALENTOS.map((grupo) => {
-    // tiers pelo nível exigido no requisito (0 = raiz da trilha)
     const porNivel = new Map<number, TalentoId[]>();
     for (const id of grupo.ids) {
       const nivel = TALENTOS[id].requisito?.nivelMinimo ?? 0;
@@ -522,125 +761,6 @@ function renderArvoreTalentos(): void {
   el('talentos').innerHTML = `<div class="arvore">${trilhas}</div>${renderDetalheTalento()}`;
 }
 
-function renderConstelacaoTalentos(): void {
-  const W = 700;
-  const H = 660;
-  const cx = W / 2;
-  const cy = H / 2;
-
-  // céu de fundo determinístico
-  let seed = 42;
-  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
-  let fundo = '';
-  for (let i = 0; i < 80; i++) {
-    fundo += `<circle class="fundo-estrela" cx="${(rnd() * W).toFixed(1)}" cy="${(rnd() * H).toFixed(1)}" r="${(0.5 + rnd() * 0.9).toFixed(2)}" opacity="${(0.12 + rnd() * 0.3).toFixed(2)}"/>`;
-  }
-
-  const nG = GRUPOS_TALENTOS.length;
-  let ligas = '';
-  let nos = '';
-  let rotulos = '';
-
-  GRUPOS_TALENTOS.forEach((grupo, gi) => {
-    const ang = -Math.PI / 2 + (gi * 2 * Math.PI) / nG;
-    const dx = Math.cos(ang);
-    const dy = Math.sin(ang);
-    const px = -dy; // perpendicular
-    const py = dx;
-
-    // tiers pelo nível de requisito, como na árvore
-    const porNivel = new Map<number, TalentoId[]>();
-    for (const id of grupo.ids) {
-      const nivel = TALENTOS[id].requisito?.nivelMinimo ?? 0;
-      porNivel.set(nivel, [...(porNivel.get(nivel) ?? []), id]);
-    }
-    const niveis = [...porNivel.keys()].sort((a, b) => a - b);
-
-    // anéis de até 2 estrelas para a constelação não invadir as vizinhas
-    const aneisIds: TalentoId[][] = [];
-    for (const nivel of niveis) {
-      const ids = porNivel.get(nivel)!;
-      for (let i = 0; i < ids.length; i += 2) aneisIds.push(ids.slice(i, i + 2));
-    }
-
-    const posDe = new Map<TalentoId, { x: number; y: number; lado: number }>();
-    const ancoraInicial = { x: cx + dx * 52, y: cy + dy * 52 };
-    ligas += `<line class="liga-centro" x1="${cx}" y1="${cy}" x2="${ancoraInicial.x.toFixed(1)}" y2="${ancoraInicial.y.toFixed(1)}"/>`;
-
-    const distBase = 92 + (gi % 2) * 26; // raios alternados entre vizinhas
-    let ancoraAnterior = ancoraInicial;
-    aneisIds.forEach((ids, ti) => {
-      const dist = distBase + ti * 60;
-      const membros: { id: TalentoId; x: number; y: number; lado: number }[] = ids.map((id, j) => {
-        const desloc = (j - (ids.length - 1) / 2) * 44;
-        return {
-          id,
-          x: cx + dx * dist + px * desloc,
-          y: cy + dy * dist + py * desloc,
-          lado: j % 2, // alterna o rótulo abaixo/acima para pares não colidirem
-        };
-      });
-      for (const m of membros) {
-        posDe.set(m.id, m);
-        ligas += `<line class="liga" x1="${ancoraAnterior.x.toFixed(1)}" y1="${ancoraAnterior.y.toFixed(1)}" x2="${m.x.toFixed(1)}" y2="${m.y.toFixed(1)}"/>`;
-      }
-      // linha tracejada entre rivais exclusivos adjacentes
-      for (let j = 0; j < membros.length - 1; j++) {
-        const a = TALENTOS[membros[j].id];
-        if ((a.exclusivoCom ?? []).includes(membros[j + 1].id)) {
-          ligas += `<line class="liga-ou" x1="${membros[j].x.toFixed(1)}" y1="${membros[j].y.toFixed(1)}" x2="${membros[j + 1].x.toFixed(1)}" y2="${membros[j + 1].y.toFixed(1)}"/>`;
-        }
-      }
-      const centroide = {
-        x: membros.reduce((s, m) => s + m.x, 0) / membros.length,
-        y: membros.reduce((s, m) => s + m.y, 0) / membros.length,
-      };
-      ancoraAnterior = centroide;
-    });
-
-    // rótulo da constelação na ponta externa, como em mapas celestes
-    const distRotulo = distBase + (aneisIds.length - 1) * 60 + 38;
-    const rx = cx + dx * distRotulo;
-    const ry = cy + dy * distRotulo;
-    rotulos += `<text class="rotulo-constelacao" x="${rx.toFixed(1)}" y="${ry.toFixed(1)}">${esc(grupo.titulo.replace(' (exclusivos)', ''))}</text>`;
-
-    // estrelas
-    for (const [id, pos] of posDe) {
-      const def = TALENTOS[id];
-      const { bloqueado, excluido, ranks } = estadoDoTalento(def);
-      const classes = [
-        ranks > 0 ? 'investido' : '',
-        ranks === def.ranksMaximos ? 'max' : '',
-        bloqueado ? 'bloqueado' : '',
-        excluido ? 'excluido' : '',
-        talentoSelecionado === id ? 'selecionado' : '',
-      ]
-        .filter(Boolean)
-        .join(' ');
-      const rNucleo = 3 + ranks * 0.7;
-      const rotuloRanks = ranks > 0 ? ` ${ranks}/${def.ranksMaximos}` : '';
-      const yRotulo = pos.lado === 0 ? pos.y + rNucleo + 11 : pos.y - rNucleo - 7;
-      nos += `<g class="${classes}" data-acao="no-talento" data-id="${id}" tabindex="0" role="button"
-        aria-label="${esc(def.nome)} (${ranks}/${def.ranksMaximos} ranks)">
-        <title>${esc(def.nome)} — ${esc(def.descricao)}</title>
-        <circle class="estrela-halo" cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="12"/>
-        <circle class="anel-selecao anel-max anel-excluido" cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="${(rNucleo + 3.5).toFixed(1)}" fill="none"/>
-        <circle class="estrela-nucleo" cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="${rNucleo.toFixed(1)}"/>
-        <text class="rotulo-estrela" x="${pos.x.toFixed(1)}" y="${yRotulo.toFixed(1)}">${esc(def.nome)}${rotuloRanks}</text>
-      </g>`;
-    }
-  });
-
-  const nucleoCentral = `<circle class="estrela-halo" cx="${cx}" cy="${cy}" r="16"/>
-    <circle class="estrela-nucleo" cx="${cx}" cy="${cy}" r="4.5"/>`;
-
-  el('talentos').innerHTML = `<div class="constelacao">
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Constelação de talentos">
-      ${fundo}${ligas}${nucleoCentral}${nos}${rotulos}
-    </svg>
-  </div>${renderDetalheTalento()}`;
-}
-
 function renderTalentos(): void {
   el('conta-talentos').textContent = `${pontosTalentosGastos()} ranks distribuídos`;
   document.querySelectorAll<HTMLButtonElement>('[data-acao="vista-talentos"]').forEach((b) => {
@@ -648,10 +768,6 @@ function renderTalentos(): void {
   });
   if (estado.vistaTalentos === 'arvore') {
     renderArvoreTalentos();
-    return;
-  }
-  if (estado.vistaTalentos === 'constelacao') {
-    renderConstelacaoTalentos();
     return;
   }
   el('talentos').innerHTML = GRUPOS_TALENTOS.map((grupo) => {
@@ -680,6 +796,8 @@ function renderTalentos(): void {
     return `<div class="talento-grupo"><h3>${esc(grupo.titulo)}</h3><div class="lista-cartas">${cartas}</div></div>`;
   }).join('');
 }
+
+// ------------------------------------------------- derivados / arquétipos
 
 function progressoReceita(def: ElementoDef, prog: Progressao): number {
   return Math.min(
@@ -759,17 +877,17 @@ function renderArquetipos(prog: Progressao): void {
     .join('');
 }
 
+// ------------------------------------------------- construtor de skill
+
 function renderFormSkill(prog: Progressao): void {
   const s = estado.skill;
+  const limites = calcularLimites(estado.personagem, s.escola, s.fontes);
   const disponiveis = prog.elementosDisponiveis;
   const opcoesElemento = (disponiveis.length ? disponiveis : ['fogo'])
     .map((id) => `<option value="${id}" ${id === s.elemento ? 'selected' : ''}>${esc(ELEMENTOS[id].nome)} (nv ${prog.niveisEfetivos[id] ?? 0})</option>`)
     .join('');
   const opcoesEscola = Object.values(ESCOLAS)
     .map((d) => `<option value="${d.id}" ${d.id === s.escola ? 'selected' : ''}>${esc(d.nome)} (${estado.personagem.escolas[d.id] ?? 0} pts)</option>`)
-    .join('');
-  const opcoesRecurso = Object.values(RECURSOS)
-    .map((d) => `<option value="${d.id}" ${d.id === s.recurso ? 'selected' : ''}>${esc(d.nome)}</option>`)
     .join('');
   const capacidades = [...prog.capacidades].sort();
   const opcoesCapacidade =
@@ -778,18 +896,45 @@ function renderFormSkill(prog: Progressao): void {
       .map((c) => `<option value="${esc(c)}" ${c === s.capacidadeExigida ? 'selected' : ''}>${esc(c)}</option>`)
       .join('');
 
+  // fontes de energia: só recursos com proficiência aparecem
+  const recursosComProf = Object.values(RECURSOS).filter(
+    (d) => (estado.personagem.recursos[d.id] ?? 0) > 0,
+  );
+  const fontesHtml = recursosComProf.length
+    ? recursosComProf
+        .map((d) => {
+          const atual = s.fontes.find((f) => f.recurso === d.id)?.proporcao ?? 0;
+          const prof = estado.personagem.recursos[d.id] ?? 0;
+          return `<div class="fonte-linha">
+            <span>${esc(d.nome)} <span class="limite-hint num">prof ${prof}</span></span>
+            <input id="sk-fonte-${d.id}" type="range" min="0" max="100" step="5" value="${atual}">
+            <span class="num">${atual}</span>
+          </div>`;
+        })
+        .join('')
+    : `<div class="req">Nenhum recurso com proficiência — invista pontos na aba Recursos.</div>`;
+
+  const energiaMax = Math.max(1, Math.floor(limites.energiaMaxima));
+  const energia = Math.min(s.energia, energiaMax);
+  const tempoMin = Math.round(limites.tempoConjuracaoMinimo * 10) / 10;
+  const tempo = Math.max(s.tempoConjuracaoSegundos, tempoMin);
+  const alcance = Math.min(s.alcanceMetros, limites.alcanceMaximo);
+
   el('form-skill').innerHTML = `
     <div class="linha-campo"><label for="sk-nome">Nome</label><input id="sk-nome" type="text" value="${esc(s.nome)}"><span></span></div>
     <div class="linha-campo"><label for="sk-elemento">Elemento</label><select id="sk-elemento">${opcoesElemento}</select><span></span></div>
     <div class="linha-campo"><label for="sk-escola">Escola</label><select id="sk-escola">${opcoesEscola}</select><span></span></div>
-    <div class="linha-campo"><label for="sk-recurso">Recurso</label><select id="sk-recurso">${opcoesRecurso}</select><span></span></div>
     <div class="linha-campo"><label for="sk-capacidade">Capacidade</label><select id="sk-capacidade">${opcoesCapacidade}</select><span></span></div>
+    <div class="linha-campo"><label>Fontes de energia</label><div class="fontes-lista">${fontesHtml}</div><span></span></div>
     <div class="linha-campo"><label for="sk-energia">Energia</label>
-      <input id="sk-energia" type="range" min="1" max="120" step="1" value="${s.energia}">
-      <span class="num">${s.energia}</span></div>
+      <input id="sk-energia" type="range" min="1" max="${energiaMax}" step="1" value="${energia}">
+      <span><span class="num">${energia}</span><br><span class="limite-hint num">máx ${energiaMax}</span></span></div>
     <div class="linha-campo"><label for="sk-tempo">Conjuração (s)</label>
-      <input id="sk-tempo" type="range" min="0.1" max="10" step="0.1" value="${s.tempoConjuracaoSegundos}">
-      <span class="num">${f1(s.tempoConjuracaoSegundos)}s</span></div>
+      <input id="sk-tempo" type="range" min="${tempoMin}" max="10" step="0.1" value="${tempo}">
+      <span><span class="num">${f1(tempo)}s</span><br><span class="limite-hint num">mín ${f1(tempoMin)}s</span></span></div>
+    <div class="linha-campo"><label for="sk-alcance">Alcance (m)</label>
+      <input id="sk-alcance" type="range" min="0" max="${limites.alcanceMaximo}" step="1" value="${alcance}">
+      <span><span class="num">${alcance}m</span><br><span class="limite-hint num">máx ${limites.alcanceMaximo}m</span></span></div>
     <div class="linha-campo"><label>Área</label>
       <div class="radios">
         <label><input type="radio" name="sk-area" value="unico" ${s.area.tipo === 'unico' ? 'checked' : ''}>Alvo único</label>
@@ -797,8 +942,8 @@ function renderFormSkill(prog: Progressao): void {
       </div><span></span></div>
     ${s.area.tipo === 'circulo' ? `
     <div class="linha-campo"><label for="sk-raio">Raio (m)</label>
-      <input id="sk-raio" type="range" min="1" max="16" step="1" value="${s.area.raioMetros}">
-      <span class="num">${s.area.raioMetros}m</span></div>` : ''}
+      <input id="sk-raio" type="range" min="1" max="${limites.raioMaximo}" step="1" value="${Math.min(s.area.raioMetros, limites.raioMaximo)}">
+      <span><span class="num">${Math.min(s.area.raioMetros, limites.raioMaximo)}m</span><br><span class="limite-hint num">máx ${limites.raioMaximo}m</span></span></div>` : ''}
     <div class="linha-campo"><label>Entrega</label>
       <div class="radios">
         <label><input type="radio" name="sk-entrega" value="instantaneo" ${s.entrega.tipo === 'instantaneo' ? 'checked' : ''}>Instantânea</label>
@@ -852,7 +997,7 @@ function renderResultadoSkill(prog: Progressao): void {
     </div>`;
     return;
   }
-  const perfilLinhas = (['dano', 'controle', 'cura', 'defesa', 'suporte'] as const)
+  const perfilLinhas = CHAVES_PERFIL
     .filter((k) => r.perfil[k] > 0.01)
     .map((k) => {
       const fracao = r.impactoTotal > 0 ? r.perfil[k] / r.impactoTotal : 0;
@@ -866,18 +1011,22 @@ function renderResultadoSkill(prog: Progressao): void {
         .map((p) => `<li>${esc(p.rotulo)}: <strong class="num">${p.valor < 1 ? pct(p.valor) : f1(p.valor)}</strong></li>`)
         .join('')}</ul>`
     : '';
+  const custoFontes = r.custoPorFonte
+    .map((c) => `${esc(RECURSOS[c.recurso].nome)} ${f1(c.custo)}`)
+    .join(' · ');
   alvo.innerHTML = `<div class="resultado-skill">
     <h3>${esc(estado.skill.nome)}</h3>
     <div class="resultado-corpo">
       <div class="coluna-metricas">
         <div class="metricas">
-          <div class="metrica"><div class="rotulo">Custo (${esc(RECURSOS[estado.skill.recurso].nome)})</div><div class="valor num">${f1(r.custoBase)}</div></div>
+          <div class="metrica"><div class="rotulo">Custo total</div><div class="valor num">${f1(r.custoTotal)}</div></div>
           <div class="metrica"><div class="rotulo">Impacto total</div><div class="valor num">${f1(r.impactoTotal)}</div></div>
           <div class="metrica"><div class="rotulo">Por alvo (${f1(r.alvosEsperados)} alvos)</div><div class="valor num">${f1(r.impactoPorAlvo)}</div></div>
           ${r.impactoPorSegundo ? `<div class="metrica"><div class="rotulo">Por segundo</div><div class="valor num">${f1(r.impactoPorSegundo)}</div></div>` : ''}
           ${r.invocacoes ? `<div class="metrica"><div class="rotulo">Criaturas</div><div class="valor num">${r.invocacoes.quantidade} × ${f1(r.invocacoes.poderPorCriatura)}</div></div>` : ''}
           <div class="metrica"><div class="rotulo">Eficiência</div><div class="valor num">${f1(r.eficiencia)}</div></div>
         </div>
+        <div class="dica num">fontes: ${custoFontes}</div>
         ${perfilLinhas}
         ${propriedades}
       </div>
@@ -890,70 +1039,86 @@ function renderSkillsSalvas(): void {
   el('conta-skills').textContent = String(estado.skillsSalvas.length);
   el('skills-salvas').innerHTML =
     estado.skillsSalvas
-      .map(
-        (s, i) => `<div class="item-skill">
-          <span><strong>${esc(s.nome)}</strong> · ${esc(ELEMENTOS[s.elemento]?.nome ?? s.elemento)} + ${esc(ESCOLAS[s.escola].nome)} @ ${esc(RECURSOS[s.recurso].nome)}</span>
+      .map((s, i) => {
+        const fontesTxt = normalizarFontes(s.fontes)
+          .map((f) => `${Math.round(f.proporcao * 100)}% ${RECURSOS[f.recurso].nome}`)
+          .join(' + ');
+        return `<div class="item-skill">
+          <span><strong>${esc(s.nome)}</strong> · ${esc(ELEMENTOS[s.elemento]?.nome ?? s.elemento)} + ${esc(ESCOLAS[s.escola].nome)} @ ${esc(fontesTxt)}</span>
           <span><button type="button" data-acao="carregar-skill" data-idx="${i}">editar</button>
           <button type="button" data-acao="remover-skill" data-idx="${i}">remover</button></span>
-        </div>`,
-      )
+        </div>`;
+      })
       .join('') || '<div class="vazio">Nenhuma skill salva ainda.</div>';
 }
 
-// ------------------------------------------------------- bancada de recursos
+// ------------------------------------------------- bancada de recursos
 
-let bancada: { chave: string; estado: EstadoRecurso; tempo: number } | null = null;
+let bancada: { chave: string; estados: Map<RecursoId, EstadoRecurso>; tempo: number } | null = null;
 
-function garantirBancada(): { estado: EstadoRecurso; tempo: number } {
-  const recurso = estado.skill.recurso;
-  const prof = estado.personagem.recursos[recurso] ?? 0;
-  const chave = `${recurso}:${prof}`;
+function fontesAtivasDaSkill(): FonteEnergia[] {
+  return normalizarFontes(estado.skill.fontes);
+}
+
+function garantirBancada(): NonNullable<typeof bancada> {
+  const fontes = fontesAtivasDaSkill();
+  const chave = fontes
+    .map((f) => `${f.recurso}:${estado.personagem.recursos[f.recurso] ?? 0}`)
+    .join('|');
   if (!bancada || bancada.chave !== chave) {
-    bancada = { chave, estado: criarEstadoRecurso(recurso, prof), tempo: 0 };
+    const estados = new Map<RecursoId, EstadoRecurso>();
+    for (const f of fontes) {
+      estados.set(f.recurso, criarEstadoRecurso(f.recurso, estado.personagem.recursos[f.recurso] ?? 0));
+    }
+    bancada = { chave, estados, tempo: 0 };
   }
   return bancada;
 }
 
-function custoDaSkillAtual(): number {
+function custosDaSkillAtual(): { recurso: RecursoId; custo: number }[] {
   const prog = calcularProgressao(estado.personagem);
-  return calcularSkill(estado.personagem, prog, estado.skill).custoBase;
+  return calcularSkill(estado.personagem, prog, estado.skill).custoPorFonte;
 }
 
 function renderBancada(): void {
   const b = garantirBancada();
-  const e = b.estado;
-  const recurso = RECURSOS[estado.skill.recurso];
-  const fracao = e.maximo > 0 ? e.atual / e.maximo : 0;
-  const custo = custoDaSkillAtual();
-
-  let extras = '';
-  if (e instanceof FeEstado) {
-    extras = `<div>Multiplicador de custo: <strong class="num">×${f1(e.multiplicadorAtual)}</strong>
-      <span class="badge">penalidade ${f1(e.penalidade)}</span></div>`;
-  } else if (e instanceof FuriaEstado) {
-    extras = `<div><span class="badge ${e.emCombate ? 'on' : ''}">${e.emCombate ? 'em combate' : 'fora de combate'}</span></div>`;
-  } else if (e instanceof SoullinkEstado) {
-    extras = `<div><span class="badge on">o custo é a sua vida</span>
-      <span class="badge">limiar vital ${f1(e.limiarVital)}</span></div>`;
-  } else if (e instanceof RessonanciaEstado) {
-    extras = `<div>Poder acumulado: <strong class="num">×${f1(e.multiplicadorAtual)}</strong>
-      <span class="badge">reseta após 8s sem usar</span></div>`;
+  if (b.estados.size === 0) {
+    el('bancada').innerHTML = `<div class="vazio">A skill atual não tem fontes de energia ativas — configure na aba Criar Skill.</div>`;
+    return;
   }
-  const botoesCombate =
-    e instanceof FuriaEstado
-      ? `<button type="button" data-acao="banc-dano">Causar 30 de dano</button>
-         <button type="button" data-acao="banc-recebe">Receber 20 de dano</button>`
-      : '';
-
-  el('bancada').innerHTML = `
-    <div class="pool">
-      <strong>${esc(recurso.nome)}</strong>
+  const custos = custosDaSkillAtual();
+  const linhas: string[] = [];
+  let temFuria = false;
+  for (const [recurso, e] of b.estados) {
+    const def = RECURSOS[recurso];
+    const custo = custos.find((c) => c.recurso === recurso)?.custo ?? 0;
+    const fracao = e.maximo > 0 ? e.atual / e.maximo : 0;
+    let extras = '';
+    if (e instanceof FeEstado) {
+      extras = `<span class="badge">custo ×${f1(e.multiplicadorAtual)}</span>`;
+    } else if (e instanceof FuriaEstado) {
+      temFuria = true;
+      extras = `<span class="badge ${e.emCombate ? 'on' : ''}">${e.emCombate ? 'em combate' : 'fora de combate'}</span>`;
+    } else if (e instanceof SoullinkEstado) {
+      extras = `<span class="badge on">vida</span> <span class="badge">limiar ${f1(e.limiarVital)}</span>`;
+    } else if (e instanceof RessonanciaEstado) {
+      extras = `<span class="badge">poder ×${f1(e.multiplicadorAtual)}</span> <span class="badge">reseta após 8s</span>`;
+    }
+    linhas.push(`<div class="pool">
+      <strong style="min-width:92px">${esc(def.nome)}</strong>
       <div class="barra"><i style="width:${pct(fracao)}"></i></div>
       <span class="num">${f1(e.atual)}/${f1(e.maximo)}</span>
-    </div>
-    <div>Custo efetivo da skill agora: <strong class="num">${f1(e.custoEfetivo(custo))}</strong>
-      · tempo simulado: <span class="num">${f1(b.tempo)}s</span></div>
-    ${extras}
+      <span class="num limite-hint">custo ${f1(e.custoEfetivo(custo))}</span>
+      ${extras}
+    </div>`);
+  }
+  const botoesCombate = temFuria
+    ? `<button type="button" data-acao="banc-dano">Causar 30 de dano</button>
+       <button type="button" data-acao="banc-recebe">Receber 20 de dano</button>`
+    : '';
+  el('bancada').innerHTML = `
+    ${linhas.join('')}
+    <div>tempo simulado: <span class="num">${f1(b.tempo)}s</span></div>
     <div class="acoes-inline">
       <button type="button" data-acao="banc-usar">Usar skill</button>
       <button type="button" data-acao="banc-tick" data-dt="1">+1s</button>
@@ -963,7 +1128,7 @@ function renderBancada(): void {
     </div>`;
 }
 
-// ------------------------------------------------------- comparação de builds
+// ------------------------------------------------- comparação de builds
 
 function resumoBuild(personagem: Personagem, skill: SkillConfig) {
   const prog = calcularProgressao(personagem);
@@ -980,7 +1145,7 @@ function resumoBuild(personagem: Personagem, skill: SkillConfig) {
     derivados: derivadosLiberados,
     arquetipos: prog.arquetipos.length,
     skillNome: skill.nome,
-    custo: r.valida ? f1(r.custoBase) : '—',
+    custo: r.valida ? f1(r.custoTotal) : '—',
     impacto: r.valida ? f1(r.impactoTotal) : 'inválida',
     eficiencia: r.valida ? f1(r.eficiencia) : '—',
     perfilTop,
@@ -1038,13 +1203,25 @@ function decrementar(obj: Partial<Record<string, number>>, id: string): void {
 }
 
 document.addEventListener('click', (ev) => {
-  const alvo = (ev.target as HTMLElement).closest<HTMLElement>('[data-acao]');
+  const alvo = (ev.target as Element).closest<HTMLElement>('[data-acao]');
   if (!alvo) return;
   const acao = alvo.dataset.acao!;
   const id = alvo.dataset.id ?? '';
   const p = estado.personagem;
   try {
     switch (acao) {
+      case 'aba':
+        estado.abaAtiva = id as AbaId;
+        renderAbas();
+        salvar();
+        return;
+      case 'estrela-ceu': {
+        elementoSelecionado = elementoSelecionado === id ? null : id;
+        const prog = calcularProgressao(p);
+        renderCeuElementos(prog);
+        renderDetalheElemento(prog);
+        return;
+      }
       case 'inc-elemento': investirElemento(p, id, 1); break;
       case 'dec-elemento': decrementar(p.elementos, id); break;
       case 'inc-escola': investirEscola(p, id as EscolaId, 1); break;
@@ -1064,27 +1241,38 @@ document.addEventListener('click', (ev) => {
         return; // aplicarPreset já renderiza
       case 'banc-usar': {
         const b = garantirBancada();
-        if (!b.estado.usar(custoDaSkillAtual())) toast('Recurso insuficiente para usar a skill.');
+        const custos = custosDaSkillAtual();
+        const semSaldo = custos.filter((c) => {
+          const e = b.estados.get(c.recurso);
+          return e && !e.podePagar(c.custo);
+        });
+        if (semSaldo.length) {
+          toast(`Insuficiente: ${semSaldo.map((c) => RECURSOS[c.recurso].nome).join(', ')}.`);
+        } else {
+          for (const c of custos) b.estados.get(c.recurso)?.usar(c.custo);
+        }
         renderBancada();
         return;
       }
       case 'banc-tick': {
         const b = garantirBancada();
         const dt = Number(alvo.dataset.dt) || 1;
-        b.estado.tick(dt);
+        for (const e of b.estados.values()) e.tick(dt);
         b.tempo += dt;
         renderBancada();
         return;
       }
       case 'banc-dano': {
-        const b = garantirBancada();
-        if (b.estado instanceof FuriaEstado) b.estado.aoCausarDano(30);
+        for (const e of garantirBancada().estados.values()) {
+          if (e instanceof FuriaEstado) e.aoCausarDano(30);
+        }
         renderBancada();
         return;
       }
       case 'banc-recebe': {
-        const b = garantirBancada();
-        if (b.estado instanceof FuriaEstado) b.estado.aoReceberDano(20);
+        for (const e of garantirBancada().estados.values()) {
+          if (e instanceof FuriaEstado) e.aoReceberDano(20);
+        }
         renderBancada();
         return;
       }
@@ -1119,36 +1307,35 @@ document.addEventListener('click', (ev) => {
   }
 });
 
-el('btn-snapshot').addEventListener('click', () => {
-  if (estado.snapshots.length >= 4) {
-    toast('Máximo de 4 snapshots — remova um para fotografar de novo.');
-    return;
-  }
-  const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  estado.snapshots.push({
-    nome: `#${estado.snapshots.length + 1} · ${hora}`,
-    criadoEm: new Date().toISOString(),
-    personagem: structuredClone(estado.personagem),
-    skill: structuredClone(estado.skill),
-  });
-  renderComparacao();
-  salvar();
-  toast('Build fotografada.');
-});
-
 document.addEventListener('input', (ev) => {
   const t = ev.target as HTMLInputElement;
   const s = estado.skill;
+
+  if (t.id?.startsWith('sk-fonte-')) {
+    const recurso = t.id.slice('sk-fonte-'.length) as RecursoId;
+    const valor = Number(t.value);
+    const existente = s.fontes.find((f) => f.recurso === recurso);
+    if (existente) existente.proporcao = valor;
+    else s.fontes.push({ recurso, proporcao: valor });
+    const rotulo = t.parentElement?.querySelector('.num:last-of-type');
+    if (rotulo) rotulo.textContent = String(valor);
+    const prog = calcularProgressao(estado.personagem);
+    renderResultadoSkill(prog);
+    renderBancada();
+    salvar();
+    return;
+  }
+
   switch (t.id) {
     case 'orc-atributos': estado.orcamentoAtributos = Number(t.value) || 0; renderCabecalho(); salvar(); return;
     case 'orc-talentos': estado.orcamentoTalentos = Number(t.value) || 0; renderCabecalho(); salvar(); return;
     case 'sk-nome': s.nome = t.value || 'Skill'; break;
     case 'sk-elemento': s.elemento = t.value; break;
     case 'sk-escola': s.escola = t.value as EscolaId; break;
-    case 'sk-recurso': s.recurso = t.value as RecursoId; break;
     case 'sk-capacidade': s.capacidadeExigida = t.value || undefined; break;
     case 'sk-energia': s.energia = Number(t.value); break;
     case 'sk-tempo': s.tempoConjuracaoSegundos = Number(t.value); break;
+    case 'sk-alcance': s.alcanceMetros = Number(t.value); break;
     case 'sk-raio': s.area = { tipo: 'circulo', raioMetros: Number(t.value) }; break;
     case 'sk-duracao': s.entrega = { tipo: 'continuo', duracaoSegundos: Number(t.value) }; break;
     default:
@@ -1168,21 +1355,30 @@ document.addEventListener('input', (ev) => {
     // não re-renderizar durante o arraste: só atualiza o rótulo ao lado
     const rotulo = t.parentElement?.querySelector('.num');
     if (rotulo) {
-      const sufixo = t.id === 'sk-tempo' ? 's' : t.id === 'sk-raio' ? 'm' : t.id === 'sk-duracao' ? 's' : '';
+      const sufixo =
+        t.id === 'sk-tempo' ? 's' : t.id === 'sk-raio' || t.id === 'sk-alcance' ? 'm' : t.id === 'sk-duracao' ? 's' : '';
       rotulo.textContent = `${f1(Number(t.value))}${sufixo}`;
     }
   } else if (t.type === 'select-one' || t.type === 'radio') {
     renderFormSkill(prog);
   }
   renderResultadoSkill(prog);
-  if (t.id === 'sk-recurso') renderBancada(); // a bancada segue o recurso da skill
+  renderBancada();
   salvar();
+});
+
+// ao soltar um slider, re-renderiza o formulário para atualizar limites
+document.addEventListener('change', (ev) => {
+  const t = ev.target as HTMLInputElement;
+  if (t.type === 'range' && (t.id?.startsWith('sk-') || t.id?.startsWith('sk-fonte-'))) {
+    renderFormSkill(calcularProgressao(estado.personagem));
+  }
 });
 
 el('btn-exportar').addEventListener('click', () => {
   const exportado = {
     formato: 'class-system-build',
-    versao: 1,
+    versao: 2,
     exportadoEm: new Date().toISOString(),
     orcamentos: { atributos: estado.orcamentoAtributos, talentos: estado.orcamentoTalentos },
     personagem: estado.personagem,
@@ -1215,12 +1411,15 @@ el('input-importar').addEventListener('change', async (ev) => {
       personagem: { ...base.personagem, ...dados.personagem },
       orcamentoAtributos: dados.orcamentos?.atributos ?? base.orcamentoAtributos,
       orcamentoTalentos: dados.orcamentos?.talentos ?? base.orcamentoTalentos,
-      skillsSalvas: Array.isArray(dados.skills) ? dados.skills : [],
-      skill: dados.skillAtual ?? base.skill,
-      snapshots: Array.isArray(dados.snapshots) ? dados.snapshots : [],
+      skillsSalvas: Array.isArray(dados.skills) ? dados.skills.map(migrarSkill) : [],
+      skill: migrarSkill(dados.skillAtual),
+      snapshots: Array.isArray(dados.snapshots)
+        ? dados.snapshots.map((sn: any) => ({ ...sn, skill: migrarSkill(sn.skill) }))
+        : [],
     };
     (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);
     (el('orc-talentos') as HTMLInputElement).value = String(estado.orcamentoTalentos);
+    bancada = null;
     render();
     toast('Build importada.');
   } catch (e) {
@@ -1246,11 +1445,30 @@ el('btn-resetar').addEventListener('click', () => {
   btn.textContent = 'Resetar';
   estado = estadoPadrao();
   bancada = null;
+  elementoSelecionado = null;
+  talentoSelecionado = null;
   localStorage.removeItem(CHAVE_STORAGE);
   (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);
   (el('orc-talentos') as HTMLInputElement).value = String(estado.orcamentoTalentos);
   render();
   toast('Build resetada.');
+});
+
+el('btn-snapshot').addEventListener('click', () => {
+  if (estado.snapshots.length >= 4) {
+    toast('Máximo de 4 snapshots — remova um para fotografar de novo.');
+    return;
+  }
+  const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  estado.snapshots.push({
+    nome: `#${estado.snapshots.length + 1} · ${hora}`,
+    criadoEm: new Date().toISOString(),
+    personagem: structuredClone(estado.personagem),
+    skill: structuredClone(estado.skill),
+  });
+  renderComparacao();
+  salvar();
+  toast('Build fotografada.');
 });
 
 document.addEventListener('click', (ev) => {

@@ -100,8 +100,7 @@
   .acoes button:hover, .acoes label:hover { border-color: var(--acento); }
   .acoes .perigo:hover { border-color: var(--erro); color: var(--erro); }
 
-  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
-  @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
+  main { display: block; }
 
   section.bloco { margin-bottom: 24px; }
   section.bloco > h2 {
@@ -313,6 +312,50 @@
   .constelacao .excluido .estrela-nucleo { fill: #7c4a44; }
   .constelacao .excluido .anel-excluido { fill: none; stroke: #d06a5a; stroke-width: 1; stroke-dasharray: 2 2; }
   .constelacao .selecionado .anel-selecao { fill: none; stroke: #9d8ce0; stroke-width: 1.6; }
+
+  nav.abas {
+    display: flex; gap: 6px; flex-wrap: wrap; position: sticky; top: 0; z-index: 5;
+    background: var(--bg); padding: 10px 0; margin-bottom: 8px;
+    border-bottom: 1px solid var(--linha);
+  }
+  nav.abas button {
+    background: var(--surface); border: 1px solid var(--linha); color: var(--ink-2);
+    border-radius: 8px; padding: 7px 16px; font-size: 13.5px; font-weight: 600;
+  }
+  nav.abas button.ativo { border-color: var(--acento); color: var(--acento); background: var(--surface-2); }
+  .aba { display: none; }
+  .aba.ativa { display: block; }
+  .dica { color: var(--ink-2); font-size: 12.5px; margin: 0 0 10px; }
+  .skill-grade { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .skill-grade { grid-template-columns: minmax(0, 1fr); } }
+
+  /* Céu dos Elementos: o tabuleiro celeste (single-theme deliberado) */
+  .ceu {
+    background: radial-gradient(ellipse at 50% 45%, #221d38 0%, #171327 55%, #100d1c 100%);
+    border: 1px solid var(--linha); border-radius: 10px; overflow: hidden;
+  }
+  .ceu svg { display: block; width: 100%; height: auto; }
+  .ceu .fundo-estrela { fill: #cfc8e6; }
+  .ceu .anel-zodiaco { fill: none; stroke: #6f649c; opacity: 0.16; }
+  .ceu .liga-receita { stroke: #c9a84c; stroke-width: 1; opacity: 0.4; }
+  .ceu .liga-selecao { stroke: #9d8ce0; stroke-width: 1.2; opacity: 0.85; }
+  .ceu [data-acao='estrela-ceu'] { cursor: pointer; }
+  .ceu [data-acao='estrela-ceu']:focus-visible .nucleo { stroke: #c9a84c; stroke-width: 2; }
+  .ceu .halo { fill: #cfc8e6; opacity: 0.08; }
+  .ceu .rotulo-base { font: 600 10px system-ui, sans-serif; fill: #cfc8e6; }
+  .ceu .rotulo-deriv { font: 8px system-ui, sans-serif; fill: #b7aed6; text-anchor: middle; }
+  .ceu .distante .nucleo { fill: #4d4766; }
+  .ceu .distante .halo { opacity: 0.03; }
+  .ceu .proximo .nucleo { fill: #9d8ce0; }
+  .ceu .proximo .halo { fill: #9d8ce0; opacity: 0.12; }
+  .ceu .liberado .nucleo { fill: #e9c95e; }
+  .ceu .liberado .halo { fill: #e9c95e; opacity: 0.22; }
+  .ceu .selecionado .anel-sel { fill: none; stroke: #9d8ce0; stroke-width: 1.6; }
+
+  .fontes-lista { display: grid; gap: 6px; }
+  .fonte-linha { display: grid; grid-template-columns: 120px 1fr 40px; gap: 8px; align-items: center; font-size: 12.5px; }
+  .fonte-linha input[type='range'] { width: 100%; accent-color: var(--acento); }
+  .limite-hint { color: var(--ink-2); font-size: 10.5px; }
 </style>
 <!--BODY-->
 <div class="app">
@@ -339,65 +382,87 @@
     </div>
   </header>
 
-  <main>
-    <div>
-      <section class="bloco">
-        <h2>Builds de exemplo <span class="conta">substitui a build atual</span></h2>
-        <div id="presets" class="chips"></div>
-      </section>
-      <section class="bloco">
-        <h2>Elementos base <span class="conta" id="conta-elementos"></span></h2>
-        <div id="elementos" class="grade-elementos"></div>
-      </section>
-      <section class="bloco">
-        <h2>Escolas</h2>
-        <div id="escolas" class="lista-cartas"></div>
-      </section>
-      <section class="bloco">
-        <h2>Recursos</h2>
-        <div id="recursos" class="lista-cartas"></div>
-      </section>
-      <section class="bloco">
-        <h2>Talentos <span class="conta" id="conta-talentos"></span>
-          <span class="vista-toggle">
-            <button type="button" data-acao="vista-talentos" data-id="arvore">Árvore</button>
-            <button type="button" data-acao="vista-talentos" data-id="constelacao">Constelação</button>
-            <button type="button" data-acao="vista-talentos" data-id="cartas">Cartas</button>
-          </span>
-        </h2>
-        <div id="talentos"></div>
-      </section>
-    </div>
+  <nav class="abas" aria-label="Seções do simulador">
+    <button type="button" data-acao="aba" data-id="elementos">✦ Elementos</button>
+    <button type="button" data-acao="aba" data-id="escolas">Escolas</button>
+    <button type="button" data-acao="aba" data-id="recursos">Recursos</button>
+    <button type="button" data-acao="aba" data-id="talentos">Talentos</button>
+    <button type="button" data-acao="aba" data-id="skill">⚔ Criar Skill</button>
+  </nav>
 
-    <div>
+  <main>
+    <section id="aba-elementos" class="aba">
+      <section class="bloco">
+        <h2>Céu dos Elementos <span class="conta" id="conta-elementos"></span></h2>
+        <p class="dica">Clique numa estrela para ver detalhes e investir pontos. Os 13 elementos base formam o anel externo;
+          as combinações orbitam mais perto do centro e acendem quando os componentes evoluem juntos. O Nulo espera no coração do céu.</p>
+        <div id="ceu-elementos" class="ceu"></div>
+        <div id="elemento-detalhe"></div>
+      </section>
       <section class="bloco">
         <h2>Elementos combinados <span class="conta" id="conta-derivados"></span></h2>
         <input id="filtro-derivados" class="filtro" type="search" placeholder="Filtrar por nome ou componente…">
         <div id="derivados" class="painel"></div>
       </section>
+    </section>
+
+    <section id="aba-escolas" class="aba">
+      <section class="bloco">
+        <h2>Escolas</h2>
+        <div id="escolas" class="lista-cartas"></div>
+      </section>
       <section class="bloco">
         <h2>Arquétipos <span class="conta" id="conta-arquetipos"></span></h2>
         <div id="arquetipos" class="painel"></div>
       </section>
+    </section>
+
+    <section id="aba-recursos" class="aba">
       <section class="bloco">
-        <h2>Construtor de skill</h2>
-        <form class="skill" id="form-skill"></form>
-        <div id="resultado-skill"></div>
+        <h2>Recursos</h2>
+        <p class="dica">Proficiência num recurso libera-o como fonte de energia das skills e escala tudo:
+          custo menor, regeneração maior, mais impacto e conjuração mais rápida.</p>
+        <div id="recursos" class="lista-cartas"></div>
       </section>
+      <section class="bloco">
+        <h2>Bancada de recursos <span class="conta">simula as fontes da skill atual</span></h2>
+        <div id="bancada" class="bancada"></div>
+      </section>
+    </section>
+
+    <section id="aba-talentos" class="aba">
+      <section class="bloco">
+        <h2>Talentos <span class="conta" id="conta-talentos"></span>
+          <span class="vista-toggle">
+            <button type="button" data-acao="vista-talentos" data-id="arvore">Árvore</button>
+            <button type="button" data-acao="vista-talentos" data-id="cartas">Cartas</button>
+          </span>
+        </h2>
+        <div id="talentos"></div>
+      </section>
+    </section>
+
+    <section id="aba-skill" class="aba">
+      <div class="skill-grade">
+        <section class="bloco">
+          <h2>Construtor de skill</h2>
+          <form class="skill" id="form-skill"></form>
+        </section>
+        <section class="bloco">
+          <h2>Resultado em tempo real</h2>
+          <div id="resultado-skill"></div>
+        </section>
+      </div>
       <section class="bloco">
         <h2>Skills salvas <span class="conta" id="conta-skills"></span></h2>
         <div id="skills-salvas" class="painel lista-skills"></div>
-      </section>
-      <section class="bloco">
-        <h2>Bancada de recursos <span class="conta">simula o recurso da skill atual</span></h2>
-        <div id="bancada" class="bancada"></div>
       </section>
       <section class="bloco">
         <h2>Comparar builds <span class="conta" id="conta-snapshots"></span></h2>
         <div class="acoes-inline"><button id="btn-snapshot" type="button">Fotografar build atual</button></div>
         <div id="comparacao" class="tabela-scroll"></div>
       </section>
-    </div>
+    </section>
   </main>
 </div>
 <div id="toast" role="status"></div>

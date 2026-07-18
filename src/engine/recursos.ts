@@ -19,6 +19,8 @@ export interface EstadoRecurso {
   readonly maximo: number;
   /** Custo que este estado cobraria agora por um custo-base dado. */
   custoEfetivo(custoBase: number): number;
+  /** True se `usar` com esse custo teria sucesso agora (sem efeitos). */
+  podePagar(custoBase: number): boolean;
   /** Tenta pagar; retorna false (sem efeitos) se não há recurso suficiente. */
   usar(custoBase: number): boolean;
   /** Avança a simulação em dt segundos. */
@@ -42,6 +44,10 @@ export class ManaEstado implements EstadoRecurso {
 
   custoEfetivo(custoBase: number): number {
     return custoBase;
+  }
+
+  podePagar(custoBase: number): boolean {
+    return this.atual >= custoBase;
   }
 
   usar(custoBase: number): boolean {
@@ -85,6 +91,10 @@ export class FeEstado implements EstadoRecurso {
 
   custoEfetivo(custoBase: number): number {
     return custoBase * this.multiplicadorAtual;
+  }
+
+  podePagar(custoBase: number): boolean {
+    return this.atual >= this.custoEfetivo(custoBase);
   }
 
   usar(custoBase: number): boolean {
@@ -140,6 +150,10 @@ export class FuriaEstado implements EstadoRecurso {
     return custoBase;
   }
 
+  podePagar(custoBase: number): boolean {
+    return this.atual >= custoBase;
+  }
+
   usar(custoBase: number): boolean {
     if (this.atual < custoBase) return false;
     this.atual -= custoBase;
@@ -173,6 +187,10 @@ export class SoullinkEstado implements EstadoRecurso {
 
   custoEfetivo(custoBase: number): number {
     return custoBase;
+  }
+
+  podePagar(custoBase: number): boolean {
+    return this.atual - custoBase >= this.limiarVital;
   }
 
   usar(custoBase: number): boolean {
@@ -211,6 +229,10 @@ export class RessonanciaEstado implements EstadoRecurso {
 
   custoEfetivo(custoBase: number): number {
     return custoBase;
+  }
+
+  podePagar(custoBase: number): boolean {
+    return this.atual >= custoBase;
   }
 
   usar(custoBase: number): boolean {

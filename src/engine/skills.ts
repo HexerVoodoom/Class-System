@@ -1,14 +1,21 @@
 /**
  * Construtor + calculadora de skills.
  *
- * O jogador monta a skill escolhendo: elemento, escola, recurso, energia
- * investida, tempo de conjuração, área e forma de entrega. O motor valida
- * contra a progressão (elemento liberado? talento permite esse raio?) e
- * calcula custo e impacto.
+ * O jogador monta a skill escolhendo: elemento, escola, FONTES DE ENERGIA
+ * (uma ou mais, em proporções livres), energia investida, tempo de
+ * conjuração, alcance, área e forma de entrega. O motor valida contra a
+ * progressão e calcula custo e impacto em tempo real.
+ *
+ * FONTES DE ENERGIA — uma skill pode misturar recursos (ex.: 60% mana +
+ * 40% fúria), desde que o personagem tenha proficiência (pontos) em cada
+ * fonte usada. A proficiência ponderada pelas proporções escala tudo:
+ *   - custo menor (−1%/ponto, até −30%);
+ *   - impacto maior (+0.8%/ponto);
+ *   - tempo mínimo de conjuração menor (−0.01s/ponto).
  *
  * BALANCEAMENTO — a regra central é um orçamento único de poder:
  *
- *   orcamento = energia × multTempo × multNivel × multFoco
+ *   orcamento = energia × multTempo × multNivel × multFoco × multFontes
  *
  * Toda escolha de forma (área, entrega, invocações) apenas REDISTRIBUI esse
  * orçamento, nunca o multiplica de graça. Área maior = menos dano por alvo;
@@ -32,15 +39,24 @@ export type EntregaConfig =
   | { tipo: 'instantaneo' }
   | { tipo: 'continuo'; duracaoSegundos: number };
 
+/** Uma fonte de energia da skill; proporções são relativas (normalizadas). */
+export interface FonteEnergia {
+  recurso: RecursoId;
+  proporcao: number;
+}
+
 export interface SkillConfig {
   nome: string;
   elemento: ElementoId;
   escola: EscolaId;
-  recurso: RecursoId;
-  /** Quanto do recurso é investido; mais energia = mais resultado. */
+  /** Fontes de energia combinadas em proporções livres. */
+  fontes: FonteEnergia[];
+  /** Quanto de energia é investido; mais energia = mais resultado. */
   energia: number;
   /** Mais tempo de conjuração = mais resultado. */
   tempoConjuracaoSegundos: number;
+  /** Distância de lançamento; limitada por talentos, encarece de leve. */
+  alcanceMetros: number;
   area: AreaConfig;
   entrega: EntregaConfig;
   /** Capacidade de arquétipo exigida (ex.: 'evocar_demonios_mortos'). */
@@ -51,14 +67,19 @@ export interface LimitesSkill {
   energiaMaxima: number;
   tempoConjuracaoMinimo: number;
   raioMaximo: number;
+  alcanceMaximo: number;
 }
 
 export interface ResultadoSkill {
   valida: boolean;
   erros: string[];
   limites: LimitesSkill;
-  /** Custo base no recurso (antes de dinâmica de fé/fúria em tempo real). */
-  custoBase: number;
+  /** Custo total (antes das dinâmicas de fé/ressonância em tempo real). */
+  custoTotal: number;
+  /** Quanto do custo cada fonte paga, na proporção escolhida. */
+  custoPorFonte: { recurso: RecursoId; custo: number }[];
+  /** Proficiência ponderada pelas proporções das fontes. */
+  proficienciaPonderada: number;
   orcamentoDePoder: number;
   alvosEsperados: number;
   /** Impacto total esperado somando todos os alvos/duração. */
@@ -85,12 +106,19 @@ const ENERGIA_MAX_POR_NIVEL_ESCOLA = 2;
 const TEMPO_MINIMO_BASE = 0.5;
 const TEMPO_MINIMO_PISO = 0.1;
 const RAIO_MAXIMO_BASE = 4;
+const ALCANCE_MAXIMO_BASE = 20;
+const CUSTO_EXTRA_POR_METRO_ALCANCE = 0.005;
 const DENSIDADE_ALVOS_POR_M2 = 0.15;
 const EFICIENCIA_AREA = 0.9; // leve taxa por espalhar o orçamento
 const BONUS_POR_NIVEL_ELEMENTO = 0.04;
 const BONUS_POR_NIVEL_ESCOLA = 0.03;
 const BONUS_TOTAL_DOT_MAXIMO = 0.3;
 const EXPOENTE_DIVISAO_ENXAME = 0.9;
+// escala por proficiência na fonte de energia
+const REDUCAO_CUSTO_POR_PROFICIENCIA = 0.01;
+const REDUCAO_CUSTO_MAXIMA = 0.3;
+const BONUS_IMPACTO_POR_PROFICIENCIA = 0.008;
+const REDUCAO_TEMPO_POR_PROFICIENCIA = 0.01;
 
 function somaEfeitos(
   p: Personagem,
@@ -104,7 +132,31 @@ function somaEfeitos(
   return total;
 }
 
-export function calcularLimites(p: Personagem, escola: EscolaId): LimitesSkill {
+/** Filtra proporções > 0, funde duplicatas e normaliza para somar 1. */
+export function normalizarFontes(fontes: FonteEnergia[]): FonteEnergia[] {
+  const porRecurso = new Map<RecursoId, number>();
+  for (const f of fontes) {
+    if (f.proporcao > 0) porRecurso.set(f.recurso, (porRecurso.get(f.recurso) ?? 0) + f.proporcao);
+  }
+  const soma = [...porRecurso.values()].reduce((a, b) => a + b, 0);
+  if (soma <= 0) return [];
+  return [...porRecurso.entries()].map(([recurso, proporcao]) => ({
+    recurso,
+    proporcao: proporcao / soma,
+  }));
+}
+
+/** Proficiência do personagem ponderada pelas proporções das fontes. */
+export function proficienciaPonderada(p: Personagem, fontes: FonteEnergia[]): number {
+  const norm = normalizarFontes(fontes);
+  return norm.reduce((s, f) => s + f.proporcao * (p.recursos[f.recurso] ?? 0), 0);
+}
+
+export function calcularLimites(
+  p: Personagem,
+  escola: EscolaId,
+  fontes: FonteEnergia[] = [],
+): LimitesSkill {
   const nivelEscola = p.escolas[escola] ?? 0;
   const bonusEnergia = somaEfeitos(p, (e, r) =>
     e.tipo === 'energia_maxima_bonus_fracao' ? e.valorPorRank * r : 0,
@@ -115,11 +167,19 @@ export function calcularLimites(p: Personagem, escola: EscolaId): LimitesSkill {
   const bonusRaio = somaEfeitos(p, (e, r) =>
     e.tipo === 'raio_maximo_bonus' ? e.valorPorRank * r : 0,
   );
+  const bonusAlcance = somaEfeitos(p, (e, r) =>
+    e.tipo === 'alcance_bonus_metros' ? e.valorPorRank * r : 0,
+  );
+  const prof = proficienciaPonderada(p, fontes);
   return {
     energiaMaxima:
       (ENERGIA_MAX_BASE + ENERGIA_MAX_POR_NIVEL_ESCOLA * nivelEscola) * (1 + bonusEnergia),
-    tempoConjuracaoMinimo: Math.max(TEMPO_MINIMO_PISO, TEMPO_MINIMO_BASE - reducaoTempo),
+    tempoConjuracaoMinimo: Math.max(
+      TEMPO_MINIMO_PISO,
+      TEMPO_MINIMO_BASE - reducaoTempo - REDUCAO_TEMPO_POR_PROFICIENCIA * prof,
+    ),
     raioMaximo: RAIO_MAXIMO_BASE + bonusRaio,
+    alcanceMaximo: ALCANCE_MAXIMO_BASE + bonusAlcance,
   };
 }
 
@@ -129,7 +189,7 @@ export function validarSkill(
   cfg: SkillConfig,
 ): { erros: string[]; limites: LimitesSkill } {
   const erros: string[] = [];
-  const limites = calcularLimites(p, cfg.escola);
+  const limites = calcularLimites(p, cfg.escola, cfg.fontes);
 
   if (prog.niveisEfetivos[cfg.elemento] <= 0) {
     erros.push(`Elemento "${ELEMENTOS[cfg.elemento].nome}" ainda não foi liberado.`);
@@ -137,6 +197,19 @@ export function validarSkill(
   if ((p.escolas[cfg.escola] ?? 0) <= 0) {
     erros.push(`Sem pontos na escola "${ESCOLAS[cfg.escola].nome}".`);
   }
+
+  const fontesAtivas = normalizarFontes(cfg.fontes);
+  if (fontesAtivas.length === 0) {
+    erros.push('A skill precisa de pelo menos uma fonte de energia com proporção maior que zero.');
+  }
+  for (const f of fontesAtivas) {
+    if ((p.recursos[f.recurso] ?? 0) <= 0) {
+      erros.push(
+        `Sem proficiência em ${RECURSOS[f.recurso].nome} — invista pontos nesse recurso para usá-lo como fonte.`,
+      );
+    }
+  }
+
   if (cfg.energia <= 0) erros.push('Energia deve ser positiva.');
   if (cfg.energia > limites.energiaMaxima) {
     erros.push(
@@ -147,7 +220,14 @@ export function validarSkill(
   if (cfg.tempoConjuracaoSegundos < limites.tempoConjuracaoMinimo) {
     erros.push(
       `Tempo de conjuração mínimo é ${limites.tempoConjuracaoMinimo.toFixed(2)}s ` +
-        `(talento Conjuração Rápida reduz).`,
+        `(talento Conjuração Rápida e proficiência nas fontes reduzem).`,
+    );
+  }
+  if (cfg.alcanceMetros < 0) erros.push('Alcance não pode ser negativo.');
+  if (cfg.alcanceMetros > limites.alcanceMaximo) {
+    erros.push(
+      `Alcance ${cfg.alcanceMetros}m acima do máximo ${limites.alcanceMaximo}m ` +
+        `(talento Alcance Estendido aumenta).`,
     );
   }
   if (cfg.area.tipo === 'circulo') {
@@ -179,13 +259,25 @@ export function calcularSkill(
 
   const nivelElemento = prog.niveisEfetivos[cfg.elemento];
   const nivelEscola = p.escolas[cfg.escola] ?? 0;
-  const fatorPotencia = ELEMENTOS[cfg.elemento].fatorPotencia;
+  const fatorPotencia = ELEMENTOS[cfg.elemento]?.fatorPotencia ?? 1;
 
-  // custo: energia menos reduções de talento
-  const reducaoCusto = somaEfeitos(p, (e, r) =>
+  const fontes = normalizarFontes(cfg.fontes);
+  const prof = proficienciaPonderada(p, cfg.fontes);
+
+  // custo: energia − reduções de talento − proficiência + taxa de alcance
+  const reducaoTalento = somaEfeitos(p, (e, r) =>
     e.tipo === 'custo_reducao_fracao' ? e.valorPorRank * r : 0,
   );
-  const custoBase = cfg.energia * Math.max(0.5, 1 - reducaoCusto);
+  const reducaoProf = Math.min(REDUCAO_CUSTO_MAXIMA, REDUCAO_CUSTO_POR_PROFICIENCIA * prof);
+  const custoTotal =
+    cfg.energia *
+    Math.max(0.5, 1 - reducaoTalento) *
+    (1 - reducaoProf) *
+    (1 + CUSTO_EXTRA_POR_METRO_ALCANCE * cfg.alcanceMetros);
+  const custoPorFonte = fontes.map((f) => ({
+    recurso: f.recurso,
+    custo: custoTotal * f.proporcao,
+  }));
 
   // orçamento único de poder
   const tempo = Math.max(cfg.tempoConjuracaoSegundos, limites.tempoConjuracaoMinimo);
@@ -199,9 +291,16 @@ export function calcularSkill(
       ? e.bonusFracaoPorRank * r
       : 0,
   );
-  // recursos com custo "caro" (soullink paga em vida) amplificam o poder
-  const multRecurso = RECURSOS[cfg.recurso].parametros.multiplicadorPoder ?? 1;
-  const orcamento = cfg.energia * multTempo * multNivel * (1 + bonusFoco) * multRecurso;
+  // fontes "caras" (soullink paga em vida) amplificam o poder, na proporção
+  const multFontes = fontes.length
+    ? fontes.reduce(
+        (s, f) => s + f.proporcao * (RECURSOS[f.recurso].parametros.multiplicadorPoder ?? 1),
+        0,
+      )
+    : 1;
+  const multProficiencia = 1 + BONUS_IMPACTO_POR_PROFICIENCIA * prof;
+  const orcamento =
+    cfg.energia * multTempo * multNivel * (1 + bonusFoco) * multFontes * multProficiencia;
 
   // área: espalhar o orçamento entre alvos esperados
   const alvosEsperados =
@@ -244,7 +343,13 @@ export function calcularSkill(
   }
 
   // perfil mecânico: média dos pesos do elemento e da escola × impacto
-  const pesosElemento = ELEMENTOS[cfg.elemento]!.pesos;
+  const pesosElemento = ELEMENTOS[cfg.elemento]?.pesos ?? {
+    dano: 1,
+    controle: 0,
+    cura: 0,
+    defesa: 0,
+    suporte: 0,
+  };
   const pesosEscola = ESCOLAS[cfg.escola].pesos;
   const perfil = {} as PerfilPesos;
   for (const k of ['dano', 'controle', 'cura', 'defesa', 'suporte'] as const) {
@@ -266,20 +371,29 @@ export function calcularSkill(
     }
   }
 
-  // notas da dinâmica do recurso escolhido
-  const parRecurso = RECURSOS[cfg.recurso].parametros;
-  if (cfg.recurso === 'soullink') {
-    propriedades.push({
-      chave: 'custo_em_vida',
-      rotulo: 'Custo pago com a própria vida (poder amplificado)',
-      valor: (parRecurso.multiplicadorPoder ?? 1) - 1,
-    });
+  // notas da dinâmica das fontes escolhidas
+  for (const f of fontes) {
+    const par = RECURSOS[f.recurso].parametros;
+    if (f.recurso === 'soullink') {
+      propriedades.push({
+        chave: 'custo_em_vida',
+        rotulo: `${Math.round(f.proporcao * 100)}% do custo pago com a própria vida (poder amplificado)`,
+        valor: (par.multiplicadorPoder ?? 1) - 1,
+      });
+    }
+    if (f.recurso === 'ressonancia') {
+      propriedades.push({
+        chave: 'ressonancia_maxima',
+        rotulo: 'Poder extra com ressonância no máximo',
+        valor: (par.multiplicadorPoderMaximo ?? 1) - 1,
+      });
+    }
   }
-  if (cfg.recurso === 'ressonancia') {
+  if (prof > 0) {
     propriedades.push({
-      chave: 'ressonancia_maxima',
-      rotulo: 'Poder extra com ressonância no máximo',
-      valor: (parRecurso.multiplicadorPoderMaximo ?? 1) - 1,
+      chave: 'proficiencia_fontes',
+      rotulo: `Proficiência ponderada ${prof.toFixed(1)}: custo −${Math.round(reducaoProf * 100)}%, impacto +${Math.round((multProficiencia - 1) * 100)}%`,
+      valor: prof,
     });
   }
 
@@ -287,7 +401,9 @@ export function calcularSkill(
     valida: erros.length === 0,
     erros,
     limites,
-    custoBase,
+    custoTotal,
+    custoPorFonte,
+    proficienciaPonderada: prof,
     orcamentoDePoder: orcamento,
     alvosEsperados,
     impactoTotal,

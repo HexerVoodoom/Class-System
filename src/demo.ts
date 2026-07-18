@@ -41,13 +41,14 @@ function mostrarFicha(p: Personagem) {
 function mostrarSkill(p: Personagem, cfg: SkillConfig) {
   const prog = calcularProgressao(p);
   const r = calcularSkill(p, prog, cfg);
-  console.log(`\n  Skill "${cfg.nome}" [${cfg.elemento} + ${cfg.escola} @ ${cfg.recurso}]`);
+  const fontesTxt = cfg.fontes.map((f) => f.recurso).join('+');
+  console.log(`\n  Skill "${cfg.nome}" [${cfg.elemento} + ${cfg.escola} @ ${fontesTxt}]`);
   if (!r.valida) {
     for (const e of r.erros) console.log(`    ✗ ${e}`);
     return;
   }
   console.log(
-    `    custo ${r.custoBase.toFixed(1)} | orçamento ${r.orcamentoDePoder.toFixed(1)} | ` +
+    `    custo ${r.custoTotal.toFixed(1)} | orçamento ${r.orcamentoDePoder.toFixed(1)} | ` +
       `impacto total ${r.impactoTotal.toFixed(1)} | por alvo ${r.impactoPorAlvo.toFixed(1)} ` +
       `(${r.alvosEsperados.toFixed(1)} alvos)`,
   );
@@ -73,9 +74,10 @@ mostrarSkill(necro, {
   nome: 'Legião de Ossos',
   elemento: 'morte',
   escola: 'evocacao',
-  recurso: 'mana',
+  fontes: [{ recurso: 'mana', proporcao: 100 }],
   energia: 30,
   tempoConjuracaoSegundos: 3,
+  alcanceMetros: 5,
   area: { tipo: 'unico' },
   entrega: { tipo: 'instantaneo' },
   capacidadeExigida: 'evocar_mortos_vivos',
@@ -84,9 +86,10 @@ mostrarSkill(necro, {
   nome: 'Lança de Chama Azul',
   elemento: 'chama_azul',
   escola: 'maldicao',
-  recurso: 'mana',
+  fontes: [{ recurso: 'mana', proporcao: 100 }],
   energia: 20,
   tempoConjuracaoSegundos: 1.5,
+  alcanceMetros: 15,
   area: { tipo: 'unico' },
   entrega: { tipo: 'continuo', duracaoSegundos: 8 },
 });
@@ -105,9 +108,10 @@ mostrarSkill(guerreiro, {
   nome: 'Armas Dançantes',
   elemento: 'vigor',
   escola: 'evocacao',
-  recurso: 'furia',
+  fontes: [{ recurso: 'furia', proporcao: 100 }],
   energia: 35,
   tempoConjuracaoSegundos: 2,
+  alcanceMetros: 0,
   area: { tipo: 'unico' },
   entrega: { tipo: 'instantaneo' },
   capacidadeExigida: 'evocar_armas_autonomas',
@@ -126,9 +130,10 @@ mostrarSkill(sacerdotisa, {
   nome: 'Jardim Guardião',
   elemento: 'vida',
   escola: 'evocacao',
-  recurso: 'fe',
+  fontes: [{ recurso: 'fe', proporcao: 100 }],
   energia: 24,
   tempoConjuracaoSegundos: 2.5,
+  alcanceMetros: 10,
   area: { tipo: 'circulo', raioMetros: 6 },
   entrega: { tipo: 'continuo', duracaoSegundos: 10 },
   capacidadeExigida: 'evocar_plantas',
