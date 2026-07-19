@@ -49,6 +49,13 @@ import {
   SoullinkEstado,
   type EstadoRecurso,
 } from '../engine/recursos';
+import { sigilo } from './sigilos';
+
+/** <img> do sigilo, ou string vazia se não houver arte para o id. */
+function sig(id: string, classe = 'sig'): string {
+  const src = sigilo(id);
+  return src ? `<img class="${classe}" src="${src}" alt="" loading="lazy">` : '';
+}
 
 // ---------------------------------------------------------------- estado
 
@@ -544,12 +551,23 @@ function renderCeuElementos(prog: Progressao): void {
     const selecionado = elementoSelecionado === def.id ? ' selecionado' : '';
     const raio = def.tipo === 'base' ? p.r + Math.min(5, nivel * 0.25) : p.r + Math.min(3, nivel * 0.12);
     const corBase = def.tipo === 'base' ? ` style="fill:${CORES[def.id as ElementoBaseId]}"` : '';
+    // elementos base ganham a arte PNG como disco; derivados seguem pontos de luz
+    const arte = sigilo(def.id);
+    const corpo =
+      def.tipo === 'base' && arte
+        ? (() => {
+            const lado = raio * 4.2;
+            return `<circle class="halo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(lado / 2 + 4).toFixed(1)}"/>
+      <image href="${arte}" x="${(p.x - lado / 2).toFixed(1)}" y="${(p.y - lado / 2).toFixed(1)}" width="${lado.toFixed(1)}" height="${lado.toFixed(1)}"/>`;
+          })()
+        : `<circle class="halo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(raio + 8).toFixed(1)}"/>
+      <circle class="nucleo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${raio.toFixed(1)}"${corBase}/>`;
+    const raioSel = def.tipo === 'base' && arte ? raio * 2.1 + 5 : raio + 4;
     estrelas += `<g class="${classe}${selecionado}" data-acao="estrela-ceu" data-id="${def.id}" tabindex="0" role="button"
       aria-label="${esc(def.nome)} (nível ${nivel})">
       <title>${esc(def.nome)} — ${esc(def.descricao)}</title>
-      <circle class="halo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(raio + 8).toFixed(1)}"/>
-      <circle class="anel-sel" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(raio + 4).toFixed(1)}" fill="none"/>
-      <circle class="nucleo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${raio.toFixed(1)}"${corBase}/>
+      ${corpo}
+      <circle class="anel-sel" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${raioSel.toFixed(1)}" fill="none"/>
     </g>`;
     if (def.tipo === 'base') {
       const ang = Math.atan2(p.y - c, p.x - c);
@@ -579,9 +597,10 @@ function renderDetalheElemento(prog: Progressao): void {
   if (def.tipo === 'base') {
     const direto = estado.personagem.elementos[def.id] ?? 0;
     const bonus = nivel - direto;
-    alvo.innerHTML = `<div class="talento-detalhe">
-      <div class="nome"><span class="ponto-cor" style="background:${CORES[def.id as ElementoBaseId]};display:inline-block"></span> ${esc(def.nome)}
-        <span class="conta">elemento base</span></div>
+    alvo.innerHTML = `<div class="talento-detalhe detalhe-com-sig">
+      ${sig(def.id, 'sig-detalhe')}
+      <div class="detalhe-corpo">
+      <div class="nome">${esc(def.nome)} <span class="conta">elemento base</span></div>
       <div class="desc">${esc(def.descricao)}</div>
       <div>Nível efetivo <strong class="num">${nivel}</strong>${bonus > 0 ? ` <span class="efetivo">(${direto} diretos + ${bonus} de sinergia)</span>` : ''}</div>
       <div class="controles">
@@ -589,7 +608,7 @@ function renderDetalheElemento(prog: Progressao): void {
         <span class="valor num">${direto}</span>
         <button type="button" data-acao="inc-elemento" data-id="${def.id}" aria-label="Adicionar ponto">+</button>
       </div>
-    </div>`;
+    </div></div>`;
     return;
   }
 
@@ -603,13 +622,16 @@ function renderDetalheElemento(prog: Progressao): void {
         <span class="num">${atual}/${comp.nivelMinimo}</span></div>`;
     })
     .join('');
-  alvo.innerHTML = `<div class="talento-detalhe">
+  const sigDeriv = def.receita!.map((c) => sig(c.elemento, 'sig-mini')).join('');
+  alvo.innerHTML = `<div class="talento-detalhe detalhe-com-sig">
+    <div class="sig-combo">${sigDeriv}</div>
+    <div class="detalhe-corpo">
     <div class="nome">${esc(def.nome)} <span class="conta">${def.tipo} · potência ×${def.fatorPotencia}</span></div>
     <div class="desc">${esc(def.descricao)}</div>
     <div>${nivel > 0 ? `Nível <strong class="num">${nivel}</strong> — igual ao menor componente.` : 'Ainda não liberado — todos os componentes precisam atingir o mínimo.'}</div>
     ${receita}
     <div class="desc">Elementos combinados não aceitam pontos diretos: evoluem quando os componentes sobem juntos.</div>
-  </div>`;
+  </div></div>`;
 }
 
 // ------------------------------------------------- escolas / recursos
@@ -618,7 +640,9 @@ function renderEscolas(): void {
   el('escolas').innerHTML = Object.values(ESCOLAS)
     .map((def) => {
       const pontos = estado.personagem.escolas[def.id] ?? 0;
-      return `<div class="carta">
+      return `<div class="carta carta-com-sig">
+        ${sig(def.id, 'sig-carta')}
+        <div class="carta-corpo">
         <div class="nome">${esc(def.nome)}</div>
         <div class="desc">${esc(def.descricao)}</div>
         <div class="controles">
@@ -626,7 +650,7 @@ function renderEscolas(): void {
           <span class="valor num">${pontos}</span>
           <button type="button" data-acao="inc-escola" data-id="${def.id}" aria-label="Adicionar ponto em ${esc(def.nome)}">+</button>
         </div>
-      </div>`;
+      </div></div>`;
     })
     .join('');
 }
@@ -638,7 +662,9 @@ function renderRecursos(): void {
       const escala = pontos > 0
         ? `<div class="efetivo num">custo −${Math.min(30, pontos)}% · impacto +${Math.round(pontos * 0.8)}% · conjuração −${(pontos * 0.01).toFixed(2)}s</div>`
         : `<div class="req">sem proficiência: não pode ser usado como fonte</div>`;
-      return `<div class="carta">
+      return `<div class="carta carta-com-sig">
+        ${sig(def.id, 'sig-carta')}
+        <div class="carta-corpo">
         <div class="nome">${esc(def.nome)}</div>
         <div class="desc">${esc(def.descricao)}</div>
         ${escala}
@@ -647,7 +673,7 @@ function renderRecursos(): void {
           <span class="valor num">${pontos}</span>
           <button type="button" data-acao="inc-recurso" data-id="${def.id}" aria-label="Adicionar proficiência em ${esc(def.nome)}">+</button>
         </div>
-      </div>`;
+      </div></div>`;
     })
     .join('');
 }
@@ -992,7 +1018,7 @@ function renderResultadoSkill(prog: Progressao): void {
   const alvo = el('resultado-skill');
   if (!r.valida) {
     alvo.innerHTML = `<div class="resultado-skill">
-      <h3>${esc(estado.skill.nome)}</h3>
+      <h3>${sig(estado.skill.elemento, 'sig-titulo')}${esc(estado.skill.nome)}</h3>
       <ul class="erros">${r.erros.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>
     </div>`;
     return;
@@ -1015,7 +1041,7 @@ function renderResultadoSkill(prog: Progressao): void {
     .map((c) => `${esc(RECURSOS[c.recurso].nome)} ${f1(c.custo)}`)
     .join(' · ');
   alvo.innerHTML = `<div class="resultado-skill">
-    <h3>${esc(estado.skill.nome)}</h3>
+    <h3>${sig(estado.skill.elemento, 'sig-titulo')}${esc(estado.skill.nome)}</h3>
     <div class="resultado-corpo">
       <div class="coluna-metricas">
         <div class="metricas">

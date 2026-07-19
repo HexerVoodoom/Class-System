@@ -356,6 +356,17 @@
   .fonte-linha { display: grid; grid-template-columns: 120px 1fr 40px; gap: 8px; align-items: center; font-size: 12.5px; }
   .fonte-linha input[type='range'] { width: 100%; accent-color: var(--acento); }
   .limite-hint { color: var(--ink-2); font-size: 10.5px; }
+
+  /* sigilos (arte PNG) */
+  .carta-com-sig { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: start; }
+  .sig-carta { width: 52px; height: 52px; border-radius: 10px; }
+  .carta-com-sig .carta-corpo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .detalhe-com-sig { display: grid; grid-template-columns: 88px 1fr; gap: 14px; align-items: start; }
+  .sig-detalhe { width: 88px; height: 88px; border-radius: 14px; }
+  .detalhe-com-sig .detalhe-corpo { display: grid; gap: 5px; min-width: 0; }
+  .sig-combo { display: flex; gap: 4px; flex-wrap: wrap; width: 88px; }
+  .sig-mini { width: 40px; height: 40px; border-radius: 8px; }
+  .resultado-skill h3 .sig-titulo { width: 30px; height: 30px; border-radius: 7px; vertical-align: middle; margin-right: 8px; }
 </style>
 <!--BODY-->
 <div class="app">
