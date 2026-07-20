@@ -18,7 +18,7 @@
  */
 
 import { ELEMENTOS, elementosBase, type ElementoBaseId, type ElementoId } from '../registry/elementos';
-import { CRIATURAS, type CriaturaDef } from '../registry/criaturas';
+import { CRIATURAS, type CriaturaDef, type FamiliaCriatura } from '../registry/criaturas';
 import type { Personagem } from './personagem';
 import type { Progressao } from './progressao';
 
@@ -220,4 +220,46 @@ export function afinidadesAtivas(p: Personagem): ElementoBaseId[] {
   return elementosBase()
     .map((e) => e.id as ElementoBaseId)
     .filter((id) => (p.elementos[id] ?? 0) > 0);
+}
+
+// ---- montaria & sinergia de combate ----
+
+/** Famílias grandes/robustas o suficiente para servir de montaria. */
+export const FAMILIAS_MONTAVEIS: FamiliaCriatura[] = [
+  'besta',
+  'aquatica',
+  'ave',
+  'construto',
+  'draconico',
+];
+const MONTARIA_PODER_MINIMO = 30;
+
+export interface AvaliacaoMontaria {
+  montavel: boolean;
+  motivo?: string;
+}
+
+/** Pode montar esta criatura? Exige talento Montaria, vínculo e porte. */
+export function avaliarMontaria(p: Personagem, criaturaId: string): AvaliacaoMontaria {
+  const cri = CRIATURAS[criaturaId];
+  if (!cri) return { montavel: false, motivo: 'Criatura desconhecida.' };
+  if (talento(p, 'montaria') <= 0) {
+    return { montavel: false, motivo: 'Requer o talento Montaria.' };
+  }
+  const entrada = p.bestiario?.find((c) => c.criaturaId === criaturaId);
+  if (!entrada || entrada.nivelVinculo <= 0) {
+    return { montavel: false, motivo: 'Só é possível montar uma fera vinculada (domada).' };
+  }
+  if (!FAMILIAS_MONTAVEIS.includes(cri.familia)) {
+    return { montavel: false, motivo: `Família ${cri.familia} não serve de montaria.` };
+  }
+  if (cri.poderBase < MONTARIA_PODER_MINIMO) {
+    return { montavel: false, motivo: `Porte insuficiente para montar (poder < ${MONTARIA_PODER_MINIMO}).` };
+  }
+  return { montavel: true };
+}
+
+/** Bônus de sinergia de combate (você + fera lutando juntos), fração. */
+export function bonusSinergiaCombate(p: Personagem): number {
+  return 0.05 * talento(p, 'sincronia_de_combate');
 }

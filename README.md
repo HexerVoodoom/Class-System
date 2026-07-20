@@ -151,6 +151,8 @@ Limites configuráveis (energia máx., tempo mín., raio máx., alcance máx.) c
 
 **Doma** é o vínculo permanente: com o talento **Vínculo Primal** você domа criaturas capturadas, que ganham poder por nível de vínculo. **Matilha Domada** vs **Fera Alfa** são o ramo de especialização (muitas feras vinculadas × uma fera muito mais forte), e **Evolução da Fera** amplifica o ganho por vínculo. Sem Doma, capturas ainda podem ser evocadas — só não criam vínculo nem evoluem.
 
+**Sinergia de combate & montaria** (ramo de talentos): **Sincronia de Combate** faz você e a fera lutarem juntos (reforça a invocação e o seu corpo a corpo), **Assalto Coordenado** premia focar o mesmo alvo, **Guarda da Fera** faz a criatura interceptar parte do dano. **Montaria** libera cavalgar uma fera vinculada de porte adequado (famílias besta/aquática/ave/construto/dracônico, poder ≥ 30), e **Carga Montada** transforma a investida montada em dano em linha. No bestiário, feras que atendem aos requisitos ganham o selo **🐎 montável**.
+
 ## Estendendo
 
 - **Novo elemento derivado**: adicione em `ELEMENTOS` com `receita` (qualquer aridade — pares, triplas, ou "todos", como o Nulo).

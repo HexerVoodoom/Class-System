@@ -45,6 +45,12 @@ export type TalentoId =
   | 'matilha_domada'
   | 'fera_alfa'
   | 'evolucao_da_fera'
+  // sinergia de combate & montaria (lutar junto/cavalgar a fera)
+  | 'sincronia_de_combate'
+  | 'assalto_coordenado'
+  | 'guarda_da_fera'
+  | 'montaria'
+  | 'carga_montada'
   // maldição
   | 'contagio'
   | 'aflicao_profunda'
@@ -279,6 +285,54 @@ export const TALENTOS: Record<TalentoId, TalentoDef> = {
     ranksMaximos: 3,
     requisito: { escola: 'evocacao', nivelMinimo: 10 },
     efeitos: [{ tipo: 'propriedade', chave: 'evolucao_vinculo', rotulo: 'Ganho por nível de vínculo', valorPorRank: 0.25, escola: 'evocacao' }],
+  },
+
+  // ------------------- sinergia de combate & montaria -------------------
+  sincronia_de_combate: {
+    id: 'sincronia_de_combate',
+    nome: 'Sincronia de Combate',
+    descricao: 'Você e sua fera lutam em sincronia: +5%/rank de poder da criatura e do seu corpo a corpo.',
+    ranksMaximos: 3,
+    requisito: { escola: 'combate_fisico', nivelMinimo: 5 },
+    efeitos: [
+      { tipo: 'invocacao_potencia_bonus_fracao', valorPorRank: 0.05 },
+      { tipo: 'propriedade', chave: 'sincronia', rotulo: 'Bônus lutando junto da fera', valorPorRank: 0.05, escola: 'evocacao' },
+    ],
+  },
+  assalto_coordenado: {
+    id: 'assalto_coordenado',
+    nome: 'Assalto Coordenado',
+    descricao: 'Focar o mesmo alvo que sua fera concede +10%/rank de dano contra ele.',
+    ranksMaximos: 3,
+    requisito: { escola: 'evocacao', nivelMinimo: 8 },
+    efeitos: [{ tipo: 'propriedade', chave: 'foco_coordenado', rotulo: 'Dano no alvo focado', valorPorRank: 0.1, escola: 'evocacao' }],
+  },
+  guarda_da_fera: {
+    id: 'guarda_da_fera',
+    nome: 'Guarda da Fera',
+    descricao: 'Sua fera intercepta 8%/rank do dano que você receberia.',
+    ranksMaximos: 3,
+    requisito: { escola: 'evocacao', nivelMinimo: 8 },
+    efeitos: [{ tipo: 'propriedade', chave: 'guarda_fera', rotulo: 'Dano interceptado pela fera', valorPorRank: 0.08, escola: 'evocacao' }],
+  },
+  montaria: {
+    id: 'montaria',
+    nome: 'Montaria',
+    descricao: 'Monte sua fera vinculada de porte adequado: mobilidade e ataques combinados.',
+    ranksMaximos: 1,
+    requisito: { escola: 'combate_fisico', nivelMinimo: 5 },
+    efeitos: [{ tipo: 'propriedade', chave: 'montaria', rotulo: 'Montaria desbloqueada', valorPorRank: 1, escola: 'evocacao' }],
+  },
+  carga_montada: {
+    id: 'carga_montada',
+    nome: 'Carga Montada',
+    descricao: 'Montado, uma investida atinge todos em linha (+12%/rank) e fortalece a fera.',
+    ranksMaximos: 3,
+    requisito: { escola: 'evocacao', nivelMinimo: 10 },
+    efeitos: [
+      { tipo: 'invocacao_potencia_bonus_fracao', valorPorRank: 0.04 },
+      { tipo: 'propriedade', chave: 'carga_montada', rotulo: 'Dano da carga montada', valorPorRank: 0.12, escola: 'evocacao' },
+    ],
   },
 
   // ------------------- maldição -------------------

@@ -40,6 +40,7 @@ import { calcularProgressao, type Progressao } from '../engine/progressao';
 import { CRIATURAS, FAMILIAS, criaturas, type CriaturaDef } from '../registry/criaturas';
 import {
   avaliarCaptura,
+  avaliarMontaria,
   capacidadeVinculo,
   elementosDeMaestria,
   evocar,
@@ -724,6 +725,7 @@ const GRUPOS_TALENTOS: { titulo: string; ids: TalentoId[] }[] = [
   { titulo: 'Conjuração', ids: ['perfuracao', 'estilhaco', 'eco_arcano'] },
   { titulo: 'Evocação', ids: ['enxame', 'colosso', 'vinculo_marcial', 'simbiose', 'autonomia', 'comando'] },
   { titulo: 'Doma', ids: ['instinto_de_caca', 'vinculo_primal', 'matilha_domada', 'fera_alfa', 'evolucao_da_fera'] },
+  { titulo: 'Sinergia & Montaria', ids: ['sincronia_de_combate', 'assalto_coordenado', 'guarda_da_fera', 'montaria', 'carga_montada'] },
   { titulo: 'Maldição', ids: ['contagio', 'aflicao_profunda'] },
   { titulo: 'Bênção', ids: ['egide', 'exaltacao', 'vinculo_de_grupo'] },
   { titulo: 'Combate Físico', ids: ['sequencia_marcial', 'golpe_devastador', 'postura_inabalavel'] },
@@ -1321,9 +1323,11 @@ function renderBestiario(prog: Progressao): void {
       const cr = CRIATURAS[b.criaturaId];
       const pips = '♥'.repeat(b.nivelVinculo) + '·'.repeat(5 - b.nivelVinculo);
       const podeDomar = cap > 0 && (b.nivelVinculo > 0 || vinculadas < cap) && b.nivelVinculo < 5;
+      const mont = avaliarMontaria(estado.personagem, b.criaturaId);
+      const badgeMont = mont.montavel ? `<span class="familia-tag" style="border-color:var(--acento);color:var(--acento)">🐎 montável</span>` : '';
       return `<div class="criatura">
         <div>
-          <div><strong>${esc(cr.nome)}</strong> <span class="familia-tag">${esc(FAMILIAS[cr.familia].nome)}</span> <span class="vinculo-pips">${pips}</span></div>
+          <div><strong>${esc(cr.nome)}</strong> <span class="familia-tag">${esc(FAMILIAS[cr.familia].nome)}</span> ${badgeMont}<span class="vinculo-pips">${pips}</span></div>
           <div class="meta">poder base ${cr.poderBase} · ${esc(cr.descricao)}</div>
         </div>
         <div>

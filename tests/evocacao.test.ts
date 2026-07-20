@@ -12,6 +12,8 @@ import {
 import { calcularProgressao } from '../src/engine/progressao';
 import {
   avaliarCaptura,
+  avaliarMontaria,
+  bonusSinergiaCombate,
   capacidadeVinculo,
   elementosDeMaestria,
   evocar,
@@ -195,6 +197,58 @@ describe('doma (vínculo)', () => {
     capturarCriatura(p, calcularProgressao(p), 'lobo');
     soltarCriatura(p, 'lobo');
     expect(p.bestiario).toHaveLength(0);
+  });
+});
+
+describe('sinergia de combate e montaria', () => {
+  function domador(): ReturnType<typeof criarPersonagem> {
+    const p = criarPersonagem('dom');
+    investirElemento(p, 'vida', 12);
+    investirElemento(p, 'vigor', 12);
+    investirEscola(p, 'evocacao', 12);
+    investirEscola(p, 'combate_fisico', 8);
+    investirTalento(p, 'vinculo_primal', 1);
+    return p;
+  }
+
+  it('montaria exige talento, vínculo e porte adequado', () => {
+    const p = domador();
+    capturarCriatura(p, calcularProgressao(p), 'urso'); // besta, poder 42
+    capturarCriatura(p, calcularProgressao(p), 'falcao'); // ave, poder 26 (< mínimo)
+
+    // sem talento montaria
+    expect(avaliarMontaria(p, 'urso').montavel).toBe(false);
+    expect(avaliarMontaria(p, 'urso').motivo).toMatch(/talento Montaria/);
+
+    investirTalento(p, 'montaria', 1);
+    // capturado mas não vinculado
+    expect(avaliarMontaria(p, 'urso').motivo).toMatch(/vinculada/);
+    domarCriatura(p, 'urso');
+    expect(avaliarMontaria(p, 'urso').montavel).toBe(true);
+
+    // falcão vinculado, mas porte insuficiente
+    // (capacidade 1 já usada pelo urso — solta o vínculo do urso p/ testar porte)
+    investirTalento(p, 'matilha_domada', 1); // capacidade 2
+    domarCriatura(p, 'falcao');
+    expect(avaliarMontaria(p, 'falcao').montavel).toBe(false);
+    expect(avaliarMontaria(p, 'falcao').motivo).toMatch(/[Pp]orte/);
+  });
+
+  it('família não-montável (imp) nunca é montaria', () => {
+    const p = domador();
+    investirElemento(p, 'vileza', 10);
+    investirTalento(p, 'montaria', 1);
+    capturarCriatura(p, calcularProgressao(p), 'imp'); // demônio
+    domarCriatura(p, 'imp');
+    expect(avaliarMontaria(p, 'imp').montavel).toBe(false);
+    expect(avaliarMontaria(p, 'imp').motivo).toMatch(/família|Família/);
+  });
+
+  it('sincronia de combate escala com ranks e reforça a invocação', () => {
+    const p = domador();
+    expect(bonusSinergiaCombate(p)).toBe(0);
+    investirTalento(p, 'sincronia_de_combate', 3);
+    expect(bonusSinergiaCombate(p)).toBeCloseTo(0.15, 10);
   });
 });
 
