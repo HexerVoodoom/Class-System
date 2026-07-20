@@ -963,17 +963,21 @@ function renderFormSkill(prog: Progressao): void {
       .map((c) => `<option value="${esc(c)}" ${c === s.capacidadeExigida ? 'selected' : ''}>${esc(c)}</option>`)
       .join('');
 
-  // fontes de energia: só recursos com proficiência aparecem
-  const recursosComProf = Object.values(RECURSOS).filter(
-    (d) => (estado.personagem.recursos[d.id] ?? 0) > 0,
+  // fontes: recursos com proficiência + qualquer um já usado na skill (para
+  // poder zerá-lo mesmo sem proficiência)
+  const recursosVisiveis = Object.values(RECURSOS).filter(
+    (d) =>
+      (estado.personagem.recursos[d.id] ?? 0) > 0 ||
+      (s.fontes.find((f) => f.recurso === d.id)?.proporcao ?? 0) > 0,
   );
-  const fontesHtml = recursosComProf.length
-    ? recursosComProf
+  const fontesHtml = recursosVisiveis.length
+    ? recursosVisiveis
         .map((d) => {
           const atual = s.fontes.find((f) => f.recurso === d.id)?.proporcao ?? 0;
           const prof = estado.personagem.recursos[d.id] ?? 0;
+          const semProf = prof <= 0;
           return `<div class="fonte-linha">
-            <span>${esc(d.nome)} <span class="limite-hint num">prof ${prof}</span></span>
+            <span>${esc(d.nome)} <span class="limite-hint num ${semProf ? 'req' : ''}">${semProf ? 'sem prof' : `prof ${prof}`}</span></span>
             <input id="sk-fonte-${d.id}" type="range" min="0" max="100" step="5" value="${atual}">
             <span class="num">${atual}</span>
           </div>`;
@@ -1022,11 +1026,26 @@ function renderFormSkill(prog: Progressao): void {
     evocacaoHtml = `<div class="linha-campo"><label>Fonte da evocação</label><div><div class="radios">${botoes}</div>${extra}</div><span></span></div>`;
   }
 
+  // montaria: só aparece quando há fera montável vinculada
+  let montariaHtml = '';
+  const montaveis = estado.personagem.bestiario.filter(
+    (b) => avaliarMontaria(estado.personagem, b.criaturaId).montavel,
+  );
+  if (montaveis.length) {
+    const opc =
+      `<option value="">— a pé —</option>` +
+      montaveis
+        .map((b) => `<option value="${b.criaturaId}" ${b.criaturaId === s.montariaId ? 'selected' : ''}>${esc(CRIATURAS[b.criaturaId].nome)}</option>`)
+        .join('');
+    montariaHtml = `<div class="linha-campo"><label for="sk-montaria">Montaria</label><div><select id="sk-montaria">${opc}</select><div class="limite-hint">lançar cavalgando amplifica a skill (Carga Montada + porte da fera).</div></div><span></span></div>`;
+  }
+
   el('form-skill').innerHTML = `
     <div class="linha-campo"><label for="sk-nome">Nome</label><input id="sk-nome" type="text" value="${esc(s.nome)}"><span></span></div>
     <div class="linha-campo"><label for="sk-elemento">Elemento</label><select id="sk-elemento">${opcoesElemento}</select><span></span></div>
     <div class="linha-campo"><label for="sk-escola">Escola</label><select id="sk-escola">${opcoesEscola}</select><span></span></div>
     ${evocacaoHtml}
+    ${montariaHtml}
     <div class="linha-campo"><label for="sk-capacidade">Capacidade</label><select id="sk-capacidade">${opcoesCapacidade}</select><span></span></div>
     <div class="linha-campo"><label>Fontes de energia</label><div class="fontes-lista">${fontesHtml}</div><span></span></div>
     <div class="linha-campo"><label for="sk-energia">Energia</label>
@@ -1127,6 +1146,7 @@ function renderResultadoSkill(prog: Progressao): void {
           <div class="metrica"><div class="rotulo">Por alvo (${f1(r.alvosEsperados)} alvos)</div><div class="valor num">${f1(r.impactoPorAlvo)}</div></div>
           ${r.impactoPorSegundo ? `<div class="metrica"><div class="rotulo">Por segundo</div><div class="valor num">${f1(r.impactoPorSegundo)}</div></div>` : ''}
           ${r.invocacoes ? `<div class="metrica"><div class="rotulo">${esc(r.invocacoes.nome)}${r.invocacoes.imbuida ? ' ✦' : ''}</div><div class="valor num">${r.invocacoes.quantidade} × ${f1(r.invocacoes.poderPorCriatura)}</div></div>` : ''}
+          ${r.montaria ? `<div class="metrica"><div class="rotulo">🐎 Montado em ${esc(r.montaria.nome)}</div><div class="valor num">+${pct(r.montaria.bonus)}</div></div>` : ''}
           <div class="metrica"><div class="rotulo">Eficiência</div><div class="valor num">${f1(r.eficiencia)}</div></div>
         </div>
         <div class="dica num">fontes: ${custoFontes}</div>
@@ -1658,6 +1678,14 @@ document.addEventListener('input', (ev) => {
       } else if (t.id === 'sk-evo-criatura') {
         estado.skill.evocacao = { modo: 'capturada', criaturaId: t.value };
         const prog = calcularProgressao(estado.personagem);
+        renderResultadoSkill(prog);
+        renderComparacao();
+        salvar();
+        return;
+      } else if (t.id === 'sk-montaria') {
+        estado.skill.montariaId = t.value || undefined;
+        const prog = calcularProgressao(estado.personagem);
+        renderFormSkill(prog);
         renderResultadoSkill(prog);
         renderComparacao();
         salvar();

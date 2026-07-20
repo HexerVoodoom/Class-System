@@ -263,3 +263,17 @@ export function avaliarMontaria(p: Personagem, criaturaId: string): AvaliacaoMon
 export function bonusSinergiaCombate(p: Personagem): number {
   return 0.05 * talento(p, 'sincronia_de_combate');
 }
+
+const MONTARIA_RAREZA_TETO = 0.2;
+const MONTARIA_RAREZA_DIVISOR = 300;
+
+/**
+ * Bônus fracionário de uma skill lançada montado numa fera: Carga Montada +
+ * Sincronia + porte da montaria. Zero se a criatura não é montável.
+ */
+export function bonusMontaria(p: Personagem, criaturaId: string): number {
+  if (!avaliarMontaria(p, criaturaId).montavel) return 0;
+  const cri = CRIATURAS[criaturaId];
+  const rareza = Math.min(MONTARIA_RAREZA_TETO, cri.poderBase / MONTARIA_RAREZA_DIVISOR);
+  return 0.12 * talento(p, 'carga_montada') + bonusSinergiaCombate(p) + rareza;
+}

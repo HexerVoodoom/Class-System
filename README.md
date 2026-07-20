@@ -153,6 +153,8 @@ Limites configuráveis (energia máx., tempo mín., raio máx., alcance máx.) c
 
 **Sinergia de combate & montaria** (ramo de talentos): **Sincronia de Combate** faz você e a fera lutarem juntos (reforça a invocação e o seu corpo a corpo), **Assalto Coordenado** premia focar o mesmo alvo, **Guarda da Fera** faz a criatura interceptar parte do dano. **Montaria** libera cavalgar uma fera vinculada de porte adequado (famílias besta/aquática/ave/construto/dracônico, poder ≥ 30), e **Carga Montada** transforma a investida montada em dano em linha. No bestiário, feras que atendem aos requisitos ganham o selo **🐎 montável**.
 
+**Montaria nas skills**: qualquer skill pode ser lançada **cavalgando** uma fera montável — o construtor mostra o seletor de Montaria quando você tem o talento e uma fera elegível. O resultado amplifica pelo bônus de Carga Montada + Sincronia + porte da fera (ex.: `🐎 Montado em Urso das Cavernas +50%`).
+
 ## Estendendo
 
 - **Novo elemento derivado**: adicione em `ELEMENTOS` com `receita` (qualquer aridade — pares, triplas, ou "todos", como o Nulo).

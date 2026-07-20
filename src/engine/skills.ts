@@ -29,7 +29,7 @@ import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
 import { CRIATURAS } from '../registry/criaturas';
-import { bonusVinculo, MAESTRIA_LIMIAR, type ModoEvocacao } from './evocacao';
+import { avaliarMontaria, bonusMontaria, bonusVinculo, MAESTRIA_LIMIAR, type ModoEvocacao } from './evocacao';
 import type { Personagem } from './personagem';
 import type { Progressao } from './progressao';
 
@@ -76,6 +76,8 @@ export interface SkillConfig {
   capacidadeExigida?: string;
   /** Fonte da evocação (só relevante em escola Evocação; padrão: elemental). */
   evocacao?: EvocacaoSkill;
+  /** Criatura montável usada como veículo desta skill (requer talento Montaria). */
+  montariaId?: string;
 }
 
 export interface LimitesSkill {
@@ -111,6 +113,8 @@ export interface ResultadoSkill {
     familia?: string;
     imbuida: boolean;
   };
+  /** Presente quando a skill é lançada montado numa fera. */
+  montaria?: { nome: string; bonus: number };
   /**
    * Como o impacto se distribui mecanicamente — média dos perfis do
    * elemento e da escola aplicada ao impacto total.
@@ -282,6 +286,14 @@ export function validarSkill(
       erros.push(`"${cri.nome}" não está no seu bestiário — capture-a antes de evocá-la.`);
     }
   }
+  // montaria: a fera-veículo precisa ser montável
+  if (cfg.montariaId) {
+    const av = avaliarMontaria(p, cfg.montariaId);
+    if (!av.montavel) {
+      const nome = CRIATURAS[cfg.montariaId]?.nome ?? cfg.montariaId;
+      erros.push(`Não é possível lançar montado em "${nome}": ${av.motivo}`);
+    }
+  }
   return { erros, limites };
 }
 
@@ -354,6 +366,15 @@ export function calcularSkill(
     );
     impactoTotal *= 1 + bonusDot;
     impactoPorSegundo = impactoTotal / cfg.entrega.duracaoSegundos;
+  }
+
+  // montaria: lançar a skill cavalgando uma fera amplifica o resultado
+  let montaria: ResultadoSkill['montaria'];
+  if (cfg.montariaId && avaliarMontaria(p, cfg.montariaId).montavel) {
+    const bonus = bonusMontaria(p, cfg.montariaId);
+    impactoTotal *= 1 + bonus;
+    if (impactoPorSegundo) impactoPorSegundo *= 1 + bonus;
+    montaria = { nome: CRIATURAS[cfg.montariaId].nome, bonus };
   }
 
   const impactoPorAlvo = impactoTotal / alvosEsperados;
@@ -473,6 +494,7 @@ export function calcularSkill(
     impactoPorAlvo,
     impactoPorSegundo,
     invocacoes,
+    montaria,
     perfil,
     propriedades,
     eficiencia: impactoTotal / cfg.energia,

@@ -322,6 +322,41 @@ describe('evocação como skill (custo + cast + fonte)', () => {
     expect(aleatoria.invocacoes!.nome).toMatch(/Aleatória/);
   });
 
+  it('lançar montado amplifica a skill; só aceita fera montável', () => {
+    const p = criarPersonagem('cavaleiro');
+    investirElemento(p, 'vigor', 12);
+    investirEscola(p, 'combate_fisico', 12);
+    investirEscola(p, 'evocacao', 10);
+    investirRecurso(p, 'furia', 6);
+    investirTalento(p, 'vinculo_primal', 1);
+    investirTalento(p, 'montaria', 1);
+    investirTalento(p, 'carga_montada', 3);
+    capturarCriatura(p, calcularProgressao(p), 'urso'); // montável
+    domarCriatura(p, 'urso');
+
+    const cfg: SkillConfig = {
+      nome: 'Investida',
+      elemento: 'vigor',
+      escola: 'combate_fisico',
+      fontes: [{ recurso: 'furia', proporcao: 100 }],
+      energia: 25,
+      tempoConjuracaoSegundos: 1,
+      alcanceMetros: 0,
+      area: { tipo: 'unico' },
+      entrega: { tipo: 'instantaneo' },
+    };
+    const aPe = calcularSkill(p, calcularProgressao(p), cfg);
+    const montado = calcularSkill(p, calcularProgressao(p), { ...cfg, montariaId: 'urso' });
+    expect(montado.valida).toBe(true);
+    expect(montado.montaria?.nome).toMatch(/Urso/);
+    expect(montado.impactoTotal).toBeGreaterThan(aPe.impactoTotal);
+
+    // fera não vinculada / não montável é rejeitada
+    const semMontar = calcularSkill(p, calcularProgressao(p), { ...cfg, montariaId: 'lobo' });
+    expect(semMontar.valida).toBe(false);
+    expect(semMontar.erros.join(' ')).toMatch(/montado/i);
+  });
+
   it('vínculo de doma aumenta o poder da criatura evocada pela skill', () => {
     const p = criarPersonagem('domador');
     investirElemento(p, 'vida', 12);
