@@ -17,7 +17,7 @@ Abra **`simulador.html`** no navegador (arquivo único, auto-contido — o motor
 - **Escolas**: pontos por escola + os arquétipos que emergem da combinação.
 - **Recursos**: proficiência nas cinco fontes de energia (mana, fé, fúria, soullink, ressonância). Cada ponto reduz custo, aumenta regeneração/impacto e encurta a conjuração — e a bancada simula as fontes da skill atual em tempo real.
 - **Talentos**: em **árvore** (trilhas e tiers) ou **cartas**.
-- **Criar Skill**: sliders para energia, tempo de conjuração, **alcance**, raio e duração — cada um **limitado pelos talentos investidos** (o máximo aparece ao lado). Você **combina várias fontes de energia em proporções livres** (só recursos com proficiência), e **custo, impacto, perfil e propriedades recalculam em tempo real**. Compare até 4 builds lado a lado.
+- **Criar Skill**: sliders para energia, tempo de conjuração, **alcance**, raio e duração — cada um **limitado pelos talentos investidos** (o máximo aparece ao lado). Você **combina várias fontes de energia em proporções livres** (só recursos com proficiência), e **custo, impacto, perfil e propriedades recalculam em tempo real**. Skills de **Evocação** ganham o seletor de fonte (Elemental / Aleatória / Capturada) — evocar qualquer coisa é uma skill com custo e cast. Compare até 4 builds lado a lado.
 
 O estado persiste no `localStorage` entre visitas; dá para **exportar/importar** tudo em JSON e **resetar**.
 
@@ -141,11 +141,11 @@ Limites configuráveis (energia máx., tempo mín., raio máx., alcance máx.) c
 
 ## Camada 6 — Evocação: captura, doma e imbuição
 
-A vocação de Evocação tem três modos, e capturar criaturas é opcional:
+**Evocar é sempre uma skill** (escola Evocação): tem custo, fontes de energia, tempo de conjuração e alcance como qualquer outra. O que muda é a **fonte da evocação**, e capturar criaturas é opcional:
 
-- **Elemental (básica)**: invoca um elemental de qualquer elemento com nível — não exige captura. Poder escala com o nível do elemento e com Evocação.
-- **Aleatória**: invoca uma criatura qualquer; quanto mais pontos em Evocação, mais poderosa.
-- **Capturada**: invoca uma criatura do seu bestiário, opcionalmente **imbuída** de um elemento no qual você tem **maestria** (nível efetivo ≥ 8, base *ou* derivado — ex.: um Lobo de **Chama Azul**).
+- **Elemental (básica)**: invoca um elemental do próprio elemento da skill — não exige captura.
+- **Aleatória**: invoca uma criatura qualquer; quanto mais pontos em Evocação, mais poderosa (fator levemente menor, por não exigir preparo).
+- **Capturada**: invoca uma criatura do seu bestiário, **imbuída** do elemento da skill quando você tem **maestria** nele (nível efetivo ≥ 8, base *ou* derivado — ex.: um Lobo de **Chama Azul**). O poder da invocação é o orçamento da skill × um fator de raridade da criatura × o bônus de vínculo (doma).
 
 **Captura depende de afinidade elemental**: cada criatura só pode ser capturada por quem tem pontos em um dos seus elementos de afinidade (Fogo captura feras ígneas; Vida/Vigor capturam animais; Morte, mortos-vivos; etc.). O *poder de captura* = base + nível no elemento de afinidade + Evocação (× talento Instinto de Caça) precisa alcançar a raridade da criatura.
 

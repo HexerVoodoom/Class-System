@@ -28,8 +28,21 @@ import { ELEMENTOS, type ElementoId, type PerfilPesos } from '../registry/elemen
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
+import { CRIATURAS } from '../registry/criaturas';
+import { bonusVinculo, MAESTRIA_LIMIAR, type ModoEvocacao } from './evocacao';
 import type { Personagem } from './personagem';
 import type { Progressao } from './progressao';
+
+/**
+ * Fonte da evocação, usada só em skills de escola Evocação:
+ *  - elemental: um elemental do próprio elemento da skill (padrão).
+ *  - aleatoria: criatura qualquer; escala com Evocação, sem preparo.
+ *  - capturada: uma criatura do bestiário, imbuída do elemento da skill.
+ */
+export interface EvocacaoSkill {
+  modo: ModoEvocacao;
+  criaturaId?: string;
+}
 
 export type AreaConfig =
   | { tipo: 'unico' }
@@ -61,6 +74,8 @@ export interface SkillConfig {
   entrega: EntregaConfig;
   /** Capacidade de arquétipo exigida (ex.: 'evocar_demonios_mortos'). */
   capacidadeExigida?: string;
+  /** Fonte da evocação (só relevante em escola Evocação; padrão: elemental). */
+  evocacao?: EvocacaoSkill;
 }
 
 export interface LimitesSkill {
@@ -88,7 +103,14 @@ export interface ResultadoSkill {
   /** Presente quando entrega é contínua. */
   impactoPorSegundo?: number;
   /** Presente quando a escola é evocação. */
-  invocacoes?: { quantidade: number; poderPorCriatura: number; poderTotal: number };
+  invocacoes?: {
+    quantidade: number;
+    poderPorCriatura: number;
+    poderTotal: number;
+    nome: string;
+    familia?: string;
+    imbuida: boolean;
+  };
   /**
    * Como o impacto se distribui mecanicamente — média dos perfis do
    * elemento e da escola aplicada ao impacto total.
@@ -119,6 +141,10 @@ const REDUCAO_CUSTO_POR_PROFICIENCIA = 0.01;
 const REDUCAO_CUSTO_MAXIMA = 0.3;
 const BONUS_IMPACTO_POR_PROFICIENCIA = 0.008;
 const REDUCAO_TEMPO_POR_PROFICIENCIA = 0.01;
+// evocação: fator da fonte sobre o poder da invocação
+const FONTE_ALEATORIA_FATOR = 0.9;
+const RAREZA_TETO = 0.4; // bônus máx. de raridade da criatura capturada
+const RAREZA_DIVISOR = 250; // poderBase/divisor → bônus de raridade
 
 function somaEfeitos(
   p: Personagem,
@@ -247,6 +273,15 @@ export function validarSkill(
       `Exige a capacidade "${cfg.capacidadeExigida}" — desbloqueie o arquétipo correspondente.`,
     );
   }
+  // fonte da evocação (só em escola de invocação)
+  if (ESCOLAS[cfg.escola].entregaPadrao === 'invocacao' && cfg.evocacao?.modo === 'capturada') {
+    const cri = cfg.evocacao.criaturaId ? CRIATURAS[cfg.evocacao.criaturaId] : undefined;
+    if (!cri) {
+      erros.push('Selecione uma criatura capturada para a evocação.');
+    } else if (!p.bestiario.some((b) => b.criaturaId === cri.id)) {
+      erros.push(`"${cri.nome}" não está no seu bestiário — capture-a antes de evocá-la.`);
+    }
+  }
   return { erros, limites };
 }
 
@@ -333,12 +368,40 @@ export function calcularSkill(
       e.tipo === 'invocacao_potencia_bonus_fracao' ? e.valorPorRank * r : 0,
     );
     const quantidade = 1 + Math.floor(quantidadeBonus);
-    const poderTotal = impactoTotal * (1 + potenciaBonus);
+
+    // fonte da evocação: define quem é invocado e um fator sobre o poder
+    const modo = cfg.evocacao?.modo ?? 'elemental';
+    const nomeElemento = ELEMENTOS[cfg.elemento]?.nome ?? cfg.elemento;
+    let fatorFonte = 1;
+    let nomeCriatura = `Elemental de ${nomeElemento}`;
+    let familia: string | undefined = 'elemental';
+    let imbuida = false;
+    if (modo === 'aleatoria') {
+      fatorFonte = FONTE_ALEATORIA_FATOR;
+      nomeCriatura = 'Criatura Aleatória';
+      familia = 'aleatoria';
+    } else if (modo === 'capturada' && cfg.evocacao?.criaturaId) {
+      const cri = CRIATURAS[cfg.evocacao.criaturaId];
+      const bond = p.bestiario.find((b) => b.criaturaId === cri?.id)?.nivelVinculo ?? 0;
+      if (cri) {
+        const rareza = Math.min(RAREZA_TETO, cri.poderBase / RAREZA_DIVISOR);
+        fatorFonte = 1 + rareza + bonusVinculo(p, bond);
+        // imbuída pelo elemento da skill quando há maestria naquele elemento
+        imbuida = nivelElemento >= MAESTRIA_LIMIAR;
+        nomeCriatura = imbuida ? `${cri.nome} de ${nomeElemento}` : cri.nome;
+        familia = cri.familia;
+      }
+    }
+
+    const poderTotal = impactoTotal * (1 + potenciaBonus) * fatorFonte;
     const poderPorCriatura = poderTotal / quantidade ** EXPOENTE_DIVISAO_ENXAME;
     invocacoes = {
       quantidade,
       poderPorCriatura,
       poderTotal: poderPorCriatura * quantidade ** EXPOENTE_DIVISAO_ENXAME,
+      nome: nomeCriatura,
+      familia,
+      imbuida,
     };
   }
 

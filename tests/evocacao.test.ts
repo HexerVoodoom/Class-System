@@ -3,6 +3,7 @@ import {
   criarPersonagem,
   investirElemento,
   investirEscola,
+  investirRecurso,
   investirTalento,
   capturarCriatura,
   domarCriatura,
@@ -16,6 +17,7 @@ import {
   evocar,
   MAESTRIA_LIMIAR,
 } from '../src/engine/evocacao';
+import { calcularSkill, type SkillConfig } from '../src/engine/skills';
 
 function evocador(): ReturnType<typeof criarPersonagem> {
   const p = criarPersonagem('t');
@@ -193,5 +195,101 @@ describe('doma (vínculo)', () => {
     capturarCriatura(p, calcularProgressao(p), 'lobo');
     soltarCriatura(p, 'lobo');
     expect(p.bestiario).toHaveLength(0);
+  });
+});
+
+describe('evocação como skill (custo + cast + fonte)', () => {
+  function evocadorSkill(): ReturnType<typeof criarPersonagem> {
+    const p = criarPersonagem('evk');
+    investirElemento(p, 'vida', 12);
+    investirElemento(p, 'fogo', 12); // maestria p/ imbuir
+    investirEscola(p, 'evocacao', 12);
+    investirRecurso(p, 'mana', 6);
+    return p;
+  }
+  function skillEvoc(extra: Partial<SkillConfig> = {}): SkillConfig {
+    return {
+      nome: 'Evocar',
+      elemento: 'fogo',
+      escola: 'evocacao',
+      fontes: [{ recurso: 'mana', proporcao: 100 }],
+      energia: 25,
+      tempoConjuracaoSegundos: 2,
+      alcanceMetros: 0,
+      area: { tipo: 'unico' },
+      entrega: { tipo: 'instantaneo' },
+      ...extra,
+    };
+  }
+
+  it('skill paga custo e tem cast — invocação básica é um elemental', () => {
+    const p = evocadorSkill();
+    const r = calcularSkill(p, calcularProgressao(p), skillEvoc());
+    expect(r.valida).toBe(true);
+    expect(r.custoTotal).toBeGreaterThan(0);
+    expect(r.invocacoes!.nome).toMatch(/Elemental de Fogo/);
+  });
+
+  it('capturada exige a criatura no bestiário', () => {
+    const p = evocadorSkill();
+    const cfg = skillEvoc({ evocacao: { modo: 'capturada', criaturaId: 'lobo' } });
+    const semCaptura = calcularSkill(p, calcularProgressao(p), cfg);
+    expect(semCaptura.valida).toBe(false);
+    expect(semCaptura.erros.join(' ')).toMatch(/não está no seu bestiário/);
+
+    capturarCriatura(p, calcularProgressao(p), 'lobo');
+    const comCaptura = calcularSkill(p, calcularProgressao(p), cfg);
+    expect(comCaptura.valida).toBe(true);
+    expect(comCaptura.invocacoes!.nome).toMatch(/Lobo Cinzento de Fogo/); // imbuída (fogo maestria)
+    expect(comCaptura.invocacoes!.imbuida).toBe(true);
+  });
+
+  it('criatura capturada rende mais que elemental na mesma skill (raridade + vínculo)', () => {
+    const p = evocadorSkill();
+    capturarCriatura(p, calcularProgressao(p), 'urso'); // poderBase 42
+    const elemental = calcularSkill(p, calcularProgressao(p), skillEvoc());
+    const capturada = calcularSkill(
+      p,
+      calcularProgressao(p),
+      skillEvoc({ evocacao: { modo: 'capturada', criaturaId: 'urso' } }),
+    );
+    expect(capturada.invocacoes!.poderTotal).toBeGreaterThan(elemental.invocacoes!.poderTotal);
+  });
+
+  it('aleatória rende um pouco menos que o elemental (sem preparo)', () => {
+    const p = evocadorSkill();
+    const elemental = calcularSkill(p, calcularProgressao(p), skillEvoc());
+    const aleatoria = calcularSkill(
+      p,
+      calcularProgressao(p),
+      skillEvoc({ evocacao: { modo: 'aleatoria' } }),
+    );
+    expect(aleatoria.invocacoes!.poderTotal).toBeLessThan(elemental.invocacoes!.poderTotal);
+    expect(aleatoria.invocacoes!.nome).toMatch(/Aleatória/);
+  });
+
+  it('vínculo de doma aumenta o poder da criatura evocada pela skill', () => {
+    const p = criarPersonagem('domador');
+    investirElemento(p, 'vida', 12);
+    investirEscola(p, 'evocacao', 12);
+    investirRecurso(p, 'mana', 6);
+    investirTalento(p, 'vinculo_primal', 1);
+    capturarCriatura(p, calcularProgressao(p), 'lobo');
+    const cfg: SkillConfig = {
+      nome: 'Evocar Lobo',
+      elemento: 'vida',
+      escola: 'evocacao',
+      fontes: [{ recurso: 'mana', proporcao: 100 }],
+      energia: 25,
+      tempoConjuracaoSegundos: 2,
+      alcanceMetros: 0,
+      area: { tipo: 'unico' },
+      entrega: { tipo: 'instantaneo' },
+      evocacao: { modo: 'capturada', criaturaId: 'lobo' },
+    };
+    const semVinculo = calcularSkill(p, calcularProgressao(p), cfg);
+    domarCriatura(p, 'lobo');
+    const comVinculo = calcularSkill(p, calcularProgressao(p), cfg);
+    expect(comVinculo.invocacoes!.poderTotal).toBeGreaterThan(semVinculo.invocacoes!.poderTotal);
   });
 });

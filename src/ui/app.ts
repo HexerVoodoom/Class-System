@@ -985,10 +985,46 @@ function renderFormSkill(prog: Progressao): void {
   const tempo = Math.max(s.tempoConjuracaoSegundos, tempoMin);
   const alcance = Math.min(s.alcanceMetros, limites.alcanceMaximo);
 
+  // fonte da evocação (só quando a escola invoca criaturas)
+  let evocacaoHtml = '';
+  if (ESCOLAS[s.escola].entregaPadrao === 'invocacao') {
+    const modo = s.evocacao?.modo ?? 'elemental';
+    const botoes = ([
+      ['elemental', 'Elemental'],
+      ['aleatoria', 'Aleatória'],
+      ['capturada', 'Capturada'],
+    ] as const)
+      .map(
+        ([id, rot]) =>
+          `<button type="button" class="btn-mini ${modo === id ? 'on' : ''}" data-acao="sk-evo-modo" data-id="${id}">${rot}</button>`,
+      )
+      .join(' ');
+    let extra = '';
+    if (modo === 'capturada') {
+      const cap = estado.personagem.bestiario;
+      if (!cap.length) {
+        extra = `<div class="req">Nenhuma criatura capturada — vá à aba Bestiário.</div>`;
+      } else {
+        const opc = cap
+          .map((b) => `<option value="${b.criaturaId}" ${b.criaturaId === s.evocacao?.criaturaId ? 'selected' : ''}>${esc(CRIATURAS[b.criaturaId].nome)}${b.nivelVinculo > 0 ? ` ♥${b.nivelVinculo}` : ''}</option>`)
+          .join('');
+        const imbui = (prog.niveisEfetivos[s.elemento] ?? 0) >= MAESTRIA_LIMIAR;
+        extra = `<select id="sk-evo-criatura" style="margin-top:6px">${opc}</select>
+          <div class="limite-hint">${imbui ? `imbuída de ${esc(ELEMENTOS[s.elemento].nome)} (maestria ✓)` : `sem maestria em ${esc(ELEMENTOS[s.elemento].nome)} — não imbui (suba para nível ${MAESTRIA_LIMIAR})`}</div>`;
+      }
+    } else if (modo === 'aleatoria') {
+      extra = `<div class="limite-hint">criatura qualquer; mais forte quanto mais Evocação.</div>`;
+    } else {
+      extra = `<div class="limite-hint">um elemental de ${esc(ELEMENTOS[s.elemento]?.nome ?? s.elemento)}.</div>`;
+    }
+    evocacaoHtml = `<div class="linha-campo"><label>Fonte da evocação</label><div><div class="radios">${botoes}</div>${extra}</div><span></span></div>`;
+  }
+
   el('form-skill').innerHTML = `
     <div class="linha-campo"><label for="sk-nome">Nome</label><input id="sk-nome" type="text" value="${esc(s.nome)}"><span></span></div>
     <div class="linha-campo"><label for="sk-elemento">Elemento</label><select id="sk-elemento">${opcoesElemento}</select><span></span></div>
     <div class="linha-campo"><label for="sk-escola">Escola</label><select id="sk-escola">${opcoesEscola}</select><span></span></div>
+    ${evocacaoHtml}
     <div class="linha-campo"><label for="sk-capacidade">Capacidade</label><select id="sk-capacidade">${opcoesCapacidade}</select><span></span></div>
     <div class="linha-campo"><label>Fontes de energia</label><div class="fontes-lista">${fontesHtml}</div><span></span></div>
     <div class="linha-campo"><label for="sk-energia">Energia</label>
@@ -1088,7 +1124,7 @@ function renderResultadoSkill(prog: Progressao): void {
           <div class="metrica"><div class="rotulo">Impacto total</div><div class="valor num">${f1(r.impactoTotal)}</div></div>
           <div class="metrica"><div class="rotulo">Por alvo (${f1(r.alvosEsperados)} alvos)</div><div class="valor num">${f1(r.impactoPorAlvo)}</div></div>
           ${r.impactoPorSegundo ? `<div class="metrica"><div class="rotulo">Por segundo</div><div class="valor num">${f1(r.impactoPorSegundo)}</div></div>` : ''}
-          ${r.invocacoes ? `<div class="metrica"><div class="rotulo">Criaturas</div><div class="valor num">${r.invocacoes.quantidade} × ${f1(r.invocacoes.poderPorCriatura)}</div></div>` : ''}
+          ${r.invocacoes ? `<div class="metrica"><div class="rotulo">${esc(r.invocacoes.nome)}${r.invocacoes.imbuida ? ' ✦' : ''}</div><div class="valor num">${r.invocacoes.quantidade} × ${f1(r.invocacoes.poderPorCriatura)}</div></div>` : ''}
           <div class="metrica"><div class="rotulo">Eficiência</div><div class="valor num">${f1(r.eficiencia)}</div></div>
         </div>
         <div class="dica num">fontes: ${custoFontes}</div>
@@ -1514,6 +1550,19 @@ document.addEventListener('click', (ev) => {
         salvar();
         return;
       }
+      case 'sk-evo-modo': {
+        const modo = id as ModoEvocacao;
+        estado.skill.evocacao =
+          modo === 'capturada'
+            ? { modo, criaturaId: estado.skill.evocacao?.criaturaId ?? p.bestiario[0]?.criaturaId }
+            : { modo };
+        const prog = calcularProgressao(p);
+        renderFormSkill(prog);
+        renderResultadoSkill(prog);
+        renderComparacao();
+        salvar();
+        return;
+      }
       case 'capturar':
         capturarCriatura(p, calcularProgressao(p), id);
         break;
@@ -1602,6 +1651,13 @@ document.addEventListener('input', (ev) => {
         renderResultadoEvocar(calcularProgressao(estado.personagem));
         salvar();
         return;
+      } else if (t.id === 'sk-evo-criatura') {
+        estado.skill.evocacao = { modo: 'capturada', criaturaId: t.value };
+        const prog = calcularProgressao(estado.personagem);
+        renderResultadoSkill(prog);
+        renderComparacao();
+        salvar();
+        return;
       } else return;
   }
   const prog = calcularProgressao(estado.personagem);
@@ -1618,6 +1674,7 @@ document.addEventListener('input', (ev) => {
   }
   renderResultadoSkill(prog);
   renderBancada();
+  renderComparacao();
   salvar();
 });
 
