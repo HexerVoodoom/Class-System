@@ -367,6 +367,32 @@
   .sig-combo { display: flex; gap: 4px; flex-wrap: wrap; width: 88px; }
   .sig-mini { width: 40px; height: 40px; border-radius: 8px; }
   .resultado-skill h3 .sig-titulo { width: 30px; height: 30px; border-radius: 7px; vertical-align: middle; margin-right: 8px; }
+
+  /* bestiário */
+  .criatura {
+    display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
+    padding: 8px 10px; border-bottom: 1px solid var(--linha); font-size: 13px;
+  }
+  .criatura:last-child { border-bottom: none; }
+  .criatura .meta { font-size: 11px; color: var(--ink-2); }
+  .criatura .familia-tag {
+    display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 10px;
+    border: 1px solid var(--linha); color: var(--ink-2); margin-right: 4px;
+  }
+  .criatura .afin { color: var(--arcano); }
+  .criatura .barra { margin-top: 4px; }
+  .criatura .barra > i { background: var(--ok); }
+  .criatura .barra.baixa > i { background: var(--alerta); }
+  .btn-mini {
+    background: var(--surface-2); border: 1px solid var(--linha); color: var(--ink);
+    border-radius: 6px; padding: 4px 10px; font-size: 12px;
+  }
+  .btn-mini:hover:not(:disabled) { border-color: var(--acento); }
+  .btn-mini:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-mini.on { background: var(--acento); color: var(--bg); border-color: var(--acento); }
+  .vinculo-pips { letter-spacing: 2px; color: var(--acento); font-size: 12px; }
+  .cap-info { font-size: 12px; color: var(--ink-2); margin-bottom: 6px; }
+  .cap-info strong { color: var(--acento); }
 </style>
 <!--BODY-->
 <div class="app">
@@ -398,6 +424,7 @@
     <button type="button" data-acao="aba" data-id="escolas">Escolas</button>
     <button type="button" data-acao="aba" data-id="recursos">Recursos</button>
     <button type="button" data-acao="aba" data-id="talentos">Talentos</button>
+    <button type="button" data-acao="aba" data-id="bestiario">🐾 Bestiário</button>
     <button type="button" data-acao="aba" data-id="skill">⚔ Criar Skill</button>
   </nav>
 
@@ -450,6 +477,26 @@
           </span>
         </h2>
         <div id="talentos"></div>
+      </section>
+    </section>
+
+    <section id="aba-bestiario" class="aba">
+      <div class="skill-grade">
+        <section class="bloco">
+          <h2>Evocar <span class="conta">3 modos</span></h2>
+          <p class="dica">Evocação básica não precisa de captura: um Elemental de qualquer elemento com nível, ou uma criatura Aleatória (mais forte quanto mais pontos em Evocação). Criaturas capturadas podem ser evocadas imbuídas de um elemento no qual você tem maestria.</p>
+          <form class="skill" id="form-evocar"></form>
+          <div id="resultado-evocar"></div>
+        </section>
+        <section class="bloco">
+          <h2>Meu bestiário <span class="conta" id="conta-bestiario"></span></h2>
+          <div id="bestiario" class="painel"></div>
+        </section>
+      </div>
+      <section class="bloco">
+        <h2>Captura <span class="conta">afinidade elemental define o que você doma</span></h2>
+        <input id="filtro-criaturas" class="filtro" type="search" placeholder="Filtrar por nome ou família…">
+        <div id="criaturas" class="painel"></div>
       </section>
     </section>
 

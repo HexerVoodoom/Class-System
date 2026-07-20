@@ -39,6 +39,12 @@ export type TalentoId =
   | 'simbiose'
   | 'autonomia'
   | 'comando'
+  // doma (captura e vínculo — sub-vocação da evocação)
+  | 'instinto_de_caca'
+  | 'vinculo_primal'
+  | 'matilha_domada'
+  | 'fera_alfa'
+  | 'evolucao_da_fera'
   // maldição
   | 'contagio'
   | 'aflicao_profunda'
@@ -229,6 +235,50 @@ export const TALENTOS: Record<TalentoId, TalentoDef> = {
     requisito: { escola: 'evocacao', nivelMinimo: 10 },
     exclusivoCom: ['autonomia'],
     efeitos: [{ tipo: 'invocacao_potencia_bonus_fracao', valorPorRank: 0.08 }],
+  },
+
+  // ------------------- doma (captura + vínculo) -------------------
+  instinto_de_caca: {
+    id: 'instinto_de_caca',
+    nome: 'Instinto de Caça',
+    descricao: 'Aumenta o poder de captura de criaturas (+15%/rank).',
+    ranksMaximos: 3,
+    requisito: { escola: 'evocacao', nivelMinimo: 5 },
+    efeitos: [{ tipo: 'propriedade', chave: 'poder_captura', rotulo: 'Poder de captura', valorPorRank: 0.15, escola: 'evocacao' }],
+  },
+  vinculo_primal: {
+    id: 'vinculo_primal',
+    nome: 'Vínculo Primal',
+    descricao: 'Desbloqueia a Doma: crie vínculo permanente com 1 criatura capturada.',
+    ranksMaximos: 1,
+    requisito: { escola: 'evocacao', nivelMinimo: 8 },
+    efeitos: [{ tipo: 'propriedade', chave: 'vinculo', rotulo: 'Vínculo de doma', valorPorRank: 1, escola: 'evocacao' }],
+  },
+  matilha_domada: {
+    id: 'matilha_domada',
+    nome: 'Matilha Domada',
+    descricao: 'Cada rank vincula +1 criatura ao mesmo tempo (exclui Fera Alfa).',
+    ranksMaximos: 3,
+    requisito: { escola: 'evocacao', nivelMinimo: 10 },
+    exclusivoCom: ['fera_alfa'],
+    efeitos: [{ tipo: 'propriedade', chave: 'capacidade_vinculo', rotulo: 'Criaturas vinculadas', valorPorRank: 1, escola: 'evocacao' }],
+  },
+  fera_alfa: {
+    id: 'fera_alfa',
+    nome: 'Fera Alfa',
+    descricao: 'Uma única fera vinculada, muito mais poderosa (+12%/rank; exclui Matilha).',
+    ranksMaximos: 3,
+    requisito: { escola: 'evocacao', nivelMinimo: 10 },
+    exclusivoCom: ['matilha_domada'],
+    efeitos: [{ tipo: 'propriedade', chave: 'poder_alfa', rotulo: 'Poder da fera alfa', valorPorRank: 0.12, escola: 'evocacao' }],
+  },
+  evolucao_da_fera: {
+    id: 'evolucao_da_fera',
+    nome: 'Evolução da Fera',
+    descricao: 'Cada nível de vínculo rende mais poder (+25%/rank sobre o vínculo).',
+    ranksMaximos: 3,
+    requisito: { escola: 'evocacao', nivelMinimo: 10 },
+    efeitos: [{ tipo: 'propriedade', chave: 'evolucao_vinculo', rotulo: 'Ganho por nível de vínculo', valorPorRank: 0.25, escola: 'evocacao' }],
   },
 
   // ------------------- maldição -------------------

@@ -8,6 +8,17 @@ import { ELEMENTOS, type ElementoId } from '../registry/elementos';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type TalentoId } from '../registry/talentos';
+import { CRIATURAS } from '../registry/criaturas';
+import { avaliarCaptura, capacidadeVinculo } from './evocacao';
+import type { Progressao } from './progressao';
+
+/** Uma criatura no bestiário do jogador. nivelVinculo 0 = capturada, não domada. */
+export interface CriaturaCapturada {
+  criaturaId: string;
+  nivelVinculo: number;
+}
+
+export const MAX_NIVEL_VINCULO = 5;
 
 export interface Personagem {
   nome: string;
@@ -17,10 +28,12 @@ export interface Personagem {
   /** Proficiência em cada recurso (pool/eficiência). */
   recursos: Partial<Record<RecursoId, number>>;
   talentos: Partial<Record<TalentoId, number>>;
+  /** Criaturas capturadas (e eventualmente domadas). */
+  bestiario: CriaturaCapturada[];
 }
 
 export function criarPersonagem(nome: string): Personagem {
-  return { nome, elementos: {}, escolas: {}, recursos: {}, talentos: {} };
+  return { nome, elementos: {}, escolas: {}, recursos: {}, talentos: {}, bestiario: [] };
 }
 
 export function investirElemento(p: Personagem, elemento: ElementoId, pontos: number): void {
@@ -75,4 +88,47 @@ export function investirTalento(p: Personagem, talento: TalentoId, ranks: number
     }
   }
   p.talentos[talento] = atual + ranks;
+}
+
+// ---- bestiário: captura e doma ----
+
+/** Captura uma criatura, se a afinidade/poder permitirem. Idempotente por id. */
+export function capturarCriatura(p: Personagem, prog: Progressao, criaturaId: string): void {
+  if (!CRIATURAS[criaturaId]) throw new Error(`Criatura desconhecida: ${criaturaId}`);
+  if (p.bestiario.some((c) => c.criaturaId === criaturaId)) {
+    throw new Error('Essa criatura já está no seu bestiário.');
+  }
+  const av = avaliarCaptura(p, prog, criaturaId);
+  if (!av.capturavel) throw new Error(av.motivo ?? 'Não é possível capturar esta criatura.');
+  p.bestiario.push({ criaturaId, nivelVinculo: 0 });
+}
+
+export function soltarCriatura(p: Personagem, criaturaId: string): void {
+  p.bestiario = p.bestiario.filter((c) => c.criaturaId !== criaturaId);
+}
+
+/** Aumenta o vínculo de doma em 1, respeitando capacidade e talento. */
+export function domarCriatura(p: Personagem, criaturaId: string): void {
+  const entrada = p.bestiario.find((c) => c.criaturaId === criaturaId);
+  if (!entrada) throw new Error('Capture a criatura antes de domá-la.');
+  const capacidade = capacidadeVinculo(p);
+  if (capacidade <= 0) {
+    throw new Error('Requer o talento Vínculo Primal (Doma) para criar vínculo.');
+  }
+  const jaVinculadas = p.bestiario.filter((c) => c.nivelVinculo > 0).length;
+  if (entrada.nivelVinculo === 0 && jaVinculadas >= capacidade) {
+    throw new Error(
+      `Capacidade de vínculo cheia (${capacidade}). Suba Matilha Domada ou solte o vínculo de outra fera.`,
+    );
+  }
+  if (entrada.nivelVinculo >= MAX_NIVEL_VINCULO) {
+    throw new Error(`Vínculo já está no máximo (${MAX_NIVEL_VINCULO}).`);
+  }
+  entrada.nivelVinculo += 1;
+}
+
+/** Reduz o vínculo em 1 (até 0 = apenas capturada). */
+export function afrouxarVinculo(p: Personagem, criaturaId: string): void {
+  const entrada = p.bestiario.find((c) => c.criaturaId === criaturaId);
+  if (entrada && entrada.nivelVinculo > 0) entrada.nivelVinculo -= 1;
 }

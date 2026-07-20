@@ -30,9 +30,23 @@ import {
   investirEscola,
   investirRecurso,
   investirTalento,
+  capturarCriatura,
+  domarCriatura,
+  afrouxarVinculo,
+  soltarCriatura,
   type Personagem,
 } from '../engine/personagem';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
+import { CRIATURAS, FAMILIAS, criaturas, type CriaturaDef } from '../registry/criaturas';
+import {
+  avaliarCaptura,
+  capacidadeVinculo,
+  elementosDeMaestria,
+  evocar,
+  MAESTRIA_LIMIAR,
+  type ConfigEvocacao,
+  type ModoEvocacao,
+} from '../engine/evocacao';
 import {
   calcularLimites,
   calcularSkill,
@@ -66,7 +80,7 @@ interface Snapshot {
   skill: SkillConfig;
 }
 
-type AbaId = 'elementos' | 'escolas' | 'recursos' | 'talentos' | 'skill';
+type AbaId = 'elementos' | 'escolas' | 'recursos' | 'talentos' | 'bestiario' | 'skill';
 
 interface Estado {
   personagem: Personagem;
@@ -75,9 +89,11 @@ interface Estado {
   skill: SkillConfig;
   skillsSalvas: SkillConfig[];
   filtroDerivados: string;
+  filtroCriaturas: string;
   snapshots: Snapshot[];
   vistaTalentos: 'arvore' | 'cartas';
   abaAtiva: AbaId;
+  evocacao: ConfigEvocacao;
 }
 
 const CHAVE_STORAGE = 'class-system-simulador-v1';
@@ -104,9 +120,25 @@ function estadoPadrao(): Estado {
     skill: skillPadrao(),
     skillsSalvas: [],
     filtroDerivados: '',
+    filtroCriaturas: '',
     snapshots: [],
     vistaTalentos: 'arvore',
     abaAtiva: 'elementos',
+    evocacao: { modo: 'elemental', elemento: 'fogo' },
+  };
+}
+
+/** Garante que uma ficha carregada/importada tenha o bestiário. */
+function normalizarPersonagem(p: any): Personagem {
+  const base = criarPersonagem(p?.nome ?? 'Meu Personagem');
+  return {
+    ...base,
+    ...p,
+    elementos: p?.elementos ?? {},
+    escolas: p?.escolas ?? {},
+    recursos: p?.recursos ?? {},
+    talentos: p?.talentos ?? {},
+    bestiario: Array.isArray(p?.bestiario) ? p.bestiario : [],
   };
 }
 
@@ -132,12 +164,14 @@ function carregar(): Estado {
     const estado: Estado = {
       ...base,
       ...salvo,
-      personagem: { ...base.personagem, ...salvo.personagem },
+      personagem: normalizarPersonagem({ ...base.personagem, ...salvo.personagem }),
       skill: migrarSkill(salvo.skill),
       skillsSalvas: Array.isArray(salvo.skillsSalvas) ? salvo.skillsSalvas.map(migrarSkill) : [],
       snapshots: Array.isArray(salvo.snapshots)
-        ? salvo.snapshots.map((sn: any) => ({ ...sn, skill: migrarSkill(sn.skill) }))
+        ? salvo.snapshots.map((sn: any) => ({ ...sn, personagem: normalizarPersonagem(sn.personagem), skill: migrarSkill(sn.skill) }))
         : [],
+      evocacao: salvo.evocacao ?? base.evocacao,
+      filtroCriaturas: salvo.filtroCriaturas ?? '',
     };
     if ((estado.vistaTalentos as string) === 'constelacao') estado.vistaTalentos = 'arvore';
     if (!['elementos', 'escolas', 'recursos', 'talentos', 'skill'].includes(estado.abaAtiva)) {
@@ -397,6 +431,10 @@ function render(): void {
   renderResultadoSkill(prog);
   renderSkillsSalvas();
   renderBancada();
+  renderFormEvocar(prog);
+  renderResultadoEvocar(prog);
+  renderBestiario(prog);
+  renderCriaturas(prog);
   renderComparacao();
   salvar();
 }
@@ -685,6 +723,7 @@ const GRUPOS_TALENTOS: { titulo: string; ids: TalentoId[] }[] = [
   { titulo: 'Entrega (exclusivos)', ids: ['impacto_imediato', 'dano_ao_longo_do_tempo'] },
   { titulo: 'Conjuração', ids: ['perfuracao', 'estilhaco', 'eco_arcano'] },
   { titulo: 'Evocação', ids: ['enxame', 'colosso', 'vinculo_marcial', 'simbiose', 'autonomia', 'comando'] },
+  { titulo: 'Doma', ids: ['instinto_de_caca', 'vinculo_primal', 'matilha_domada', 'fera_alfa', 'evolucao_da_fera'] },
   { titulo: 'Maldição', ids: ['contagio', 'aflicao_profunda'] },
   { titulo: 'Bênção', ids: ['egide', 'exaltacao', 'vinculo_de_grupo'] },
   { titulo: 'Combate Físico', ids: ['sequencia_marcial', 'golpe_devastador', 'postura_inabalavel'] },
@@ -1154,6 +1193,148 @@ function renderBancada(): void {
     </div>`;
 }
 
+// ------------------------------------------------- bestiário / evocação
+
+function renderFormEvocar(prog: Progressao): void {
+  const ev = estado.evocacao;
+  const modos: { id: ModoEvocacao; rotulo: string }[] = [
+    { id: 'elemental', rotulo: 'Elemental (básica)' },
+    { id: 'aleatoria', rotulo: 'Aleatória' },
+    { id: 'capturada', rotulo: 'Capturada' },
+  ];
+  const abasModo = modos
+    .map(
+      (m) =>
+        `<button type="button" class="btn-mini ${ev.modo === m.id ? 'on' : ''}" data-acao="evo-modo" data-id="${m.id}">${m.rotulo}</button>`,
+    )
+    .join(' ');
+
+  let campos = '';
+  if (ev.modo === 'elemental') {
+    const disp = prog.elementosDisponiveis;
+    const opc = (disp.length ? disp : ['fogo'])
+      .map((id) => `<option value="${id}" ${id === ev.elemento ? 'selected' : ''}>${esc(ELEMENTOS[id].nome)} (nv ${prog.niveisEfetivos[id] ?? 0})</option>`)
+      .join('');
+    campos = `<div class="linha-campo"><label for="evo-elemento">Elemento</label><select id="evo-elemento">${opc}</select><span></span></div>`;
+  } else if (ev.modo === 'capturada') {
+    const capturadas = estado.personagem.bestiario;
+    if (!capturadas.length) {
+      campos = `<div class="req">Nenhuma criatura capturada. Vá à seção Captura abaixo.</div>`;
+    } else {
+      const opcCri = capturadas
+        .map((b) => {
+          const cr = CRIATURAS[b.criaturaId];
+          return `<option value="${b.criaturaId}" ${b.criaturaId === ev.criaturaId ? 'selected' : ''}>${esc(cr.nome)}${b.nivelVinculo > 0 ? ` ♥${b.nivelVinculo}` : ''}</option>`;
+        })
+        .join('');
+      const maestria = elementosDeMaestria(prog);
+      const opcImb =
+        `<option value="">— sem imbuir —</option>` +
+        maestria
+          .map((id) => `<option value="${id}" ${id === ev.elementoImbuido ? 'selected' : ''}>${esc(ELEMENTOS[id].nome)} (nv ${prog.niveisEfetivos[id] ?? 0})</option>`)
+          .join('');
+      const semMaestria = maestria.length === 0
+        ? `<div class="limite-hint">Nenhum elemento com maestria (nível ${MAESTRIA_LIMIAR}+) para imbuir ainda.</div>`
+        : '';
+      campos = `
+        <div class="linha-campo"><label for="evo-criatura">Criatura</label><select id="evo-criatura">${opcCri}</select><span></span></div>
+        <div class="linha-campo"><label for="evo-imbuir">Imbuir com</label><select id="evo-imbuir">${opcImb}</select><span></span></div>
+        ${semMaestria ? `<div class="linha-campo"><span></span>${semMaestria}<span></span></div>` : ''}`;
+    }
+  }
+
+  el('form-evocar').innerHTML = `
+    <div class="linha-campo"><label>Modo</label><div class="radios">${abasModo}</div><span></span></div>
+    ${campos}
+  `;
+}
+
+function renderResultadoEvocar(prog: Progressao): void {
+  const ev = estado.evocacao;
+  // injeta o nível de vínculo da criatura selecionada
+  const cfg: ConfigEvocacao = { ...ev };
+  if (ev.modo === 'capturada' && ev.criaturaId) {
+    const b = estado.personagem.bestiario.find((x) => x.criaturaId === ev.criaturaId);
+    cfg.nivelVinculo = b?.nivelVinculo ?? 0;
+  }
+  const r = evocar(estado.personagem, prog, cfg);
+  const alvo = el('resultado-evocar');
+  if (!r.valida) {
+    alvo.innerHTML = `<div class="resultado-skill"><ul class="erros">${r.erros.map((e) => `<li>${esc(e)}</li>`).join('')}</ul></div>`;
+    return;
+  }
+  const famNome = r.familia && FAMILIAS[r.familia as keyof typeof FAMILIAS]?.nome;
+  alvo.innerHTML = `<div class="resultado-skill">
+    <h3>${r.imbuido ? sig(r.imbuido, 'sig-titulo') : ''}${esc(r.nome)}</h3>
+    <div class="metricas">
+      <div class="metrica"><div class="rotulo">Poder</div><div class="valor num">${f1(r.poder)}</div></div>
+      ${famNome ? `<div class="metrica"><div class="rotulo">Família</div><div class="valor" style="font-size:14px">${esc(famNome)}</div></div>` : ''}
+      ${r.vinculada ? `<div class="metrica"><div class="rotulo">Vínculo</div><div class="valor">domada ♥</div></div>` : ''}
+      ${r.imbuido ? `<div class="metrica"><div class="rotulo">Imbuída</div><div class="valor" style="font-size:14px">${esc(ELEMENTOS[r.imbuido].nome)}</div></div>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderBestiario(prog: Progressao): void {
+  const cap = capacidadeVinculo(estado.personagem);
+  const vinculadas = estado.personagem.bestiario.filter((c) => c.nivelVinculo > 0).length;
+  el('conta-bestiario').textContent = `${estado.personagem.bestiario.length} capturadas`;
+  const capInfo = `<div class="cap-info">Vínculos de doma: <strong>${vinculadas}/${cap}</strong>${cap === 0 ? ' — desbloqueie o talento Vínculo Primal (Doma)' : ''}</div>`;
+  const linhas = estado.personagem.bestiario
+    .map((b) => {
+      const cr = CRIATURAS[b.criaturaId];
+      const pips = '♥'.repeat(b.nivelVinculo) + '·'.repeat(5 - b.nivelVinculo);
+      const podeDomar = cap > 0 && (b.nivelVinculo > 0 || vinculadas < cap) && b.nivelVinculo < 5;
+      return `<div class="criatura">
+        <div>
+          <div><strong>${esc(cr.nome)}</strong> <span class="familia-tag">${esc(FAMILIAS[cr.familia].nome)}</span> <span class="vinculo-pips">${pips}</span></div>
+          <div class="meta">poder base ${cr.poderBase} · ${esc(cr.descricao)}</div>
+        </div>
+        <div>
+          <button type="button" class="btn-mini" data-acao="domar" data-id="${b.criaturaId}" ${podeDomar ? '' : 'disabled'}>domar +</button>
+          ${b.nivelVinculo > 0 ? `<button type="button" class="btn-mini" data-acao="afrouxar" data-id="${b.criaturaId}">−</button>` : ''}
+          <button type="button" class="btn-mini" data-acao="soltar" data-id="${b.criaturaId}">soltar</button>
+        </div>
+      </div>`;
+    })
+    .join('');
+  el('bestiario').innerHTML = capInfo + (linhas || '<div class="vazio">Nenhuma criatura capturada ainda.</div>');
+}
+
+function renderCriaturas(prog: Progressao): void {
+  const filtro = estado.filtroCriaturas.trim().toLowerCase();
+  const jaTenho = new Set(estado.personagem.bestiario.map((c) => c.criaturaId));
+  const lista = criaturas()
+    .map((cr) => ({ cr, av: avaliarCaptura(estado.personagem, prog, cr.id) }))
+    .filter(({ cr }) => {
+      if (!filtro) return true;
+      return `${cr.nome} ${FAMILIAS[cr.familia].nome}`.toLowerCase().includes(filtro);
+    })
+    .sort((a, b) => Number(b.av.capturavel) - Number(a.av.capturavel) || a.cr.poderBase - b.cr.poderBase);
+
+  el('criaturas').innerHTML = lista
+    .map(({ cr, av }) => {
+      const afin = cr.afinidades.map((e) => esc(ELEMENTOS[e].nome)).join(' / ');
+      const tenho = jaTenho.has(cr.id);
+      const fracao = av.exigido > 0 ? Math.min(1, av.poder / av.exigido) : 0;
+      const barra = `<div class="barra ${av.capturavel ? '' : 'baixa'}"><i style="width:${pct(fracao)}"></i></div>`;
+      return `<div class="criatura">
+        <div>
+          <div><strong>${esc(cr.nome)}</strong> <span class="familia-tag">${esc(FAMILIAS[cr.familia].nome)}</span>
+            <span class="meta">afinidade <span class="afin">${afin}</span> · poder ${cr.poderBase}</span></div>
+          <div class="meta">poder de captura ${f1(av.poder)}/${av.exigido}${av.motivo ? ` — ${esc(av.motivo)}` : ''}</div>
+          ${barra}
+        </div>
+        <div>
+          ${tenho
+            ? `<span class="btn-mini on">no bestiário</span>`
+            : `<button type="button" class="btn-mini" data-acao="capturar" data-id="${cr.id}" ${av.capturavel ? '' : 'disabled'}>capturar</button>`}
+        </div>
+      </div>`;
+    })
+    .join('');
+}
+
 // ------------------------------------------------- comparação de builds
 
 function resumoBuild(personagem: Personagem, skill: SkillConfig) {
@@ -1320,6 +1501,32 @@ document.addEventListener('click', (ev) => {
         talentoSelecionado = talentoSelecionado === id ? null : (id as TalentoId);
         renderTalentos();
         return;
+      case 'evo-modo': {
+        estado.evocacao = { modo: id as ModoEvocacao };
+        if (id === 'elemental') {
+          estado.evocacao.elemento = calcularProgressao(p).elementosDisponiveis[0] ?? 'fogo';
+        } else if (id === 'capturada') {
+          estado.evocacao.criaturaId = p.bestiario[0]?.criaturaId;
+        }
+        const prog = calcularProgressao(p);
+        renderFormEvocar(prog);
+        renderResultadoEvocar(prog);
+        salvar();
+        return;
+      }
+      case 'capturar':
+        capturarCriatura(p, calcularProgressao(p), id);
+        break;
+      case 'domar':
+        domarCriatura(p, id);
+        break;
+      case 'afrouxar':
+        afrouxarVinculo(p, id);
+        break;
+      case 'soltar':
+        soltarCriatura(p, id);
+        if (estado.evocacao.criaturaId === id) estado.evocacao.criaturaId = p.bestiario[0]?.criaturaId;
+        break;
       case 'vista-talentos':
         estado.vistaTalentos = id as Estado['vistaTalentos'];
         renderTalentos();
@@ -1372,6 +1579,27 @@ document.addEventListener('input', (ev) => {
       } else if (t.id === 'filtro-derivados') {
         estado.filtroDerivados = t.value;
         renderDerivados(calcularProgressao(estado.personagem));
+        salvar();
+        return;
+      } else if (t.id === 'filtro-criaturas') {
+        estado.filtroCriaturas = t.value;
+        renderCriaturas(calcularProgressao(estado.personagem));
+        salvar();
+        return;
+      } else if (t.id === 'evo-elemento') {
+        estado.evocacao.elemento = t.value;
+        const prog = calcularProgressao(estado.personagem);
+        renderResultadoEvocar(prog);
+        salvar();
+        return;
+      } else if (t.id === 'evo-criatura') {
+        estado.evocacao.criaturaId = t.value;
+        renderResultadoEvocar(calcularProgressao(estado.personagem));
+        salvar();
+        return;
+      } else if (t.id === 'evo-imbuir') {
+        estado.evocacao.elementoImbuido = t.value || undefined;
+        renderResultadoEvocar(calcularProgressao(estado.personagem));
         salvar();
         return;
       } else return;
@@ -1434,13 +1662,13 @@ el('input-importar').addEventListener('change', async (ev) => {
     const base = estadoPadrao();
     estado = {
       ...base,
-      personagem: { ...base.personagem, ...dados.personagem },
+      personagem: normalizarPersonagem({ ...base.personagem, ...dados.personagem }),
       orcamentoAtributos: dados.orcamentos?.atributos ?? base.orcamentoAtributos,
       orcamentoTalentos: dados.orcamentos?.talentos ?? base.orcamentoTalentos,
       skillsSalvas: Array.isArray(dados.skills) ? dados.skills.map(migrarSkill) : [],
       skill: migrarSkill(dados.skillAtual),
       snapshots: Array.isArray(dados.snapshots)
-        ? dados.snapshots.map((sn: any) => ({ ...sn, skill: migrarSkill(sn.skill) }))
+        ? dados.snapshots.map((sn: any) => ({ ...sn, personagem: normalizarPersonagem(sn.personagem), skill: migrarSkill(sn.skill) }))
         : [],
     };
     (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);

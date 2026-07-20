@@ -31,11 +31,13 @@ src/
     escolas.ts     combate físico, longo alcance, evocação, conjuração, bênção, maldição
     talentos.ts    talentos com ranks, requisitos e ramos exclusivos
     arquetipos.ts  identidades desbloqueadas por combinação (necromante etc.)
+    criaturas.ts   bestiário: criaturas capturáveis, famílias e afinidades
   engine/       ← MOTOR: cálculo puro em cima dos dados
     personagem.ts  ficha (só pontos diretos) + regras de investimento
     progressao.ts  níveis efetivos, derivados, arquétipos
     skills.ts      construtor + calculadora de skills (orçamento de poder)
     recursos.ts    simuladores em tempo real de mana/fé/fúria
+    evocacao.ts    captura, doma (vínculo) e os 3 modos de evocar
 ```
 
 A separação é deliberada: **adicionar um elemento, uma receita, uma sinergia ou um arquétipo é só adicionar uma entrada no registro** — o motor lê tudo de forma declarativa.
@@ -137,9 +139,22 @@ Resultado: `impacto ÷ energia` fica estável entre builds (testado com tolerân
 
 Limites configuráveis (energia máx., tempo mín., raio máx., alcance máx.) crescem com escola, talentos e proficiência nas fontes; no simulador, cada slider mostra seu teto e a validação explica exatamente o que destrava mais.
 
+## Camada 6 — Evocação: captura, doma e imbuição
+
+A vocação de Evocação tem três modos, e capturar criaturas é opcional:
+
+- **Elemental (básica)**: invoca um elemental de qualquer elemento com nível — não exige captura. Poder escala com o nível do elemento e com Evocação.
+- **Aleatória**: invoca uma criatura qualquer; quanto mais pontos em Evocação, mais poderosa.
+- **Capturada**: invoca uma criatura do seu bestiário, opcionalmente **imbuída** de um elemento no qual você tem **maestria** (nível efetivo ≥ 8, base *ou* derivado — ex.: um Lobo de **Chama Azul**).
+
+**Captura depende de afinidade elemental**: cada criatura só pode ser capturada por quem tem pontos em um dos seus elementos de afinidade (Fogo captura feras ígneas; Vida/Vigor capturam animais; Morte, mortos-vivos; etc.). O *poder de captura* = base + nível no elemento de afinidade + Evocação (× talento Instinto de Caça) precisa alcançar a raridade da criatura.
+
+**Doma** é o vínculo permanente: com o talento **Vínculo Primal** você domа criaturas capturadas, que ganham poder por nível de vínculo. **Matilha Domada** vs **Fera Alfa** são o ramo de especialização (muitas feras vinculadas × uma fera muito mais forte), e **Evolução da Fera** amplifica o ganho por vínculo. Sem Doma, capturas ainda podem ser evocadas — só não criam vínculo nem evoluem.
+
 ## Estendendo
 
 - **Novo elemento derivado**: adicione em `ELEMENTOS` com `receita` (qualquer aridade — pares, triplas, ou "todos", como o Nulo).
 - **Nova sinergia**: uma linha em `SINERGIAS`.
 - **Novo arquétipo**: entrada em `ARQUETIPOS` com condição de elementos/escolas/recursos e as capacidades que libera.
+- **Nova criatura**: entrada em `CRIATURAS` com família, afinidades (elementos que capturam) e poder-base.
 - **Ajuste de balanceamento**: todas as constantes estão no topo de `src/engine/skills.ts`.
