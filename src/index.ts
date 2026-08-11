@@ -6,6 +6,8 @@ export * from './registry/arquetipos';
 export * from './registry/criaturas';
 export * from './registry/afinidades';
 export * from './registry/estados';
+export * from './registry/profissoes';
+export * from './engine/profissoes';
 export * from './engine/personagem';
 export * from './engine/progressao';
 export * from './engine/skills';

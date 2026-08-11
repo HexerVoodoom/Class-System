@@ -30,12 +30,19 @@ import {
   investirEscola,
   investirRecurso,
   investirTalento,
+  investirProfissao,
   capturarCriatura,
   domarCriatura,
   afrouxarVinculo,
   soltarCriatura,
   type Personagem,
 } from '../engine/personagem';
+import {
+  PROFISSOES,
+  itensDaProfissao,
+  type ProfissaoId,
+} from '../registry/profissoes';
+import { craftar, elementosDominados, type ConfigCraft } from '../engine/profissoes';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
 import { CRIATURAS, FAMILIAS, criaturas, type CriaturaDef } from '../registry/criaturas';
 import { efetividade } from '../registry/afinidades';
@@ -82,7 +89,7 @@ interface Snapshot {
   skill: SkillConfig;
 }
 
-type AbaId = 'elementos' | 'escolas' | 'recursos' | 'talentos' | 'bestiario' | 'skill';
+type AbaId = 'elementos' | 'escolas' | 'recursos' | 'talentos' | 'bestiario' | 'profissao' | 'skill';
 
 interface Estado {
   personagem: Personagem;
@@ -96,6 +103,7 @@ interface Estado {
   vistaTalentos: 'arvore' | 'cartas';
   abaAtiva: AbaId;
   evocacao: ConfigEvocacao;
+  craft: ConfigCraft;
 }
 
 const CHAVE_STORAGE = 'class-system-simulador-v1';
@@ -127,6 +135,7 @@ function estadoPadrao(): Estado {
     vistaTalentos: 'arvore',
     abaAtiva: 'elementos',
     evocacao: { modo: 'elemental', elemento: 'fogo' },
+    craft: { profissao: 'ferreiro', itemId: 'espada', elementosImbuidos: [] },
   };
 }
 
@@ -141,6 +150,7 @@ function normalizarPersonagem(p: any): Personagem {
     recursos: p?.recursos ?? {},
     talentos: p?.talentos ?? {},
     bestiario: Array.isArray(p?.bestiario) ? p.bestiario : [],
+    profissoes: p?.profissoes ?? {},
   };
 }
 
@@ -174,6 +184,7 @@ function carregar(): Estado {
         : [],
       evocacao: salvo.evocacao ?? base.evocacao,
       filtroCriaturas: salvo.filtroCriaturas ?? '',
+      craft: salvo.craft ?? base.craft,
     };
     if ((estado.vistaTalentos as string) === 'constelacao') estado.vistaTalentos = 'arvore';
     if (!['elementos', 'escolas', 'recursos', 'talentos', 'skill'].includes(estado.abaAtiva)) {
@@ -231,7 +242,12 @@ function toast(msg: string): void {
 function pontosAtributosGastos(): number {
   const soma = (obj: Partial<Record<string, number>>) =>
     Object.values(obj).reduce((a: number, b) => a + (b ?? 0), 0);
-  return soma(estado.personagem.elementos) + soma(estado.personagem.escolas) + soma(estado.personagem.recursos);
+  return (
+    soma(estado.personagem.elementos) +
+    soma(estado.personagem.escolas) +
+    soma(estado.personagem.recursos) +
+    soma(estado.personagem.profissoes)
+  );
 }
 
 function pontosTalentosGastos(): number {
@@ -491,6 +507,9 @@ function render(): void {
   renderResultadoEvocar(prog);
   renderBestiario(prog);
   renderCriaturas(prog);
+  renderProfissoes(prog);
+  renderFormCraft(prog);
+  renderResultadoCraft(prog);
   renderComparacao();
   salvar();
 }
@@ -1491,6 +1510,90 @@ function renderCriaturas(prog: Progressao): void {
     .join('');
 }
 
+// ------------------------------------------------- profissão / craft
+
+function renderProfissoes(prog: Progressao): void {
+  el('profissoes').innerHTML = Object.values(PROFISSOES)
+    .map((def) => {
+      const nivel = estado.personagem.profissoes[def.id] ?? 0;
+      const fatores = Object.entries(def.fatoresElementos)
+        .map(([e, w]) => `${esc(ELEMENTOS[e]?.nome ?? e)} ×${w}`)
+        .join(' · ');
+      return `<div class="carta carta-com-sig">
+        ${sig(`prof_${def.id}`, 'sig-carta')}
+        <div class="carta-corpo">
+        <div class="nome">${esc(def.nome)}</div>
+        <div class="desc">${esc(def.descricao)}</div>
+        <div class="efetivo num">eleva com: ${fatores}</div>
+        <div class="controles">
+          <button type="button" data-acao="dec-profissao" data-id="${def.id}" aria-label="Remover ponto de ${esc(def.nome)}">−</button>
+          <span class="valor num">${nivel}</span>
+          <button type="button" data-acao="inc-profissao" data-id="${def.id}" aria-label="Adicionar ponto em ${esc(def.nome)}">+</button>
+        </div>
+      </div></div>`;
+    })
+    .join('');
+}
+
+function renderFormCraft(prog: Progressao): void {
+  const c = estado.craft;
+  const opcoesProf = Object.values(PROFISSOES)
+    .map((d) => `<option value="${d.id}" ${d.id === c.profissao ? 'selected' : ''}>${esc(d.nome)} (nv ${estado.personagem.profissoes[d.id] ?? 0})</option>`)
+    .join('');
+  const itens = itensDaProfissao(c.profissao);
+  if (!itens.some((i) => i.id === c.itemId)) c.itemId = itens[0]?.id ?? '';
+  const opcoesItem = itens
+    .map((i) => `<option value="${i.id}" ${i.id === c.itemId ? 'selected' : ''}>${esc(i.nome)} · ${i.categoria}</option>`)
+    .join('');
+
+  const dominados = elementosDominados(prog);
+  const imbuirHtml = dominados.length
+    ? `<div class="imbuir-lista">${dominados
+        .map(
+          (e) =>
+            `<label><input type="checkbox" data-acao="craft-imbuir" data-id="${e}" ${c.elementosImbuidos.includes(e) ? 'checked' : ''}>${esc(ELEMENTOS[e].nome)}</label>`,
+        )
+        .join('')}</div>`
+    : `<div class="imbuir-vazio">Nenhum elemento com maestria (nível ${MAESTRIA_LIMIAR}+) ainda — suba elementos na aba Elementos.</div>`;
+
+  el('form-craft').innerHTML = `
+    <div class="linha-campo"><label for="craft-prof">Profissão</label><select id="craft-prof">${opcoesProf}</select><span></span></div>
+    <div class="linha-campo"><label for="craft-item">Item</label><select id="craft-item">${opcoesItem}</select><span></span></div>
+    <div class="linha-campo"><label>Imbuir elementos</label><div>${imbuirHtml}<div class="limite-hint">as propriedades emergem do que você imbui + talentos + nível</div></div><span></span></div>
+  `;
+}
+
+function renderResultadoCraft(prog: Progressao): void {
+  const r = craftar(estado.personagem, prog, estado.craft);
+  const alvo = el('resultado-craft');
+  if (!r.valida) {
+    alvo.innerHTML = `<div class="resultado-skill"><ul class="erros">${r.erros.map((e) => `<li>${esc(e)}</li>`).join('')}</ul></div>`;
+    return;
+  }
+  const maxQual = 120;
+  const fracao = Math.min(1, r.qualidade / maxQual);
+  const props = r.propriedades.length
+    ? r.propriedades
+        .map((p) => `<div class="prop-item"><strong>${esc(p.nome)}</strong> <span class="prop-bonus">+${p.bonusQualidade}</span><br>${esc(p.descricao)}</div>`)
+        .join('')
+    : `<div class="prop-item imbuir-vazio">Nenhuma propriedade emergente — imbua elementos que você domina.</div>`;
+  const atributos = r.atributos
+    .filter((a) => a.valor > 0)
+    .map((a) => `<li>${esc(a.rotulo)}: <strong class="num">+${f1(a.valor)}</strong></li>`)
+    .join('');
+  alvo.innerHTML = `<div class="resultado-skill">
+    <h3>${esc(r.nomeItem)}</h3>
+    <div class="metricas">
+      <div class="metrica"><div class="rotulo">Qualidade</div><div class="valor num">${f1(r.qualidade)}</div></div>
+      <div class="metrica"><div class="rotulo">Raridade</div><div class="valor"><span class="tier-badge" style="border-color:${r.tier.cor};color:${r.tier.cor}">${esc(r.tier.nome)}</span></div></div>
+    </div>
+    <div class="qual-barra"><i style="width:${pct(fracao)};background:${r.tier.cor}"></i></div>
+    <div class="dica">Propriedades emergentes:</div>
+    ${props}
+    ${atributos ? `<div class="dica" style="margin-top:8px">Qualidade vem de:</div><ul class="propriedades">${atributos}</ul>` : ''}
+  </div>`;
+}
+
 // ------------------------------------------------- comparação de builds
 
 function resumoBuild(personagem: Personagem, skill: SkillConfig) {
@@ -1591,6 +1694,17 @@ document.addEventListener('click', (ev) => {
       case 'dec-escola': decrementar(p.escolas, id); break;
       case 'inc-recurso': investirRecurso(p, id as RecursoId, 1); break;
       case 'dec-recurso': decrementar(p.recursos, id); break;
+      case 'inc-profissao': investirProfissao(p, id as ProfissaoId, 1); break;
+      case 'dec-profissao': decrementar(p.profissoes, id); break;
+      case 'craft-imbuir': {
+        const arr = estado.craft.elementosImbuidos;
+        const i = arr.indexOf(id);
+        if (i >= 0) arr.splice(i, 1);
+        else arr.push(id);
+        renderResultadoCraft(calcularProgressao(p));
+        salvar();
+        return;
+      }
       case 'inc-talento': investirTalento(p, id as TalentoId, 1); break;
       case 'dec-talento': decrementar(p.talentos, id); break;
       case 'carregar-skill':
@@ -1777,6 +1891,18 @@ document.addEventListener('input', (ev) => {
         const prog = calcularProgressao(estado.personagem);
         renderResultadoSkill(prog);
         renderComparacao();
+        salvar();
+        return;
+      } else if (t.id === 'craft-prof') {
+        estado.craft.profissao = t.value as ProfissaoId;
+        const prog = calcularProgressao(estado.personagem);
+        renderFormCraft(prog);
+        renderResultadoCraft(prog);
+        salvar();
+        return;
+      } else if (t.id === 'craft-item') {
+        estado.craft.itemId = t.value;
+        renderResultadoCraft(calcularProgressao(estado.personagem));
         salvar();
         return;
       } else if (t.id === 'sk-montaria') {

@@ -183,6 +183,30 @@ GLIFOS.fam_draconico = (c) =>
   fill('M72 120 C72 96 104 92 120 108 L152 92 C160 120 148 140 128 148 C150 156 156 176 148 192 C120 184 96 168 92 148 C76 144 68 132 72 120 Z', c) +
   `<circle cx="112" cy="116" r="6" fill="#0e0b16"/>`;
 
+// profissões
+GLIFOS.prof_ferreiro = (c) =>
+  fill('M60 150 L150 150 C168 150 176 138 176 128 L196 128 L196 110 L150 110 C132 110 124 122 124 132 L60 132 Z', c) +
+  fill('M84 150 L132 150 L124 186 L92 186 Z', c);
+GLIFOS.prof_tecelao = (c) =>
+  `<circle cx="${cx}" cy="88" r="14" fill="none" stroke="${c}" stroke-width="10"/>` +
+  stroke('M128 102 C104 130 152 150 128 184', c, 11) +
+  fill('M118 176 L138 176 L128 200 Z', c);
+GLIFOS.prof_artesao = (c) => {
+  let d = '';
+  for (let i = 0; i < 8; i++) d += `<rect x="${(cx - 7).toFixed(1)}" y="44" width="14" height="24" fill="${c}" transform="rotate(${i * 45} ${cx} ${cy})"/>`;
+  return d + `<circle cx="${cx}" cy="${cy}" r="50" fill="${c}"/><circle cx="${cx}" cy="${cy}" r="20" fill="#0e0b16"/>`;
+};
+GLIFOS.prof_joalheiro = (c) =>
+  fill('M90 96 L166 96 L192 128 L128 200 L64 128 Z', c) +
+  `<path d="M90 96 L128 200 L166 96 M64 128 L192 128" stroke="#0e0b16" stroke-opacity="0.4" stroke-width="5" fill="none"/>`;
+GLIFOS.prof_alquimista = (c) =>
+  stroke('M112 64 L112 104 L80 168 C74 182 84 196 100 196 L156 196 C172 196 182 182 176 168 L144 104 L144 64', c, 11) +
+  stroke('M104 64 L152 64', c, 11) +
+  fill('M92 148 L164 148 C168 160 166 184 152 184 L104 184 C90 184 88 160 92 148 Z', c);
+GLIFOS.prof_curtidor = (c) =>
+  fill('M72 96 C96 76 160 76 184 96 C176 128 184 160 160 188 C128 176 128 176 96 188 C72 160 80 128 72 96 Z', c) +
+  `<circle cx="112" cy="120" r="6" fill="#0e0b16"/><circle cx="144" cy="120" r="6" fill="#0e0b16"/>`;
+
 // escolas
 GLIFOS.combate_fisico = GLIFOS.marcial;
 GLIFOS.longo_alcance = (c) =>
@@ -238,6 +262,9 @@ const CORES = {
   fam_besta: '#c07a50', fam_ave: '#8fc4c9', fam_aquatica: '#4f8fd0', fam_ignea: '#e2603f',
   fam_morto_vivo: '#8a9184', fam_aberracao: '#6b5a8a', fam_planta: '#5fae82', fam_espirito: '#d9c878',
   fam_construto: '#9aa3b5', fam_demonio: '#b04a6e', fam_draconico: '#c98f4f',
+  // profissões
+  prof_ferreiro: '#c07a50', prof_tecelao: '#8b7ad6', prof_artesao: '#9aa3b5',
+  prof_joalheiro: '#d9c878', prof_alquimista: '#5fae82', prof_curtidor: '#a07840',
   vileza: '#b04a6e', morte: '#8a9184', vida: '#5fae82', vigor: '#c07a50', marcial: '#9aa3b5',
   mana: '#4f8fd0', fe: '#d9c878', furia: '#c0503f', soullink: '#b04a6e', ressonancia: '#8b7ad6',
   combate_fisico: '#c07a50', longo_alcance: '#8fc4c9', evocacao: '#8b7ad6',

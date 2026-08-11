@@ -34,6 +34,7 @@ src/
     criaturas.ts   bestiário: criaturas capturáveis, famílias e afinidades
     afinidades.ts  tabela de efetividade elemental (forte/fraco/neutro)
     estados.ts     condições/status (queimadura, veneno, atordoamento…)
+    profissoes.ts  ofícios, itens-base e propriedades emergentes de craft
   engine/       ← MOTOR: cálculo puro em cima dos dados
     personagem.ts  ficha (só pontos diretos) + regras de investimento
     progressao.ts  níveis efetivos, derivados, arquétipos
@@ -173,6 +174,14 @@ Enriquecimentos trazidos de **Tree of Savior** (principalmente), Ragnarok, Final
 - **Novas classes**: Menestrel, Trovador Sombrio, Senhor da Gravidade, Astromante, Viajante Dimensional (Continuum), Demiurgo (Big Bang).
 - **Sigilos por família de criatura** no bestiário (besta, ave, aquática, ígnea, morto-vivo, aberração, planta, espírito, construto, demônio, dracônico) e **presets** prontos: Cronomante e Cavaleiro Dragão (já com wyvern capturado, domado e montado).
 
+## Camada 9 — Profissões (ofícios de criação)
+
+Inspirada nas professions de **World of Warcraft** (Ferraria, Alfaiataria, Engenharia…) e na forja elemental de **Ragnarok**. A regra central: **o resto da ficha molda o que você cria.**
+
+- **6 profissões**: Ferreiro (metal), Tecelão (vestes), Artesão (engenhocas), Joalheiro (joias), Alquimista (poções), Curtidor (couro). Cada uma **escala a qualidade** com atributos específicos da ficha (o Ferreiro com vigor/marcial/fogo/terra; o Artesão com arcano/eletricidade/gravidade/espaço…).
+- **Propriedades emergentes**: a qualidade base vem do nível da profissão + atributos, mas as *propriedades* do item **emergem dos seus elementos com maestria, talentos e nível**. Um ferreiro com **fogo e frio** faz **Têmpera Perfeita**; com **veneno**, uma lâmina **Envenenada**; com **gravidade/espaço**, um machado **Flutuante** (orbita e ataca sozinho). Há 16 propriedades (Flamejante, Gélida, Condutora, Abençoada, Espectral, Regenerativa, Gravitacional, Dimensional, Temporal, Vampírica, Rúnica, Ressonante, Obra-Prima…), cada uma exigindo a combinação certa da ficha e restrita à categoria do item (arma/armadura/acessório/consumível).
+- **Qualidade → raridade**: Comum → Incomum → Raro → Épico → Lendário → Mítico. No simulador, a aba **🔨 Profissão** mostra a bancada de criação com o item resultante, sua raridade, as propriedades que emergiram e de onde veio cada ponto de qualidade — tudo em tempo real.
+
 ## Estendendo
 
 - **Novo elemento derivado**: adicione em `ELEMENTOS` com `receita` (qualquer aridade — pares, triplas, ou "todos", como o Nulo).
@@ -181,4 +190,5 @@ Enriquecimentos trazidos de **Tree of Savior** (principalmente), Ragnarok, Final
 - **Nova criatura**: entrada em `CRIATURAS` com família, afinidades (elementos que capturam) e poder-base.
 - **Ajustar afinidade elemental**: edite `AFINIDADES` (forte/fraco por elemento base).
 - **Novo estado/condição**: entrada em `ESTADOS` + mapeie em `ESTADOS_POR_ELEMENTO`/`ESTADOS_POR_ESCOLA`.
+- **Nova profissão/item/propriedade**: entradas em `PROFISSOES`, `ITENS_BASE` e `PROPRIEDADES_ITEM` (com os requisitos de elemento/talento/nível que a fazem emergir).
 - **Ajuste de balanceamento**: todas as constantes estão no topo de `src/engine/skills.ts`.

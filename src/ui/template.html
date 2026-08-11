@@ -407,6 +407,23 @@
   .metrica.efet-forte { outline: 1px solid var(--ok); }
   .metrica.efet-fraco { outline: 1px solid var(--alerta); }
 
+  /* profissão / craft */
+  .imbuir-lista { display: flex; flex-wrap: wrap; gap: 6px; }
+  .imbuir-lista label {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 12px;
+    background: var(--surface-2); border: 1px solid var(--linha); border-radius: 14px; padding: 3px 10px; cursor: pointer;
+  }
+  .imbuir-lista label:hover { border-color: var(--acento); }
+  .imbuir-lista input { accent-color: var(--acento); }
+  .imbuir-vazio { color: var(--ink-2); font-size: 12px; }
+  .tier-badge { display: inline-block; font-size: 12px; padding: 2px 12px; border-radius: 12px; border: 1.5px solid; font-weight: 600; }
+  .prop-item { padding: 6px 8px; border-bottom: 1px solid var(--linha); font-size: 12.5px; }
+  .prop-item:last-child { border-bottom: none; }
+  .prop-item strong { color: var(--acento); }
+  .prop-item .prop-bonus { color: var(--ok); font-size: 11px; }
+  .qual-barra { height: 10px; border-radius: 5px; background: var(--barra-fundo); overflow: hidden; margin: 6px 0; }
+  .qual-barra > i { display: block; height: 100%; border-radius: 5px; }
+
   /* matriz de afinidades */
   .matriz-scroll { overflow-x: auto; }
   table.matriz { border-collapse: collapse; font-size: 11px; }
@@ -452,6 +469,7 @@
     <button type="button" data-acao="aba" data-id="recursos">Recursos</button>
     <button type="button" data-acao="aba" data-id="talentos">Talentos</button>
     <button type="button" data-acao="aba" data-id="bestiario">🐾 Bestiário</button>
+    <button type="button" data-acao="aba" data-id="profissao">🔨 Profissão</button>
     <button type="button" data-acao="aba" data-id="skill">⚔ Criar Skill</button>
   </nav>
 
@@ -529,6 +547,24 @@
         <input id="filtro-criaturas" class="filtro" type="search" placeholder="Filtrar por nome ou família…">
         <div id="criaturas" class="painel"></div>
       </section>
+    </section>
+
+    <section id="aba-profissao" class="aba">
+      <section class="bloco">
+        <h2>Ofícios <span class="conta">a ficha inteira molda o que você cria</span></h2>
+        <p class="dica">Invista numa profissão para elevar a qualidade base. As <strong>propriedades</strong> do item emergem dos seus elementos com maestria, talentos e nível — um ferreiro com fogo e frio faz Têmpera Perfeita; com veneno, uma lâmina envenenada; com gravidade, um machado flutuante.</p>
+        <div id="profissoes" class="lista-cartas"></div>
+      </section>
+      <div class="skill-grade">
+        <section class="bloco">
+          <h2>Bancada de criação</h2>
+          <form class="skill" id="form-craft"></form>
+        </section>
+        <section class="bloco">
+          <h2>Resultado</h2>
+          <div id="resultado-craft"></div>
+        </section>
+      </div>
     </section>
 
     <section id="aba-skill" class="aba">

@@ -9,6 +9,7 @@ import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type TalentoId } from '../registry/talentos';
 import { CRIATURAS } from '../registry/criaturas';
+import { PROFISSOES, type ProfissaoId } from '../registry/profissoes';
 import { avaliarCaptura, capacidadeVinculo } from './evocacao';
 import type { Progressao } from './progressao';
 
@@ -30,10 +31,18 @@ export interface Personagem {
   talentos: Partial<Record<TalentoId, number>>;
   /** Criaturas capturadas (e eventualmente domadas). */
   bestiario: CriaturaCapturada[];
+  /** Nível em cada profissão/ofício. */
+  profissoes: Partial<Record<ProfissaoId, number>>;
 }
 
 export function criarPersonagem(nome: string): Personagem {
-  return { nome, elementos: {}, escolas: {}, recursos: {}, talentos: {}, bestiario: [] };
+  return { nome, elementos: {}, escolas: {}, recursos: {}, talentos: {}, bestiario: [], profissoes: {} };
+}
+
+export function investirProfissao(p: Personagem, profissao: ProfissaoId, pontos: number): void {
+  if (!PROFISSOES[profissao]) throw new Error(`Profissão desconhecida: ${profissao}`);
+  if (pontos <= 0 || !Number.isInteger(pontos)) throw new Error('Pontos devem ser inteiros positivos.');
+  p.profissoes[profissao] = (p.profissoes[profissao] ?? 0) + pontos;
 }
 
 export function investirElemento(p: Personagem, elemento: ElementoId, pontos: number): void {
