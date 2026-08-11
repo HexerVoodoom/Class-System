@@ -76,6 +76,7 @@ export const ESTADOS_POR_ELEMENTO: Record<ElementoBaseId, EstadoId[]> = {
   vida: ['regeneracao'],
   vigor: [],
   marcial: ['sangramento', 'atordoamento'],
+  tempo: ['lentidao', 'pressa'],
 };
 
 /** Estados que cada escola tende a aplicar, além do elemento. */

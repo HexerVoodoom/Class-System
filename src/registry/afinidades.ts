@@ -26,14 +26,16 @@ export const AFINIDADES: Record<ElementoBaseId, AfinidadeDef> = {
   terra: { forteContra: ['eletricidade'], fracoContra: ['ar', 'fogo'] },
   ar: { forteContra: ['terra'], fracoContra: ['eletricidade'] },
   eletricidade: { forteContra: ['agua', 'ar'], fracoContra: ['terra'] },
-  arcano: { forteContra: ['vigor', 'marcial'], fracoContra: ['sombra'] },
+  arcano: { forteContra: ['vigor', 'marcial', 'tempo'], fracoContra: ['sombra'] },
   sombra: { forteContra: ['luz', 'arcano'], fracoContra: ['luz'] },
   luz: { forteContra: ['sombra', 'morte', 'vileza'], fracoContra: [] },
   vileza: { forteContra: ['vida'], fracoContra: ['luz'] },
   morte: { forteContra: ['vida'], fracoContra: ['luz'] },
   vida: { forteContra: ['morte', 'vileza'], fracoContra: ['fogo', 'morte'] },
-  vigor: { forteContra: [], fracoContra: ['arcano'] },
-  marcial: { forteContra: [], fracoContra: ['arcano'] },
+  vigor: { forteContra: [], fracoContra: ['arcano', 'tempo'] },
+  marcial: { forteContra: [], fracoContra: ['arcano', 'tempo'] },
+  // Tempo desgasta a vida e supera o físico; o arcano o domina.
+  tempo: { forteContra: ['vida', 'vigor', 'marcial'], fracoContra: ['arcano'] },
 };
 
 /** Reduz um elemento (base ou derivado) ao seu elemento base dominante. */

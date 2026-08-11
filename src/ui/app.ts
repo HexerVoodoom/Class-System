@@ -207,6 +207,7 @@ const CORES: Record<ElementoBaseId, string> = {
   vida: '#5fae82',
   vigor: '#c07a50',
   marcial: '#9aa3b5',
+  tempo: '#5fb3ad',
 };
 
 const el = (id: string) => document.getElementById(id)!;

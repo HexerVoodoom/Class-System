@@ -112,6 +112,11 @@ const GLIFOS = {
   marcial: (c) =>
     stroke('M72 76 L176 180 M184 72 L80 176', c, 12) +
     stroke('M64 96 L92 68 M192 96 L164 68', c, 10),
+  // tempo — ampulheta
+  tempo: (c) =>
+    stroke('M84 72 L172 72 M84 184 L172 184', c, 12) +
+    fill('M92 78 L164 78 C164 108 136 120 128 128 C120 120 92 108 92 78 Z', c) +
+    fill('M128 128 C136 136 164 148 164 178 L92 178 C92 148 120 136 128 128 Z', c),
 };
 
 // recursos (glifos reaproveitam a linguagem visual)
@@ -176,7 +181,7 @@ async function render(nome, cor, glifoId) {
 // paleta (mesma da UI)
 const CORES = {
   fogo: '#e2603f', agua: '#4f8fd0', terra: '#a07840', ar: '#8fc4c9',
-  eletricidade: '#d9bd3e', arcano: '#8b7ad6', sombra: '#6b5a8a', luz: '#d9c878',
+  eletricidade: '#d9bd3e', arcano: '#8b7ad6', sombra: '#6b5a8a', luz: '#d9c878', tempo: '#5fb3ad',
   vileza: '#b04a6e', morte: '#8a9184', vida: '#5fae82', vigor: '#c07a50', marcial: '#9aa3b5',
   mana: '#4f8fd0', fe: '#d9c878', furia: '#c0503f', soullink: '#b04a6e', ressonancia: '#8b7ad6',
   combate_fisico: '#c07a50', longo_alcance: '#8fc4c9', evocacao: '#8b7ad6',

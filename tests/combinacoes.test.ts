@@ -36,7 +36,7 @@ describe('matriz completa de combinações', () => {
       }
     }
     expect(faltando).toEqual([]);
-    expect(paresRegistrados.size).toBe(78); // C(13,2) com marcial incluído
+    expect(paresRegistrados.size).toBe(91); // C(14,2) com marcial e tempo incluídos
   });
 
   it('derivados herdam perfil como média dos componentes', () => {
@@ -51,7 +51,20 @@ describe('matriz completa de combinações', () => {
     expect(ELEMENTOS.chama_demoniaca.receita).toHaveLength(3);
     expect(ELEMENTOS.primordial.receita).toHaveLength(5);
     expect(ELEMENTOS.ciclo.receita).toHaveLength(4);
-    expect(ELEMENTOS.nulo.receita).toHaveLength(13);
+    expect(ELEMENTOS.nulo.receita).toHaveLength(14);
+  });
+
+  it('tempo (14º base) fecha a matriz: pira eterna e cronomancia existem', () => {
+    expect(ELEMENTOS.tempo.tipo).toBe('base');
+    expect(ELEMENTOS.pira_eterna.receita!.map((c) => c.elemento).sort()).toEqual(['fogo', 'tempo']);
+    expect(ELEMENTOS.cronomancia.receita!.map((c) => c.elemento).sort()).toEqual(['arcano', 'tempo']);
+  });
+
+  it('tempo + arcano libera cronomancia', () => {
+    const p = criarPersonagem('t');
+    investirElemento(p, 'tempo', 12);
+    investirElemento(p, 'arcano', 12);
+    expect(calcularProgressao(p).niveisEfetivos.cronomancia).toBe(12);
   });
 
   it('primordial: 12+ em todos os primais libera o elemento', () => {

@@ -27,6 +27,13 @@ describe('afinidade elemental (Ragnarok/FF/D&D)', () => {
     expect(efetividade('arcano', 'marcial')).toBe(MULT_FORTE); // arcano penetra físico
   });
 
+  it('tempo desgasta a vida e o físico; o arcano domina o tempo', () => {
+    expect(efetividade('tempo', 'vida')).toBe(MULT_FORTE);
+    expect(efetividade('tempo', 'vigor')).toBe(MULT_FORTE);
+    expect(efetividade('arcano', 'tempo')).toBe(MULT_FORTE);
+    expect(efetividade('tempo', 'arcano')).toBe(MULT_FRACO);
+  });
+
   it('a skill reporta a efetividade sem alterar o impacto base', () => {
     const p = criarPersonagem('t');
     investirElemento(p, 'fogo', 12);

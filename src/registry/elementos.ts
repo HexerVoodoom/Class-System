@@ -27,7 +27,8 @@ export type ElementoBaseId =
   | 'morte'
   | 'vida'
   | 'vigor'
-  | 'marcial';
+  | 'marcial'
+  | 'tempo';
 
 export interface PerfilPesos {
   dano: number;
@@ -176,6 +177,14 @@ const ELEMENTOS_BASE: Record<ElementoBaseId, ElementoDef> = {
     pesos: pesos(0.7, 0.1, 0, 0.2, 0),
     descricao: 'A arte das armas: maestria, técnica e armas evocadas.',
   },
+  tempo: {
+    id: 'tempo',
+    nome: 'Tempo',
+    tipo: 'base',
+    fatorPotencia: 1.0,
+    pesos: pesos(0.2, 0.5, 0, 0, 0.3),
+    descricao: 'A corrente do tempo: pressa, lentidão, decadência e reversão.',
+  },
 };
 
 interface OpcoesDerivado {
@@ -320,8 +329,24 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado('lamina_viva', 'Lâmina Viva', ['marcial', 'vida'], 'Armas que crescem: madeira viva, espinhos e seiva.'),
   derivado('maestria', 'Maestria', ['marcial', 'vigor'], 'Corpo e arma como um só: a técnica além da perfeição.'),
 
+  // ---- tempo + X (o 14º elemento base fecha a matriz) ----
+  derivado('pira_eterna', 'Pira Eterna', ['tempo', 'fogo'], 'Fogo que arde desde sempre: queima acelerada que nunca se apaga.'),
+  derivado('erosao', 'Erosão', ['tempo', 'agua'], 'A água que desgasta a montanha: dano que cresce com o tempo.'),
+  derivado('fossil', 'Fossilização', ['tempo', 'terra'], 'O peso das eras: petrifica e imobiliza lentamente.'),
+  derivado('aceleracao', 'Aceleração', ['tempo', 'ar'], 'O vento apressado: velocidade e reflexos sobre-humanos.'),
+  derivado('instante', 'Instante', ['tempo', 'eletricidade'], 'O relâmpago fora do tempo: golpe que acontece antes de ser visto.'),
+  derivado('cronomancia', 'Cronomancia', ['tempo', 'arcano'], 'A magia pura do tempo: pressa, lentidão e paradas temporais.', { fator: 1.2 }),
+  derivado('entropia', 'Entropia', ['tempo', 'sombra'], 'A desordem inevitável: tudo se desfaz e nada retorna.'),
+  derivado('eon', 'Éon', ['tempo', 'luz'], 'A luz das eras: cura o que o tempo feriu e revela o que virá.'),
+  derivado('ruina', 'Ruína', ['tempo', 'vileza'], 'A maldição da idade: corrói corpo e vontade lentamente.'),
+  derivado('ocaso', 'Ocaso', ['tempo', 'morte'], 'O relógio que sempre para: acelera o fim de tudo que vive.', { fator: 1.2 }),
+  derivado('florescer', 'Florescer', ['tempo', 'vida'], 'O tempo a favor da vida: crescimento e rejuvenescimento acelerados.'),
+  derivado('frenesi', 'Frenesi', ['tempo', 'vigor'], 'O corpo além do limite: cada segundo vale por dois.'),
+  derivado('contratempo', 'Contratempo', ['tempo', 'marcial'], 'A lâmina no tempo certo: contragolpes e cortes preemptivos.'),
+
   // ---- triplas ----
   derivado('chama_demoniaca', 'Chama Demoníaca', ['fogo', 'vileza', 'morte'], 'Fogo alimentado por pacto e morte: queima corpo, alma e contrato.'),
+  derivado('paradoxo', 'Paradoxo', ['tempo', 'arcano', 'morte'], 'Vida e morte fora de ordem: desfaz causas e efeitos.'),
   derivado('furacao', 'Furacão', ['agua', 'ar', 'eletricidade'], 'A tempestade perfeita: área devastadora que se move sozinha.'),
   derivado('selva', 'Selva', ['agua', 'terra', 'vida'], 'Ecossistema vivo: terreno inteiro que luta por você.'),
   derivado('abominacao', 'Abominação', ['sombra', 'morte', 'vileza'], 'O horror completo: criaturas que não deveriam existir.'),
@@ -350,7 +375,7 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado(
     'nulo',
     'Nulo',
-    ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'arcano', 'sombra', 'luz', 'vileza', 'morte', 'vida', 'vigor', 'marcial'],
+    ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'arcano', 'sombra', 'luz', 'vileza', 'morte', 'vida', 'vigor', 'marcial', 'tempo'],
     'O elemento de quem dominou todos: nega, absorve e devolve qualquer coisa.',
     { fator: 1.4, minimo: 8, tipo: 'especial' },
   ),
@@ -397,6 +422,8 @@ export const SINERGIAS: Sinergia[] = [
   { de: 'vida', para: ['vigor'], razao: 0.1 },
   { de: 'marcial', para: ['vigor'], razao: 0.1 },
   { de: 'vigor', para: ['marcial'], razao: 0.1 },
+  { de: 'arcano', para: ['tempo'], razao: 0.08 },
+  { de: 'tempo', para: ['arcano'], razao: 0.08 },
   { de: 'terra', para: ['vigor'], razao: 0.05 },
   { de: 'eletricidade', para: ['ar'], razao: 0.05 },
   // Arcano é magia pura: alimenta de leve tudo que não é físico.
