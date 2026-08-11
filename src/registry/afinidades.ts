@@ -23,10 +23,10 @@ export interface AfinidadeDef {
 export const AFINIDADES: Record<ElementoBaseId, AfinidadeDef> = {
   fogo: { forteContra: ['vida', 'terra'], fracoContra: ['agua'] },
   agua: { forteContra: ['fogo'], fracoContra: ['eletricidade', 'vida'] },
-  terra: { forteContra: ['eletricidade'], fracoContra: ['ar', 'fogo'] },
+  terra: { forteContra: ['eletricidade', 'som'], fracoContra: ['ar', 'fogo'] },
   ar: { forteContra: ['terra'], fracoContra: ['eletricidade'] },
   eletricidade: { forteContra: ['agua', 'ar'], fracoContra: ['terra'] },
-  arcano: { forteContra: ['vigor', 'marcial', 'tempo'], fracoContra: ['sombra'] },
+  arcano: { forteContra: ['vigor', 'marcial', 'tempo', 'espaco'], fracoContra: ['sombra'] },
   sombra: { forteContra: ['luz', 'arcano'], fracoContra: ['luz'] },
   luz: { forteContra: ['sombra', 'morte', 'vileza'], fracoContra: [] },
   vileza: { forteContra: ['vida'], fracoContra: ['luz'] },
@@ -35,7 +35,13 @@ export const AFINIDADES: Record<ElementoBaseId, AfinidadeDef> = {
   vigor: { forteContra: [], fracoContra: ['arcano', 'tempo'] },
   marcial: { forteContra: [], fracoContra: ['arcano', 'tempo'] },
   // Tempo desgasta a vida e supera o físico; o arcano o domina.
-  tempo: { forteContra: ['vida', 'vigor', 'marcial'], fracoContra: ['arcano'] },
+  tempo: { forteContra: ['vida', 'vigor', 'marcial'], fracoContra: ['arcano', 'espaco'] },
+  // Som ressoa e estilhaça; a terra o absorve.
+  som: { forteContra: ['arcano', 'ar'], fracoContra: ['terra'] },
+  // Gravidade esmaga o físico e o voo; o espaço a curva.
+  gravidade: { forteContra: ['ar', 'vigor', 'marcial'], fracoContra: ['espaco'] },
+  // Espaço supera gravidade e tempo; o arcano o mapeia.
+  espaco: { forteContra: ['gravidade', 'tempo'], fracoContra: ['arcano'] },
 };
 
 /** Reduz um elemento (base ou derivado) ao seu elemento base dominante. */

@@ -158,6 +158,9 @@ const REDUCAO_CUSTO_POR_PROFICIENCIA = 0.01;
 const REDUCAO_CUSTO_MAXIMA = 0.3;
 const BONUS_IMPACTO_POR_PROFICIENCIA = 0.008;
 const REDUCAO_TEMPO_POR_PROFICIENCIA = 0.01;
+// tempo: skills de elemento temporal aceleram a conjuração (pressa)
+const BONUS_PRESSA_POR_NIVEL = 0.012;
+const BONUS_PRESSA_TETO = 0.35;
 // evocação: fator da fonte sobre o poder da invocação
 const FONTE_ALEATORIA_FATOR = 0.9;
 const RAREZA_TETO = 0.4; // bônus máx. de raridade da criatura capturada
@@ -359,8 +362,14 @@ export function calcularSkill(
       )
     : 1;
   const multProficiencia = 1 + BONUS_IMPACTO_POR_PROFICIENCIA * prof;
+  // pressa do Cronomante: elementos temporais aceleram a conjuração,
+  // rendendo mais poder por segundo de cast (escala com o nível do elemento)
+  const ehTemporal = baseDominante(cfg.elemento) === 'tempo';
+  const multPressa = ehTemporal
+    ? 1 + Math.min(BONUS_PRESSA_TETO, BONUS_PRESSA_POR_NIVEL * nivelElemento)
+    : 1;
   const orcamento =
-    cfg.energia * multTempo * multNivel * (1 + bonusFoco) * multFontes * multProficiencia;
+    cfg.energia * multTempo * multNivel * (1 + bonusFoco) * multFontes * multProficiencia * multPressa;
 
   // área: espalhar o orçamento entre alvos esperados
   const alvosEsperados =
@@ -491,6 +500,13 @@ export function calcularSkill(
       chave: 'proficiencia_fontes',
       rotulo: `Proficiência ponderada ${prof.toFixed(1)}: custo −${Math.round(reducaoProf * 100)}%, impacto +${Math.round((multProficiencia - 1) * 100)}%`,
       valor: prof,
+    });
+  }
+  if (ehTemporal && multPressa > 1) {
+    propriedades.push({
+      chave: 'pressa',
+      rotulo: 'Pressa (Cronomante): conjuração acelerada',
+      valor: multPressa - 1,
     });
   }
 

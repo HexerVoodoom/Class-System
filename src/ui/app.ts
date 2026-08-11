@@ -208,6 +208,9 @@ const CORES: Record<ElementoBaseId, string> = {
   vigor: '#c07a50',
   marcial: '#9aa3b5',
   tempo: '#5fb3ad',
+  som: '#cf7fa8',
+  gravidade: '#7d6fa0',
+  espaco: '#4d5fb0',
 };
 
 const el = (id: string) => document.getElementById(id)!;
@@ -383,6 +386,46 @@ const PRESETS: Preset[] = [
     },
   },
   {
+    id: 'cronomante',
+    nome: 'Cronomante',
+    descricao: 'Tempo + Arcano: pressa, lentidão e paradas temporais.',
+    montar() {
+      const p = criarPersonagem('Aeon, o Cronomante');
+      investirElemento(p, 'tempo', 16);
+      investirElemento(p, 'arcano', 10);
+      investirEscola(p, 'conjuracao', 12);
+      investirEscola(p, 'benca', 8);
+      investirEscola(p, 'maldicao', 8);
+      investirRecurso(p, 'mana', 10);
+      investirTalento(p, 'area_ampliada', 2);
+      return { p, skill: sk({ nome: 'Parada Temporal', elemento: 'cronomancia', escola: 'conjuracao', fontes: [fonte('mana')], energia: 26, tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 5 } }) };
+    },
+  },
+  {
+    id: 'cavaleiro_dragao',
+    nome: 'Cavaleiro Dragão',
+    descricao: 'Esgrima + Combate + Salto, montado num wyvern.',
+    montar() {
+      const p = criarPersonagem('Kain, o Cavaleiro Dragão');
+      investirElemento(p, 'marcial', 14);
+      investirElemento(p, 'ar', 14);
+      investirElemento(p, 'fogo', 10);
+      investirEscola(p, 'combate_fisico', 14);
+      investirEscola(p, 'evocacao', 10);
+      investirRecurso(p, 'furia', 8);
+      investirTalento(p, 'salto', 3);
+      investirTalento(p, 'instinto_de_caca', 2);
+      investirTalento(p, 'vinculo_primal', 1);
+      investirTalento(p, 'montaria', 1);
+      // captura e doma um wyvern para servir de montaria
+      const prog = calcularProgressao(p);
+      capturarCriatura(p, prog, 'wyvern');
+      domarCriatura(p, 'wyvern');
+      const skill = sk({ nome: 'Salto Dracônico', elemento: 'esgrima', escola: 'combate_fisico', fontes: [fonte('furia')], energia: 28, tempoConjuracaoSegundos: 1.5, alcanceMetros: 0, montariaId: 'wyvern' });
+      return { p, skill };
+    },
+  },
+  {
     id: 'nulo',
     nome: 'Portador do Nulo',
     descricao: 'Nível 8 em tudo: o elemento que nega.',
@@ -419,9 +462,18 @@ function aplicarPreset(id: string): void {
 
 // ---------------------------------------------------------------- render
 
+function renderPresets(): void {
+  const alvo = document.getElementById('presets');
+  if (!alvo) return;
+  alvo.innerHTML = PRESETS.map(
+    (pr) => `<button type="button" data-acao="preset" data-id="${pr.id}" title="${esc(pr.descricao)}">${esc(pr.nome)}</button>`,
+  ).join('');
+}
+
 function render(): void {
   const prog = calcularProgressao(estado.personagem);
   renderCabecalho();
+  renderPresets();
   renderAbas();
   renderCeuElementos(prog);
   renderDetalheElemento(prog);
@@ -1387,7 +1439,8 @@ function renderBestiario(prog: Progressao): void {
       const podeDomar = cap > 0 && (b.nivelVinculo > 0 || vinculadas < cap) && b.nivelVinculo < 5;
       const mont = avaliarMontaria(estado.personagem, b.criaturaId);
       const badgeMont = mont.montavel ? `<span class="familia-tag" style="border-color:var(--acento);color:var(--acento)">🐎 montável</span>` : '';
-      return `<div class="criatura">
+      return `<div class="criatura criatura-com-sig">
+        ${sig(`fam_${cr.familia}`, 'sig-mini')}
         <div>
           <div><strong>${esc(cr.nome)}</strong> <span class="familia-tag">${esc(FAMILIAS[cr.familia].nome)}</span> ${badgeMont}<span class="vinculo-pips">${pips}</span></div>
           <div class="meta">poder base ${cr.poderBase} · ${esc(cr.descricao)}</div>
@@ -1420,7 +1473,8 @@ function renderCriaturas(prog: Progressao): void {
       const tenho = jaTenho.has(cr.id);
       const fracao = av.exigido > 0 ? Math.min(1, av.poder / av.exigido) : 0;
       const barra = `<div class="barra ${av.capturavel ? '' : 'baixa'}"><i style="width:${pct(fracao)}"></i></div>`;
-      return `<div class="criatura">
+      return `<div class="criatura criatura-com-sig">
+        ${sig(`fam_${cr.familia}`, 'sig-mini')}
         <div>
           <div><strong>${esc(cr.nome)}</strong> <span class="familia-tag">${esc(FAMILIAS[cr.familia].nome)}</span>
             <span class="meta">afinidade <span class="afin">${afin}</span> · poder ${cr.poderBase}</span></div>

@@ -202,6 +202,8 @@
   @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
   .vazio { color: var(--ink-2); font-size: 13px; padding: 8px; }
 
+  .presets-barra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .presets-rotulo { font-size: 12px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chips button {
     background: var(--surface); border: 1px solid var(--linha); color: var(--ink);
@@ -373,6 +375,8 @@
     display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
     padding: 8px 10px; border-bottom: 1px solid var(--linha); font-size: 13px;
   }
+  .criatura.criatura-com-sig { grid-template-columns: 44px 1fr auto; }
+  .criatura .sig-mini { width: 40px; height: 40px; border-radius: 8px; }
   .criatura:last-child { border-bottom: none; }
   .criatura .meta { font-size: 11px; color: var(--ink-2); }
   .criatura .familia-tag {
@@ -436,6 +440,11 @@
       <button id="btn-resetar" type="button" class="perigo">Resetar</button>
     </div>
   </header>
+
+  <div class="presets-barra">
+    <span class="presets-rotulo">Builds de exemplo:</span>
+    <div id="presets" class="chips"></div>
+  </div>
 
   <nav class="abas" aria-label="Seções do simulador">
     <button type="button" data-acao="aba" data-id="elementos">✦ Elementos</button>

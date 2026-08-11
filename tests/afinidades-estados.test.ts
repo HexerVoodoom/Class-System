@@ -34,6 +34,14 @@ describe('afinidade elemental (Ragnarok/FF/D&D)', () => {
     expect(efetividade('tempo', 'arcano')).toBe(MULT_FRACO);
   });
 
+  it('espaço supera gravidade e tempo; som é absorvido pela terra', () => {
+    expect(efetividade('espaco', 'gravidade')).toBe(MULT_FORTE);
+    expect(efetividade('espaco', 'tempo')).toBe(MULT_FORTE);
+    expect(efetividade('gravidade', 'espaco')).toBe(MULT_FRACO);
+    expect(efetividade('som', 'terra')).toBe(MULT_FRACO);
+    expect(efetividade('terra', 'som')).toBe(MULT_FORTE);
+  });
+
   it('a skill reporta a efetividade sem alterar o impacto base', () => {
     const p = criarPersonagem('t');
     investirElemento(p, 'fogo', 12);
@@ -131,8 +139,34 @@ describe('novas classes (ToS/FF/Ragnarok/WoW/D&D)', () => {
   });
 
   it('todos os novos arquétipos existem no registro', () => {
-    for (const id of ['geomante', 'cronomante', 'bardo', 'alquimista', 'xama_totemico', 'feiticeiro_de_cartas', 'bokor', 'tecelao_de_sangue', 'cavaleiro_dragao', 'cavalaria_negra', 'mago_vermelho', 'cabalista', 'invocador']) {
+    for (const id of ['geomante', 'cronomante', 'bardo', 'alquimista', 'xama_totemico', 'feiticeiro_de_cartas', 'bokor', 'tecelao_de_sangue', 'cavaleiro_dragao', 'cavalaria_negra', 'mago_vermelho', 'cabalista', 'invocador', 'menestrel', 'senhor_da_gravidade', 'astromante', 'viajante_dimensional', 'demiurgo']) {
       expect(ARQUETIPOS[id]).toBeDefined();
     }
+  });
+});
+
+describe('pressa do Cronomante (Camada 7)', () => {
+  it('skill de elemento temporal acelera a conjuração (mais poder que a mesma skill não-temporal)', () => {
+    const p = criarPersonagem('crono');
+    investirElemento(p, 'tempo', 20);
+    investirElemento(p, 'fogo', 20);
+    investirEscola(p, 'conjuracao', 10);
+    investirRecurso(p, 'mana', 5);
+    const prog = calcularProgressao(p);
+    const base: SkillConfig = {
+      nome: 't',
+      elemento: 'fogo',
+      escola: 'conjuracao',
+      fontes: [{ recurso: 'mana', proporcao: 100 }],
+      energia: 20,
+      tempoConjuracaoSegundos: 2,
+      alcanceMetros: 0,
+      area: { tipo: 'unico' },
+      entrega: { tipo: 'instantaneo' },
+    };
+    const semPressa = calcularSkill(p, prog, base);
+    const comPressa = calcularSkill(p, prog, { ...base, elemento: 'tempo' });
+    expect(comPressa.impactoTotal).toBeGreaterThan(semPressa.impactoTotal);
+    expect(comPressa.propriedades.map((x) => x.chave)).toContain('pressa');
   });
 });

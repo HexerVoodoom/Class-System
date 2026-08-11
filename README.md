@@ -13,7 +13,7 @@ npm run build:sim  # regenera o simulador interativo (simulador.html)
 
 Abra **`simulador.html`** no navegador (arquivo único, auto-contido — o motor real é empacotado dentro dele). Está organizado em **abas**, no espírito do License Board do FFXII:
 
-- **Elementos — o Céu dos Elementos**: um tabuleiro celeste onde os 13 elementos base formam o anel externo e as 78 combinações orbitam em anéis concêntricos rumo ao centro (pares de vizinhos na borda, pares de opostos mais fundo), triplas num anel interno e o **Nulo no coração do céu**. Clique numa estrela para investir; derivados acendem quando os componentes evoluem juntos, e as linhas de receita se iluminam.
+- **Elementos — o Céu dos Elementos**: um tabuleiro celeste onde os 17 elementos base formam o anel externo e as 136 combinações orbitam em anéis concêntricos rumo ao centro (pares de vizinhos na borda, pares de opostos mais fundo), triplas num anel interno e o **Nulo no coração do céu**. Clique numa estrela para investir; derivados acendem quando os componentes evoluem juntos, e as linhas de receita se iluminam.
 - **Escolas**: pontos por escola + os arquétipos que emergem da combinação.
 - **Recursos**: proficiência nas cinco fontes de energia (mana, fé, fúria, soullink, ressonância). Cada ponto reduz custo, aumenta regeneração/impacto e encurta a conjuração — e a bancada simula as fontes da skill atual em tempo real.
 - **Talentos**: em **árvore** (trilhas e tiers) ou **cartas**.
@@ -46,7 +46,7 @@ A separação é deliberada: **adicionar um elemento, uma receita, uma sinergia 
 
 ## Camada 1 — Elementos
 
-**Base** (recebem pontos diretos): fogo, água, terra, ar, eletricidade, arcano, sombra, luz, vileza, morte, vida, vigor, **marcial** (maestria de armas), **tempo** (pressa, lentidão, decadência — o Cronomancer).
+**Base** (recebem pontos diretos): fogo, água, terra, ar, eletricidade, arcano, sombra, luz, vileza, morte, vida, vigor, **marcial** (armas), **tempo** (pressa/lentidão — Cronomancer), **som** (canções, ondas de choque — Bardo), **gravidade** (peso, colapso — FF Demi), **espaço** (portais, meteoros — Sage/Astromante). São **17 elementos base**.
 
 **Sinergias de transbordo** — investir num elemento vaza para os vizinhos:
 
@@ -65,9 +65,9 @@ Cada elemento (e escola) tem um **perfil mecânico** — pesos de dano/controle/
 
 **Derivados** (não aceitam ponto direto; nível = **menor** nível efetivo entre os componentes, exigindo o mínimo da receita — ou seja, evoluem quando os componentes evoluem *juntos*):
 
-- **Todos os 91 pares** dos 14 elementos base existem — incluindo os de **Tempo**: Pira Eterna (tempo+fogo), Erosão (tempo+água), Fossilização (tempo+terra), Aceleração (tempo+ar), Instante (tempo+eletricidade), **Cronomancia** (tempo+arcano), Entropia (tempo+sombra), Éon (tempo+luz), Ruína (tempo+vileza), Ocaso (tempo+morte), Florescer (tempo+vida), Frenesi (tempo+vigor), Contratempo (tempo+marcial) — além de Vapor (fogo+água), Lava (fogo+terra), Plasma (fogo+eletricidade), Fênix (fogo+vida), Pântano (água+terra), Gelo (água+ar), Veneno (água+morte), Ácido (água+vileza), Abismo (água+sombra), Areia (terra+ar), Magnetismo (terra+eletricidade), Flora (terra+vida), Titã (terra+vigor), Tempestade (ar+eletricidade), Éter (ar+arcano), Miasma (ar+morte), Galvanismo (eletricidade+morte), Runa (arcano+luz), Pacto (arcano+vileza), Alma (arcano+morte), Espectro (sombra+morte), Parasita (sombra+vida), Assassínio (sombra+vigor), Julgamento (luz+morte), Santidade (luz+vida), Praga (vileza+morte), Mutação (vileza+vida), Carnificina (vileza+vigor), Equilíbrio (morte+vida), Ceifa (morte+vigor)… — a lista completa (com descrição de cada um) está em `src/registry/elementos.ts`, e um teste garante que nenhum par falte.
+- **Todos os 136 pares** dos 17 elementos base existem — incluindo Trovão (som+eletricidade), Terremoto (som+terra), Réquiem (som+morte), Buraco Negro (gravidade+sombra), Singularidade (gravidade+arcano), Implosão (gravidade+morte), Meteoro (espaço+fogo), Portal (espaço+arcano), Constelação (espaço+luz), Continuum (espaço+tempo)… — incluindo os de **Tempo**: Pira Eterna (tempo+fogo), Erosão (tempo+água), Fossilização (tempo+terra), Aceleração (tempo+ar), Instante (tempo+eletricidade), **Cronomancia** (tempo+arcano), Entropia (tempo+sombra), Éon (tempo+luz), Ruína (tempo+vileza), Ocaso (tempo+morte), Florescer (tempo+vida), Frenesi (tempo+vigor), Contratempo (tempo+marcial) — além de Vapor (fogo+água), Lava (fogo+terra), Plasma (fogo+eletricidade), Fênix (fogo+vida), Pântano (água+terra), Gelo (água+ar), Veneno (água+morte), Ácido (água+vileza), Abismo (água+sombra), Areia (terra+ar), Magnetismo (terra+eletricidade), Flora (terra+vida), Titã (terra+vigor), Tempestade (ar+eletricidade), Éter (ar+arcano), Miasma (ar+morte), Galvanismo (eletricidade+morte), Runa (arcano+luz), Pacto (arcano+vileza), Alma (arcano+morte), Espectro (sombra+morte), Parasita (sombra+vida), Assassínio (sombra+vigor), Julgamento (luz+morte), Santidade (luz+vida), Praga (vileza+morte), Mutação (vileza+vida), Carnificina (vileza+vigor), Equilíbrio (morte+vida), Ceifa (morte+vigor)… — a lista completa (com descrição de cada um) está em `src/registry/elementos.ts`, e um teste garante que nenhum par falte.
 - **Triplas**: Chama Demoníaca (fogo+vileza+morte), Paradoxo (tempo+arcano+morte), Furacão (água+ar+eletricidade), Selva (água+terra+vida), Abominação (sombra+morte+vileza), Eclipse (luz+sombra+arcano), Reencarnação (vida+morte+arcano), Sobrecarga (eletricidade+arcano+vigor), Ascensão (luz+vida+vigor), Núcleo (fogo+terra+eletricidade) — fator 1.30.
-- **Amplas**: Primordial (os 5 primais, fator 1.35), Ciclo (vida+morte+luz+sombra, fator 1.35) e **Nulo** (nível 8+ em **todos** os 14 base, fator 1.40).
+- **Amplas**: Primordial (os 5 primais, fator 1.35), Ciclo (vida+morte+luz+sombra, fator 1.35) e **Nulo** (nível 8+ em **todos** os 17 base, fator 1.40). Amplas cósmicas: **Big Bang** (espaço+gravidade+tempo) e **Sinfonia** (som+luz+vida).
 
 Pares têm fator de potência 1.15 (opostos como Equilíbrio e Crepúsculo, 1.20–1.25). O *fator de potência* compensa o custo de investir em vários componentes: derivados rendem mais por nível, mas o balanceamento se mantém porque exigem o dobro (ou mais) de pontos.
 
@@ -161,10 +161,17 @@ Limites configuráveis (energia máx., tempo mín., raio máx., alcance máx.) c
 
 Enriquecimentos trazidos de **Tree of Savior** (principalmente), Ragnarok, Final Fantasy, Warcraft e D&D:
 
-- **Afinidade elemental** (Ragnarok/FF/D&D): cada elemento é forte (×1.5), fraco (×0.5) ou neutro contra os outros. No construtor de skill, escolha o **Alvo (afinidade)** e veja o impacto ajustado — sem alterar o impacto base (o invariante de balanceamento é preservado; a efetividade é uma leitura "vs alvo"). Derivados herdam a tabela do componente dominante. A aba Elementos mostra a **matriz completa** 13×13.
+- **Afinidade elemental** (Ragnarok/FF/D&D): cada elemento é forte (×1.5), fraco (×0.5) ou neutro contra os outros. No construtor de skill, escolha o **Alvo (afinidade)** e veja o impacto ajustado — sem alterar o impacto base (o invariante de balanceamento é preservado; a efetividade é uma leitura "vs alvo"). Derivados herdam a tabela do componente dominante. A aba Elementos mostra a **matriz completa** 17×17.
 - **Estados/condições** (D&D/FF/Ragnarok): cada elemento e escola declara os status que pode infligir (queimadura, congelamento, choque, veneno, sangramento, atordoamento, silêncio, cegueira, medo, maldição, lentidão, definhamento… e positivos como regeneração, pressa, escudo). A skill calculada lista "pode causar…", agrupando por ofensivo/controle/positivo.
 - **Novas classes** (arquétipos): Geomante (FF/D&D), Cronomante (ToS/FF — tempo), Bardo (canções), Alquimista/Homúnculo (Ragnarok/ToS), Xamã Totêmico (WoW), Feiticeiro de Cartas (ToS Sorcerer — sela e invoca monstros), Bokor (ToS — vodu), Tecelão de Sangue (ToS Featherfoot), Cavaleiro Dragão (FF Dragoon — salto), Cavalaria Negra (ToS Schwarzer Reiter — pistoleiro montado), Mago Vermelho (FF — híbrido), Cabalista (ToS — numerologia), Invocador (FF — espers).
 - **Novos talentos**: Metamagia Gêmea (D&D), Auto-Feitiço e Endossar Elemento (Ragnarok Sage), Canção Persistente (Bardo), Salto (Dragoon).
+
+## Camada 8 — Cosmos: Som, Gravidade, Espaço e a pressa do Cronomante
+
+- **Três novos elementos base** completam a matriz (17 base, 136 pares): **Som** (canções, ondas de choque — Bardo/Menestrel), **Gravidade** (peso, colapso, buraco negro — FF Demi/Senhor da Gravidade) e **Espaço** (portais, meteoros, o cosmos — Sage/Astromante). Trazem novas triplas cósmicas (Big Bang, Sinfonia), afinidades (espaço supera gravidade e tempo; som é absorvido pela terra), estados (silêncio, derrubada, lentidão) e sigilos próprios.
+- **Pressa do Cronomante**: skills de elemento temporal (Tempo e derivados como Cronomancia) **aceleram a conjuração** — rendem mais poder por segundo de cast, escalando com o nível do elemento (até +35%). Aparece como propriedade "Pressa" no resultado.
+- **Novas classes**: Menestrel, Trovador Sombrio, Senhor da Gravidade, Astromante, Viajante Dimensional (Continuum), Demiurgo (Big Bang).
+- **Sigilos por família de criatura** no bestiário (besta, ave, aquática, ígnea, morto-vivo, aberração, planta, espírito, construto, demônio, dracônico) e **presets** prontos: Cronomante e Cavaleiro Dragão (já com wyvern capturado, domado e montado).
 
 ## Estendendo
 
