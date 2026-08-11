@@ -5,6 +5,7 @@ import {
   investirEscola,
   investirProfissao,
   investirTalento,
+  capturarCriatura,
 } from '../src/engine/personagem';
 import { calcularProgressao } from '../src/engine/progressao';
 import { craftar, elementosDominados, tierDe, type ConfigCraft } from '../src/engine/profissoes';
@@ -124,5 +125,69 @@ describe('propriedades emergentes (a ficha molda o item)', () => {
   it('cada profissão só lista seus próprios itens', () => {
     expect(itensDaProfissao('alquimista').every((i) => i.categoria === 'consumivel')).toBe(true);
     expect(itensDaProfissao('ferreiro').map((i) => i.id)).toContain('espada');
+  });
+});
+
+describe('ponte bestiário → curtidor (peles de criatura)', () => {
+  function curtidor(): ReturnType<typeof criarPersonagem> {
+    const p = criarPersonagem('Peleiro');
+    investirProfissao(p, 'curtidor', 10);
+    investirElemento(p, 'vida', 12);
+    investirElemento(p, 'vigor', 12);
+    return p;
+  }
+
+  it('couro de dragão confere a propriedade Dracônica e muito poder', () => {
+    const p = curtidor();
+    investirElemento(p, 'fogo', 12);
+    investirElemento(p, 'arcano', 12); // afinidade p/ capturar dragão jovem (fogo/arcano)
+    investirEscola(p, 'evocacao', 12);
+    investirTalento(p, 'instinto_de_caca', 3);
+    const prog = calcularProgressao(p);
+    capturarCriatura(p, prog, 'dragao_jovem');
+    const semMaterial = craftar(p, prog, { profissao: 'curtidor', itemId: 'armadura_couro', elementosImbuidos: [] });
+    const comMaterial = craftar(p, prog, {
+      profissao: 'curtidor',
+      itemId: 'armadura_couro',
+      elementosImbuidos: [],
+      materialCriaturaId: 'dragao_jovem',
+    });
+    expect(comMaterial.valida).toBe(true);
+    expect(comMaterial.propriedades.map((x) => x.id)).toContain('mat_draconico');
+    expect(comMaterial.qualidade).toBeGreaterThan(semMaterial.qualidade + 20);
+    expect(comMaterial.nomeItem).toMatch(/Dracônica/);
+  });
+
+  it('só o Curtidor trabalha peles', () => {
+    const p = criarPersonagem('Ferrufino');
+    investirProfissao(p, 'ferreiro', 10);
+    investirElemento(p, 'vida', 12);
+    investirEscola(p, 'evocacao', 10);
+    const prog = calcularProgressao(p);
+    capturarCriatura(p, prog, 'lobo');
+    const r = craftar(p, prog, { profissao: 'ferreiro', itemId: 'peitoral', elementosImbuidos: [], materialCriaturaId: 'lobo' });
+    expect(r.valida).toBe(false);
+    expect(r.erros.join(' ')).toMatch(/Só o Curtidor/);
+  });
+
+  it('precisa ter a criatura capturada', () => {
+    const p = curtidor();
+    const prog = calcularProgressao(p);
+    const r = craftar(p, prog, { profissao: 'curtidor', itemId: 'armadura_couro', elementosImbuidos: [], materialCriaturaId: 'urso' });
+    expect(r.valida).toBe(false);
+    expect(r.erros.join(' ')).toMatch(/Capture .* antes/);
+  });
+
+  it('propriedade do material respeita a categoria do item', () => {
+    const p = curtidor();
+    investirElemento(p, 'sombra', 8);
+    investirEscola(p, 'evocacao', 10);
+    const prog = calcularProgressao(p);
+    capturarCriatura(p, prog, 'lobo'); // besta → couro rústico "Resistente" (só armadura)
+    // aljava é acessório → propriedade de armadura não aplica, mas ainda soma qualidade do material
+    const aljava = craftar(p, prog, { profissao: 'curtidor', itemId: 'aljava', elementosImbuidos: [], materialCriaturaId: 'lobo' });
+    expect(aljava.propriedades.map((x) => x.id)).not.toContain('mat_besta');
+    const botas = craftar(p, prog, { profissao: 'curtidor', itemId: 'botas', elementosImbuidos: [], materialCriaturaId: 'lobo' });
+    expect(botas.propriedades.map((x) => x.id)).toContain('mat_besta');
   });
 });

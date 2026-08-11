@@ -39,6 +39,7 @@ import {
 } from '../engine/personagem';
 import {
   PROFISSOES,
+  MATERIAIS_CRIATURA,
   itensDaProfissao,
   type ProfissaoId,
 } from '../registry/profissoes';
@@ -1556,9 +1557,33 @@ function renderFormCraft(prog: Progressao): void {
         .join('')}</div>`
     : `<div class="imbuir-vazio">Nenhum elemento com maestria (nível ${MAESTRIA_LIMIAR}+) ainda — suba elementos na aba Elementos.</div>`;
 
+  // material de criatura: só o Curtidor, e só entre as capturadas
+  let materialHtml = '';
+  if (c.profissao === 'curtidor') {
+    const capturadas = estado.personagem.bestiario;
+    if (c.materialCriaturaId && !capturadas.some((b) => b.criaturaId === c.materialCriaturaId)) {
+      c.materialCriaturaId = undefined;
+    }
+    if (capturadas.length) {
+      const opc =
+        `<option value="">— sem material —</option>` +
+        capturadas
+          .map((b) => {
+            const cr = CRIATURAS[b.criaturaId];
+            const mat = MATERIAIS_CRIATURA[cr.familia];
+            return `<option value="${b.criaturaId}" ${b.criaturaId === c.materialCriaturaId ? 'selected' : ''}>${esc(cr.nome)} — ${esc(mat.material)}</option>`;
+          })
+          .join('');
+      materialHtml = `<div class="linha-campo"><label for="craft-material">Pele / material</label><div><select id="craft-material">${opc}</select><div class="limite-hint">a pele da criatura confere qualidade e uma propriedade própria</div></div><span></span></div>`;
+    } else {
+      materialHtml = `<div class="linha-campo"><label>Pele / material</label><div class="imbuir-vazio">Capture criaturas no Bestiário para usar suas peles.</div><span></span></div>`;
+    }
+  }
+
   el('form-craft').innerHTML = `
     <div class="linha-campo"><label for="craft-prof">Profissão</label><select id="craft-prof">${opcoesProf}</select><span></span></div>
     <div class="linha-campo"><label for="craft-item">Item</label><select id="craft-item">${opcoesItem}</select><span></span></div>
+    ${materialHtml}
     <div class="linha-campo"><label>Imbuir elementos</label><div>${imbuirHtml}<div class="limite-hint">as propriedades emergem do que você imbui + talentos + nível</div></div><span></span></div>
   `;
 }
@@ -1895,6 +1920,7 @@ document.addEventListener('input', (ev) => {
         return;
       } else if (t.id === 'craft-prof') {
         estado.craft.profissao = t.value as ProfissaoId;
+        if (estado.craft.profissao !== 'curtidor') estado.craft.materialCriaturaId = undefined;
         const prog = calcularProgressao(estado.personagem);
         renderFormCraft(prog);
         renderResultadoCraft(prog);
@@ -1902,6 +1928,11 @@ document.addEventListener('input', (ev) => {
         return;
       } else if (t.id === 'craft-item') {
         estado.craft.itemId = t.value;
+        renderResultadoCraft(calcularProgressao(estado.personagem));
+        salvar();
+        return;
+      } else if (t.id === 'craft-material') {
+        estado.craft.materialCriaturaId = t.value || undefined;
         renderResultadoCraft(calcularProgressao(estado.personagem));
         salvar();
         return;

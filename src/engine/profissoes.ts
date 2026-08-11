@@ -5,8 +5,10 @@
  */
 
 import { ELEMENTOS, type ElementoId } from '../registry/elementos';
+import { CRIATURAS, FAMILIAS } from '../registry/criaturas';
 import {
   ITENS_BASE,
+  MATERIAIS_CRIATURA,
   PROFISSOES,
   PROPRIEDADES_ITEM,
   type ItemBaseDef,
@@ -49,6 +51,8 @@ export interface ConfigCraft {
   itemId: string;
   /** Elementos que o artesão escolhe imbuir (dentre os que domina). */
   elementosImbuidos: ElementoId[];
+  /** Criatura do bestiário usada como material (só Curtidor). */
+  materialCriaturaId?: string;
 }
 
 export interface ResultadoCraft {
@@ -143,6 +147,36 @@ export function craftar(p: Personagem, prog: Progressao, cfg: ConfigCraft): Resu
       if (propriedadeAtende(def, p, prog, nivelProfissao, imbuidosDominados)) {
         propriedadesAplicaveis.push(def);
         qualidade += def.bonusQualidade + QUAL_POR_PROPRIEDADE;
+      }
+    }
+  }
+
+  // material de criatura (a ponte com o bestiário): só o Curtidor trabalha peles
+  if (cfg.materialCriaturaId) {
+    const cri = CRIATURAS[cfg.materialCriaturaId];
+    if (cfg.profissao !== 'curtidor') {
+      erros.push('Só o Curtidor trabalha peles e carcaças de criatura.');
+    } else if (!cri) {
+      erros.push('Material de criatura desconhecido.');
+    } else if (!p.bestiario?.some((b) => b.criaturaId === cri.id)) {
+      erros.push(`Capture ${cri.nome} no bestiário antes de usá-la como material.`);
+    } else {
+      const mat = MATERIAIS_CRIATURA[cri.familia];
+      qualidade += cri.poderBase * mat.qualidadePorPoder;
+      atributos.push({
+        rotulo: `${mat.material} (${FAMILIAS[cri.familia].nome}, poder ${cri.poderBase})`,
+        valor: cri.poderBase * mat.qualidadePorPoder,
+      });
+      if (item && mat.propriedade.categorias.includes(item.categoria)) {
+        const propMat: PropriedadeItemDef = {
+          id: `mat_${cri.familia}`,
+          nome: mat.propriedade.nome,
+          descricao: `${mat.propriedade.descricao} (de ${cri.nome})`,
+          categorias: mat.propriedade.categorias,
+          bonusQualidade: mat.propriedade.bonusQualidade,
+        };
+        propriedadesAplicaveis.push(propMat);
+        qualidade += propMat.bonusQualidade;
       }
     }
   }

@@ -14,6 +14,7 @@
 import type { ElementoId } from './elementos';
 import type { EscolaId } from './escolas';
 import type { TalentoId } from './talentos';
+import type { FamiliaCriatura } from './criaturas';
 
 export type ProfissaoId =
   | 'ferreiro'
@@ -209,3 +210,76 @@ export const PROPRIEDADES_ITEM: Record<string, PropriedadeItemDef> = Object.from
 export function propriedades(): PropriedadeItemDef[] {
   return Object.values(PROPRIEDADES_ITEM);
 }
+
+/**
+ * Materiais de criatura: a pele/carcaça de cada FAMÍLIA do bestiário vira um
+ * material que o artesão pode usar. Cada material adiciona qualidade
+ * (proporcional ao poder-base da criatura) e uma propriedade própria — a
+ * ponte entre captura e ofício.
+ */
+export interface MaterialCriaturaDef {
+  familia: FamiliaCriatura;
+  material: string;
+  /** Propriedade concedida ao item, com seu bônus de qualidade. */
+  propriedade: { nome: string; descricao: string; categorias: CategoriaItem[]; bonusQualidade: number };
+  /** Bônus de qualidade por ponto de poder-base da criatura usada. */
+  qualidadePorPoder: number;
+}
+
+export const MATERIAIS_CRIATURA: Record<FamiliaCriatura, MaterialCriaturaDef> = {
+  besta: {
+    familia: 'besta', material: 'Couro Rústico',
+    propriedade: { nome: 'Resistente', descricao: 'Couro grosso: aguenta mais castigo.', categorias: ['armadura'], bonusQualidade: 5 },
+    qualidadePorPoder: 0.15,
+  },
+  ave: {
+    familia: 'ave', material: 'Plumas',
+    propriedade: { nome: 'Leve como Pena', descricao: 'Não pesa nada: mobilidade e velocidade.', categorias: ['armadura', 'acessorio'], bonusQualidade: 6 },
+    qualidadePorPoder: 0.15,
+  },
+  aquatica: {
+    familia: 'aquatica', material: 'Escamas',
+    propriedade: { nome: 'Escamada', descricao: 'Escamas sobrepostas: desliza golpes e repele água.', categorias: ['armadura'], bonusQualidade: 6 },
+    qualidadePorPoder: 0.18,
+  },
+  ignea: {
+    familia: 'ignea', material: 'Couro Ígneo',
+    propriedade: { nome: 'Ignífuga', descricao: 'Imune ao fogo; queima quem toca.', categorias: ['armadura', 'acessorio'], bonusQualidade: 8 },
+    qualidadePorPoder: 0.2,
+  },
+  morto_vivo: {
+    familia: 'morto_vivo', material: 'Ossos e Mortalha',
+    propriedade: { nome: 'Profana', descricao: 'Feita da morte: resiste a definhamento e medo.', categorias: ['armadura', 'arma'], bonusQualidade: 7 },
+    qualidadePorPoder: 0.18,
+  },
+  aberracao: {
+    familia: 'aberracao', material: 'Carne Aberrante',
+    propriedade: { nome: 'Perturbadora', descricao: 'Errada de propósito: apavora quem encara.', categorias: ['armadura', 'arma', 'acessorio'], bonusQualidade: 7 },
+    qualidadePorPoder: 0.2,
+  },
+  planta: {
+    familia: 'planta', material: 'Fibra Viva',
+    propriedade: { nome: 'Rebrotante', descricao: 'Fibra que se regenera: repara sozinha com o tempo.', categorias: ['armadura', 'acessorio'], bonusQualidade: 6 },
+    qualidadePorPoder: 0.16,
+  },
+  espirito: {
+    familia: 'espirito', material: 'Éctoplasma',
+    propriedade: { nome: 'Etérea', descricao: 'Meio-fantasma: às vezes o golpe atravessa você.', categorias: ['armadura', 'acessorio'], bonusQualidade: 9 },
+    qualidadePorPoder: 0.22,
+  },
+  construto: {
+    familia: 'construto', material: 'Placas e Engrenagens',
+    propriedade: { nome: 'Blindada', descricao: 'Ferro reaproveitado: defesa pesada embutida.', categorias: ['armadura'], bonusQualidade: 8 },
+    qualidadePorPoder: 0.2,
+  },
+  demonio: {
+    familia: 'demonio', material: 'Chifres e Couro Vil',
+    propriedade: { nome: 'Maldita', descricao: 'Pactuada: amplia o poder, mas cobra seu preço.', categorias: ['arma', 'armadura', 'acessorio'], bonusQualidade: 9 },
+    qualidadePorPoder: 0.22,
+  },
+  draconico: {
+    familia: 'draconico', material: 'Escama de Dragão',
+    propriedade: { nome: 'Dracônica', descricao: 'A cobiça dos reis: resistência elemental lendária.', categorias: ['arma', 'armadura', 'acessorio'], bonusQualidade: 14 },
+    qualidadePorPoder: 0.28,
+  },
+};
