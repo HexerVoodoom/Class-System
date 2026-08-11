@@ -4,6 +4,8 @@ export * from './registry/escolas';
 export * from './registry/talentos';
 export * from './registry/arquetipos';
 export * from './registry/criaturas';
+export * from './registry/afinidades';
+export * from './registry/estados';
 export * from './engine/personagem';
 export * from './engine/progressao';
 export * from './engine/skills';

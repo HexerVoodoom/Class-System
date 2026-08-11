@@ -24,11 +24,18 @@
  * mecânico similar.
  */
 
-import { ELEMENTOS, type ElementoId, type PerfilPesos } from '../registry/elementos';
+import { ELEMENTOS, type ElementoBaseId, type ElementoId, type PerfilPesos } from '../registry/elementos';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
 import { CRIATURAS } from '../registry/criaturas';
+import { baseDominante, efetividade, rotuloEfetividade } from '../registry/afinidades';
+import {
+  ESTADOS,
+  ESTADOS_POR_ELEMENTO,
+  ESTADOS_POR_ESCOLA,
+  type EstadoId,
+} from '../registry/estados';
 import { avaliarMontaria, bonusMontaria, bonusVinculo, MAESTRIA_LIMIAR, type ModoEvocacao } from './evocacao';
 import type { Personagem } from './personagem';
 import type { Progressao } from './progressao';
@@ -78,6 +85,8 @@ export interface SkillConfig {
   evocacao?: EvocacaoSkill;
   /** Criatura montável usada como veículo desta skill (requer talento Montaria). */
   montariaId?: string;
+  /** Afinidade elemental do alvo, para calcular efetividade (opcional). */
+  alvoElemento?: ElementoBaseId;
 }
 
 export interface LimitesSkill {
@@ -115,6 +124,10 @@ export interface ResultadoSkill {
   };
   /** Presente quando a skill é lançada montado numa fera. */
   montaria?: { nome: string; bonus: number };
+  /** Estados/condições que a skill pode infligir (elemento + escola). */
+  estados: { id: EstadoId; nome: string; tipo: string }[];
+  /** Efetividade contra o alvo, quando um alvo elemental foi informado. */
+  efetividade?: { alvo: ElementoBaseId; multiplicador: number; rotulo: string; impacto: number };
   /**
    * Como o impacto se distribui mecanicamente — média dos perfis do
    * elemento e da escola aplicada ao impacto total.
@@ -481,6 +494,31 @@ export function calcularSkill(
     });
   }
 
+  // estados/condições que a skill pode infligir (elemento + escola), sem repetir
+  const baseElem = baseDominante(cfg.elemento);
+  const estadoIds = new Set<EstadoId>([
+    ...(ESTADOS_POR_ELEMENTO[baseElem] ?? []),
+    ...(ESTADOS_POR_ESCOLA[cfg.escola] ?? []),
+  ]);
+  const estados = [...estadoIds].map((id) => ({
+    id,
+    nome: ESTADOS[id].nome,
+    tipo: ESTADOS[id].tipo,
+  }));
+
+  // efetividade contra a afinidade do alvo (não altera o impacto base;
+  // preserva o invariante de balanceamento e apenas informa o "vs alvo")
+  let efet: ResultadoSkill['efetividade'];
+  if (cfg.alvoElemento) {
+    const mult = efetividade(cfg.elemento, cfg.alvoElemento);
+    efet = {
+      alvo: cfg.alvoElemento,
+      multiplicador: mult,
+      rotulo: rotuloEfetividade(mult),
+      impacto: impactoTotal * mult,
+    };
+  }
+
   return {
     valida: erros.length === 0,
     erros,
@@ -495,6 +533,8 @@ export function calcularSkill(
     impactoPorSegundo,
     invocacoes,
     montaria,
+    estados,
+    efetividade: efet,
     perfil,
     propriedades,
     eficiencia: impactoTotal / cfg.energia,

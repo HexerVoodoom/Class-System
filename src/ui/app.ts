@@ -38,6 +38,7 @@ import {
 } from '../engine/personagem';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
 import { CRIATURAS, FAMILIAS, criaturas, type CriaturaDef } from '../registry/criaturas';
+import { efetividade } from '../registry/afinidades';
 import {
   avaliarCaptura,
   avaliarMontaria,
@@ -423,6 +424,7 @@ function render(): void {
   renderAbas();
   renderCeuElementos(prog);
   renderDetalheElemento(prog);
+  renderMatrizAfinidades();
   renderEscolas();
   renderRecursos();
   renderTalentos();
@@ -622,6 +624,28 @@ function renderCeuElementos(prog: Progressao): void {
   el('ceu-elementos').innerHTML = `<svg viewBox="0 0 ${W} ${W}" role="img" aria-label="Céu dos Elementos">
     ${fundo}${ligas}${estrelas}${rotulos}
   </svg>`;
+}
+
+function renderMatrizAfinidades(): void {
+  const bases = elementosBase().map((e) => e.id as ElementoBaseId);
+  const abrev = (id: string) => ELEMENTOS[id].nome.slice(0, 3);
+  const cabecalho =
+    `<tr><th class="canto">atk\\def</th>${bases.map((d) => `<th title="${esc(ELEMENTOS[d].nome)}">${esc(abrev(d))}</th>`).join('')}</tr>`;
+  const linhas = bases
+    .map((atk) => {
+      const cells = bases
+        .map((def) => {
+          if (atk === def) return `<td>·</td>`;
+          const m = efetividade(atk, def);
+          const cls = m > 1 ? 'forte' : m < 1 ? 'fraco' : '';
+          const txt = m > 1 ? '▲' : m < 1 ? '▽' : '';
+          return `<td class="${cls}" title="${esc(ELEMENTOS[atk].nome)} → ${esc(ELEMENTOS[def].nome)}: ×${m}">${txt}</td>`;
+        })
+        .join('');
+      return `<tr><th title="${esc(ELEMENTOS[atk].nome)}">${esc(abrev(atk))}</th>${cells}</tr>`;
+    })
+    .join('');
+  el('matriz-afinidades').innerHTML = `<table class="matriz">${cabecalho}${linhas}</table>`;
 }
 
 function renderDetalheElemento(prog: Progressao): void {
@@ -1075,6 +1099,13 @@ function renderFormSkill(prog: Progressao): void {
     <div class="linha-campo"><label for="sk-duracao">Duração (s)</label>
       <input id="sk-duracao" type="range" min="1" max="20" step="1" value="${s.entrega.duracaoSegundos}">
       <span class="num">${s.entrega.duracaoSegundos}s</span></div>` : ''}
+    <div class="linha-campo"><label for="sk-alvo">Alvo (afinidade)</label>
+      <select id="sk-alvo">
+        <option value="">— sem alvo —</option>
+        ${elementosBase()
+          .map((d) => `<option value="${d.id}" ${d.id === s.alvoElemento ? 'selected' : ''}>${esc(d.nome)}</option>`)
+          .join('')}
+      </select><span></span></div>
     <div><button type="button" class="botao-primario" id="btn-salvar-skill">Salvar skill na build</button></div>
   `;
 }
@@ -1136,6 +1167,14 @@ function renderResultadoSkill(prog: Progressao): void {
   const custoFontes = r.custoPorFonte
     .map((c) => `${esc(RECURSOS[c.recurso].nome)} ${f1(c.custo)}`)
     .join(' · ');
+  const efetHtml = r.efetividade
+    ? `<div class="metrica efet-${r.efetividade.rotulo}"><div class="rotulo">vs ${esc(ELEMENTOS[r.efetividade.alvo].nome)} (${r.efetividade.rotulo} ×${f1(r.efetividade.multiplicador)})</div><div class="valor num">${f1(r.efetividade.impacto)}</div></div>`
+    : '';
+  const estadosHtml = r.estados.length
+    ? `<div class="estados-lista">pode causar: ${r.estados
+        .map((e) => `<span class="estado-tag estado-${e.tipo}">${esc(e.nome)}</span>`)
+        .join('')}</div>`
+    : '';
   alvo.innerHTML = `<div class="resultado-skill">
     <h3>${sig(estado.skill.elemento, 'sig-titulo')}${esc(estado.skill.nome)}</h3>
     <div class="resultado-corpo">
@@ -1147,9 +1186,11 @@ function renderResultadoSkill(prog: Progressao): void {
           ${r.impactoPorSegundo ? `<div class="metrica"><div class="rotulo">Por segundo</div><div class="valor num">${f1(r.impactoPorSegundo)}</div></div>` : ''}
           ${r.invocacoes ? `<div class="metrica"><div class="rotulo">${esc(r.invocacoes.nome)}${r.invocacoes.imbuida ? ' ✦' : ''}</div><div class="valor num">${r.invocacoes.quantidade} × ${f1(r.invocacoes.poderPorCriatura)}</div></div>` : ''}
           ${r.montaria ? `<div class="metrica"><div class="rotulo">🐎 Montado em ${esc(r.montaria.nome)}</div><div class="valor num">+${pct(r.montaria.bonus)}</div></div>` : ''}
+          ${efetHtml}
           <div class="metrica"><div class="rotulo">Eficiência</div><div class="valor num">${f1(r.eficiencia)}</div></div>
         </div>
         <div class="dica num">fontes: ${custoFontes}</div>
+        ${estadosHtml}
         ${perfilLinhas}
         ${propriedades}
       </div>
@@ -1644,6 +1685,7 @@ document.addEventListener('input', (ev) => {
     case 'sk-alcance': s.alcanceMetros = Number(t.value); break;
     case 'sk-raio': s.area = { tipo: 'circulo', raioMetros: Number(t.value) }; break;
     case 'sk-duracao': s.entrega = { tipo: 'continuo', duracaoSegundos: Number(t.value) }; break;
+    case 'sk-alvo': s.alvoElemento = (t.value || undefined) as any; break;
     default:
       if (t.name === 'sk-area') {
         s.area = t.value === 'unico' ? { tipo: 'unico' } : { tipo: 'circulo', raioMetros: 4 };

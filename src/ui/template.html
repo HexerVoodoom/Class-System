@@ -393,6 +393,24 @@
   .vinculo-pips { letter-spacing: 2px; color: var(--acento); font-size: 12px; }
   .cap-info { font-size: 12px; color: var(--ink-2); margin-bottom: 6px; }
   .cap-info strong { color: var(--acento); }
+
+  /* estados e efetividade */
+  .estados-lista { font-size: 12px; color: var(--ink-2); margin: 6px 0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .estado-tag { display: inline-block; font-size: 10.5px; padding: 1px 8px; border-radius: 10px; border: 1px solid var(--linha); }
+  .estado-ofensivo { border-color: var(--erro); color: var(--erro); }
+  .estado-controle { border-color: var(--arcano); color: var(--arcano); }
+  .estado-positivo { border-color: var(--ok); color: var(--ok); }
+  .metrica.efet-forte { outline: 1px solid var(--ok); }
+  .metrica.efet-fraco { outline: 1px solid var(--alerta); }
+
+  /* matriz de afinidades */
+  .matriz-scroll { overflow-x: auto; }
+  table.matriz { border-collapse: collapse; font-size: 11px; }
+  table.matriz th, table.matriz td { border: 1px solid var(--linha); width: 26px; height: 26px; text-align: center; padding: 0; }
+  table.matriz th { color: var(--ink-2); font-weight: 600; }
+  table.matriz td.forte { background: color-mix(in srgb, var(--ok) 30%, transparent); }
+  table.matriz td.fraco { background: color-mix(in srgb, var(--alerta) 30%, transparent); }
+  table.matriz .canto { font-size: 9px; color: var(--ink-2); }
 </style>
 <!--BODY-->
 <div class="app">
@@ -441,6 +459,10 @@
         <h2>Elementos combinados <span class="conta" id="conta-derivados"></span></h2>
         <input id="filtro-derivados" class="filtro" type="search" placeholder="Filtrar por nome ou componente…">
         <div id="derivados" class="painel"></div>
+      </section>
+      <section class="bloco">
+        <h2>Afinidade elemental <span class="conta">linha ataca coluna · verde = forte, laranja = fraco</span></h2>
+        <div id="matriz-afinidades" class="matriz-scroll"></div>
       </section>
     </section>
 

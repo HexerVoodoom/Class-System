@@ -32,6 +32,8 @@ src/
     talentos.ts    talentos com ranks, requisitos e ramos exclusivos
     arquetipos.ts  identidades desbloqueadas por combinação (necromante etc.)
     criaturas.ts   bestiário: criaturas capturáveis, famílias e afinidades
+    afinidades.ts  tabela de efetividade elemental (forte/fraco/neutro)
+    estados.ts     condições/status (queimadura, veneno, atordoamento…)
   engine/       ← MOTOR: cálculo puro em cima dos dados
     personagem.ts  ficha (só pontos diretos) + regras de investimento
     progressao.ts  níveis efetivos, derivados, arquétipos
@@ -155,10 +157,21 @@ Limites configuráveis (energia máx., tempo mín., raio máx., alcance máx.) c
 
 **Montaria nas skills**: qualquer skill pode ser lançada **cavalgando** uma fera montável — o construtor mostra o seletor de Montaria quando você tem o talento e uma fera elegível. O resultado amplifica pelo bônus de Carga Montada + Sincronia + porte da fera (ex.: `🐎 Montado em Urso das Cavernas +50%`).
 
+## Camada 7 — Afinidade elemental, estados e classes (inspirações)
+
+Enriquecimentos trazidos de **Tree of Savior** (principalmente), Ragnarok, Final Fantasy, Warcraft e D&D:
+
+- **Afinidade elemental** (Ragnarok/FF/D&D): cada elemento é forte (×1.5), fraco (×0.5) ou neutro contra os outros. No construtor de skill, escolha o **Alvo (afinidade)** e veja o impacto ajustado — sem alterar o impacto base (o invariante de balanceamento é preservado; a efetividade é uma leitura "vs alvo"). Derivados herdam a tabela do componente dominante. A aba Elementos mostra a **matriz completa** 13×13.
+- **Estados/condições** (D&D/FF/Ragnarok): cada elemento e escola declara os status que pode infligir (queimadura, congelamento, choque, veneno, sangramento, atordoamento, silêncio, cegueira, medo, maldição, lentidão, definhamento… e positivos como regeneração, pressa, escudo). A skill calculada lista "pode causar…", agrupando por ofensivo/controle/positivo.
+- **Novas classes** (arquétipos): Geomante (FF/D&D), Cronomante (ToS/FF — tempo), Bardo (canções), Alquimista/Homúnculo (Ragnarok/ToS), Xamã Totêmico (WoW), Feiticeiro de Cartas (ToS Sorcerer — sela e invoca monstros), Bokor (ToS — vodu), Tecelão de Sangue (ToS Featherfoot), Cavaleiro Dragão (FF Dragoon — salto), Cavalaria Negra (ToS Schwarzer Reiter — pistoleiro montado), Mago Vermelho (FF — híbrido), Cabalista (ToS — numerologia), Invocador (FF — espers).
+- **Novos talentos**: Metamagia Gêmea (D&D), Auto-Feitiço e Endossar Elemento (Ragnarok Sage), Canção Persistente (Bardo), Salto (Dragoon).
+
 ## Estendendo
 
 - **Novo elemento derivado**: adicione em `ELEMENTOS` com `receita` (qualquer aridade — pares, triplas, ou "todos", como o Nulo).
 - **Nova sinergia**: uma linha em `SINERGIAS`.
 - **Novo arquétipo**: entrada em `ARQUETIPOS` com condição de elementos/escolas/recursos e as capacidades que libera.
 - **Nova criatura**: entrada em `CRIATURAS` com família, afinidades (elementos que capturam) e poder-base.
+- **Ajustar afinidade elemental**: edite `AFINIDADES` (forte/fraco por elemento base).
+- **Novo estado/condição**: entrada em `ESTADOS` + mapeie em `ESTADOS_POR_ELEMENTO`/`ESTADOS_POR_ESCOLA`.
 - **Ajuste de balanceamento**: todas as constantes estão no topo de `src/engine/skills.ts`.

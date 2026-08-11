@@ -51,6 +51,12 @@ export type TalentoId =
   | 'guarda_da_fera'
   | 'montaria'
   | 'carga_montada'
+  // inspirações ToS/FF/Ragnarok/WoW/D&D
+  | 'metamagia_gemea'
+  | 'auto_feitico'
+  | 'cancao_persistente'
+  | 'salto'
+  | 'endossar_elemento'
   // maldição
   | 'contagio'
   | 'aflicao_profunda'
@@ -333,6 +339,48 @@ export const TALENTOS: Record<TalentoId, TalentoDef> = {
       { tipo: 'invocacao_potencia_bonus_fracao', valorPorRank: 0.04 },
       { tipo: 'propriedade', chave: 'carga_montada', rotulo: 'Dano da carga montada', valorPorRank: 0.12, escola: 'evocacao' },
     ],
+  },
+
+  // ------------------- inspirações de outros jogos -------------------
+  metamagia_gemea: {
+    id: 'metamagia_gemea',
+    nome: 'Metamagia Gêmea',
+    descricao: 'D&D/Sorcerer: chance de a conjuração atingir um segundo alvo (10%/rank).',
+    ranksMaximos: 3,
+    requisito: { escola: 'conjuracao', nivelMinimo: 10 },
+    efeitos: [{ tipo: 'propriedade', chave: 'gemea', rotulo: 'Chance de alvo gêmeo', valorPorRank: 0.1, escola: 'conjuracao' }],
+  },
+  auto_feitico: {
+    id: 'auto_feitico',
+    nome: 'Auto-Feitiço',
+    descricao: 'Ragnarok Sage: seus golpes têm chance de disparar uma magia extra (8%/rank).',
+    ranksMaximos: 3,
+    requisito: { escola: 'combate_fisico', nivelMinimo: 8 },
+    efeitos: [{ tipo: 'propriedade', chave: 'auto_feitico', rotulo: 'Chance de auto-feitiço', valorPorRank: 0.08, escola: 'combate_fisico' }],
+  },
+  cancao_persistente: {
+    id: 'cancao_persistente',
+    nome: 'Canção Persistente',
+    descricao: 'Bardo: suas bênçãos em área duram mais e afetam +1 aliado por rank.',
+    ranksMaximos: 3,
+    requisito: { escola: 'benca', nivelMinimo: 8 },
+    efeitos: [{ tipo: 'propriedade', chave: 'cancao', rotulo: 'Aliados extras da canção', valorPorRank: 1, escola: 'benca' }],
+  },
+  salto: {
+    id: 'salto',
+    nome: 'Salto',
+    descricao: 'FF Dragoon: um salto que ignora defesas e atinge de cima (+10%/rank).',
+    ranksMaximos: 3,
+    requisito: { escola: 'combate_fisico', nivelMinimo: 8 },
+    efeitos: [{ tipo: 'propriedade', chave: 'salto', rotulo: 'Dano do salto (ignora defesa)', valorPorRank: 0.1, escola: 'combate_fisico' }],
+  },
+  endossar_elemento: {
+    id: 'endossar_elemento',
+    nome: 'Endossar Elemento',
+    descricao: 'Ragnarok Sage: imbui a arma com o elemento da skill (+8%/rank de dano elemental).',
+    ranksMaximos: 3,
+    requisito: { escola: 'combate_fisico', nivelMinimo: 5 },
+    efeitos: [{ tipo: 'propriedade', chave: 'endosso', rotulo: 'Dano elemental na arma', valorPorRank: 0.08, escola: 'combate_fisico' }],
   },
 
   // ------------------- maldição -------------------
