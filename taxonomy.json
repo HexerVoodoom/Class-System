@@ -1,0 +1,3944 @@
+{
+  "$schema": "https://github.com/HexerVoodoom/class-system taxonomy export — see scripts/export-taxonomy.ts",
+  "generatedFrom": "src/registry/elementos.ts + src/registry/criaturas.ts",
+  "elements": [
+    {
+      "id": "fogo",
+      "nome": "Fogo",
+      "tipo": "base",
+      "descricao": "Destruição pura: dano direto e queimadura.",
+      "pesos": {
+        "dano": 1,
+        "controle": 0,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0
+      },
+      "receita": null
+    },
+    {
+      "id": "agua",
+      "nome": "Água",
+      "tipo": "base",
+      "descricao": "Fluxo e adaptação: empurra, puxa, afoga e sustenta.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.4,
+        "cura": 0.2,
+        "defesa": 0,
+        "suporte": 0
+      },
+      "receita": null
+    },
+    {
+      "id": "terra",
+      "nome": "Terra",
+      "tipo": "base",
+      "descricao": "Peso e permanência: muralhas, tremores e imobilidade.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.5,
+        "suporte": 0
+      },
+      "receita": null
+    },
+    {
+      "id": "ar",
+      "nome": "Ar",
+      "tipo": "base",
+      "descricao": "Velocidade e alcance: lâminas de vento e deslocamento.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": null
+    },
+    {
+      "id": "eletricidade",
+      "nome": "Eletricidade",
+      "tipo": "base",
+      "descricao": "Picos instantâneos: dano em cadeia e paralisia breve.",
+      "pesos": {
+        "dano": 0.8,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0
+      },
+      "receita": null
+    },
+    {
+      "id": "arcano",
+      "nome": "Arcano",
+      "tipo": "base",
+      "descricao": "Magia pura: conversa com todas as escolas e elementos mágicos.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": null
+    },
+    {
+      "id": "sombra",
+      "nome": "Sombra",
+      "tipo": "base",
+      "descricao": "Furtividade, drenagem e medo.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": null
+    },
+    {
+      "id": "luz",
+      "nome": "Luz",
+      "tipo": "base",
+      "descricao": "Revelação, punição e proteção.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0,
+        "cura": 0.3,
+        "defesa": 0.2,
+        "suporte": 0.2
+      },
+      "receita": null
+    },
+    {
+      "id": "vileza",
+      "nome": "Vileza",
+      "tipo": "base",
+      "descricao": "Pactos, corrupção e demônios; vizinha do fogo.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.1
+      },
+      "receita": null
+    },
+    {
+      "id": "morte",
+      "nome": "Morte",
+      "tipo": "base",
+      "descricao": "Decadência, mortos-vivos e o fim inevitável.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.1
+      },
+      "receita": null
+    },
+    {
+      "id": "vida",
+      "nome": "Vida",
+      "tipo": "base",
+      "descricao": "Cura e crescimento; alimenta os elementos primais.",
+      "pesos": {
+        "dano": 0,
+        "controle": 0,
+        "cura": 0.6,
+        "defesa": 0.2,
+        "suporte": 0.2
+      },
+      "receita": null
+    },
+    {
+      "id": "vigor",
+      "nome": "Vigor",
+      "tipo": "base",
+      "descricao": "O espírito do corpo; potencializa o combate físico.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0,
+        "cura": 0,
+        "defesa": 0.3,
+        "suporte": 0.1
+      },
+      "receita": null
+    },
+    {
+      "id": "marcial",
+      "nome": "Marcial",
+      "tipo": "base",
+      "descricao": "A arte das armas: maestria, técnica e armas evocadas.",
+      "pesos": {
+        "dano": 0.7,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0
+      },
+      "receita": null
+    },
+    {
+      "id": "tempo",
+      "nome": "Tempo",
+      "tipo": "base",
+      "descricao": "A corrente do tempo: pressa, lentidão, decadência e reversão.",
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.5,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": null
+    },
+    {
+      "id": "som",
+      "nome": "Som",
+      "tipo": "base",
+      "descricao": "Vibração e ressonância: brados, canções e ondas de choque.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": null
+    },
+    {
+      "id": "gravidade",
+      "nome": "Gravidade",
+      "tipo": "base",
+      "descricao": "A força que puxa e esmaga: peso, atração e colapso.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0
+      },
+      "receita": null
+    },
+    {
+      "id": "espaco",
+      "nome": "Espaço",
+      "tipo": "base",
+      "descricao": "A distância entre os pontos: portais, teleporte e o cosmos.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": null
+    },
+    {
+      "id": "vapor",
+      "nome": "Vapor",
+      "tipo": "derivado",
+      "descricao": "Névoa escaldante: queima, oculta e sufoca em área.",
+      "pesos": {
+        "dano": 0.7,
+        "controle": 0.2,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "lava",
+      "nome": "Lava",
+      "tipo": "derivado",
+      "descricao": "Fogo que adere: impacto pesado + queimadura persistente.",
+      "pesos": {
+        "dano": 0.65,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "incendio",
+      "nome": "Incêndio",
+      "tipo": "derivado",
+      "descricao": "Fogo alimentado pelo vento: espalha-se sozinho de alvo em alvo.",
+      "pesos": {
+        "dano": 0.7,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "plasma",
+      "nome": "Plasma",
+      "tipo": "derivado",
+      "descricao": "Matéria ionizada: o dano mais cru do sistema, difícil de resistir.",
+      "pesos": {
+        "dano": 0.9,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "fogo_feiticeiro",
+      "nome": "Fogo Feiticeiro",
+      "tipo": "derivado",
+      "descricao": "Chama programável: explosões com atraso, formas e gatilhos.",
+      "pesos": {
+        "dano": 0.75,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "fogo_negro",
+      "nome": "Fogo Negro",
+      "tipo": "derivado",
+      "descricao": "Chama que não ilumina: queima e drena ao mesmo tempo.",
+      "pesos": {
+        "dano": 0.75,
+        "controle": 0.15,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "chama_solar",
+      "nome": "Chama Solar",
+      "tipo": "derivado",
+      "descricao": "Fogo purificador: dano que também abençoa aliados próximos.",
+      "pesos": {
+        "dano": 0.65,
+        "controle": 0,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "fogo_infernal",
+      "nome": "Fogo Infernal",
+      "tipo": "derivado",
+      "descricao": "A fornalha dos pactos: queima a carne e a vontade.",
+      "pesos": {
+        "dano": 0.8,
+        "controle": 0.15,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "chama_azul",
+      "nome": "Chama Azul",
+      "tipo": "derivado",
+      "descricao": "Fogo que queima a alma; ignora parte da defesa.",
+      "pesos": {
+        "dano": 0.8,
+        "controle": 0.15,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "fenix",
+      "nome": "Fênix",
+      "tipo": "derivado",
+      "descricao": "Fogo que renasce: dano que retorna como cura.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "fervor",
+      "nome": "Fervor",
+      "tipo": "derivado",
+      "descricao": "Sangue fervente: golpes físicos incendiários.",
+      "pesos": {
+        "dano": 0.8,
+        "controle": 0,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "pantano",
+      "nome": "Pântano",
+      "tipo": "derivado",
+      "descricao": "Lama viva: prende, afunda e engole os inimigos.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.30000000000000004,
+        "cura": 0.1,
+        "defesa": 0.25,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "gelo",
+      "nome": "Gelo",
+      "tipo": "derivado",
+      "descricao": "Água parada no tempo: congela, retarda e estilhaça.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.4,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "agua_viva",
+      "nome": "Água-Viva",
+      "tipo": "derivado",
+      "descricao": "Corrente condutora: choques que viajam por superfícies molhadas.",
+      "pesos": {
+        "dano": 0.6000000000000001,
+        "controle": 0.30000000000000004,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "mare",
+      "nome": "Maré",
+      "tipo": "derivado",
+      "descricao": "Fluxo lunar: ondas que reposicionam aliados e inimigos.",
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.30000000000000004,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "abismo",
+      "nome": "Abismo",
+      "tipo": "derivado",
+      "descricao": "Pressão das profundezas: esmaga e cega quem afunda.",
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.35,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "prisma",
+      "nome": "Prisma",
+      "tipo": "derivado",
+      "descricao": "Luz refratada: divide um efeito entre múltiplos feixes.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.2,
+        "cura": 0.25,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "acido",
+      "nome": "Ácido",
+      "tipo": "derivado",
+      "descricao": "Corrosão: derrete armadura e derrete defesas.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.35,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "veneno",
+      "nome": "Veneno",
+      "tipo": "derivado",
+      "descricao": "Toxina paciente: dano contínuo que se recusa a sair.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.35,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "nascente",
+      "nome": "Nascente",
+      "tipo": "derivado",
+      "descricao": "Fonte restauradora: cura em área que persiste no chão.",
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.2,
+        "cura": 0.4,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "correnteza",
+      "nome": "Correnteza",
+      "tipo": "derivado",
+      "descricao": "Fluidez marcial: golpes encadeados sem pausa.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.2,
+        "cura": 0.1,
+        "defesa": 0.15,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "areia",
+      "nome": "Areia",
+      "tipo": "derivado",
+      "descricao": "Tempestade de areia: cega, corrói e desloca.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.30000000000000004,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "magnetismo",
+      "nome": "Magnetismo",
+      "tipo": "derivado",
+      "descricao": "Atração e repulsão: desarma, puxa e prende metais.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "cristal",
+      "nome": "Cristal",
+      "tipo": "derivado",
+      "descricao": "Terra lapidada pelo arcano: barreiras e foco amplificador.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "obsidiana",
+      "nome": "Obsidiana",
+      "tipo": "derivado",
+      "descricao": "Vidro vulcânico: lâminas defensivas que cortam quem ataca.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "ouro_vivo",
+      "nome": "Ouro Vivo",
+      "tipo": "derivado",
+      "descricao": "Metal sagrado: armaduras e armas conjuradas brilhantes.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0.1,
+        "cura": 0.15,
+        "defesa": 0.35,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "solo_profano",
+      "nome": "Solo Profano",
+      "tipo": "derivado",
+      "descricao": "Chão corrompido: território que enfraquece quem pisa.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "ossuario",
+      "nome": "Ossuário",
+      "tipo": "derivado",
+      "descricao": "Os ossos da terra: muralhas e lanças de osso.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "flora",
+      "nome": "Flora",
+      "tipo": "derivado",
+      "descricao": "Natureza desperta: vinhas, raízes e crescimento selvagem.",
+      "pesos": {
+        "dano": 0.15,
+        "controle": 0.1,
+        "cura": 0.3,
+        "defesa": 0.35,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "tita",
+      "nome": "Titã",
+      "tipo": "derivado",
+      "descricao": "Corpo de pedra: força colossal e pele impenetrável.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0.4,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "tempestade",
+      "nome": "Tempestade",
+      "tipo": "derivado",
+      "descricao": "Céu em fúria: área enorme e relâmpagos encadeados.",
+      "pesos": {
+        "dano": 0.6000000000000001,
+        "controle": 0.30000000000000004,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "eter",
+      "nome": "Éter",
+      "tipo": "derivado",
+      "descricao": "O vento entre os mundos: teleporte curto e levitação.",
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.30000000000000004,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "murmurio",
+      "nome": "Murmúrio",
+      "tipo": "derivado",
+      "descricao": "Vozes no vento: medo, confusão e sussurros que distraem.",
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "aurora",
+      "nome": "Aurora",
+      "tipo": "derivado",
+      "descricao": "Véu celeste: proteção em área e clareza mental.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.2,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "enxofre",
+      "nome": "Enxofre",
+      "tipo": "derivado",
+      "descricao": "Fumaça infernal: nuvens tóxicas que corrompem o fôlego.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "miasma",
+      "nome": "Miasma",
+      "tipo": "derivado",
+      "descricao": "Ar pútrido: praga aerotransportada de longo alcance.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "alento",
+      "nome": "Alento",
+      "tipo": "derivado",
+      "descricao": "Sopro vital: cura à distância e fôlego renovado.",
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.2,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "impeto",
+      "nome": "Ímpeto",
+      "tipo": "derivado",
+      "descricao": "Velocidade sobre-humana: investidas e esquivas relâmpago.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "fluxo",
+      "nome": "Fluxo",
+      "tipo": "derivado",
+      "descricao": "Corrente de mana: sobrecarrega magias e dispositivos.",
+      "pesos": {
+        "dano": 0.65,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "trovao_negro",
+      "nome": "Trovão Negro",
+      "tipo": "derivado",
+      "descricao": "Relâmpago silencioso: atinge sem aviso e sem som.",
+      "pesos": {
+        "dano": 0.65,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "fulgor",
+      "nome": "Fulgor",
+      "tipo": "derivado",
+      "descricao": "Clarão ofuscante: cega em área e pune quem ataca.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.1,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "tormento",
+      "nome": "Tormento",
+      "tipo": "derivado",
+      "descricao": "Choque cruel: dor que interrompe e desespera.",
+      "pesos": {
+        "dano": 0.7,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "galvanismo",
+      "nome": "Galvanismo",
+      "tipo": "derivado",
+      "descricao": "A centelha que reanima: constructos de carne e raio.",
+      "pesos": {
+        "dano": 0.7,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "sinapse",
+      "nome": "Sinapse",
+      "tipo": "derivado",
+      "descricao": "Sistema nervoso: acelera aliados e trava reflexos inimigos.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.1,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "reflexo",
+      "nome": "Reflexo",
+      "tipo": "derivado",
+      "descricao": "Nervos elétricos: contra-ataques instantâneos.",
+      "pesos": {
+        "dano": 0.7,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "ocultismo",
+      "nome": "Ocultismo",
+      "tipo": "derivado",
+      "descricao": "Saber proibido: magias que o alvo não vê chegar.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "runa",
+      "nome": "Runa",
+      "tipo": "derivado",
+      "descricao": "Palavra gravada: efeitos persistentes ancorados no chão ou em aliados.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.1,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "pacto",
+      "nome": "Pacto",
+      "tipo": "derivado",
+      "descricao": "Contrato de poder: sacrifica recurso por efeito ampliado.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "alma",
+      "nome": "Alma",
+      "tipo": "derivado",
+      "descricao": "A moeda dos mortos: manipula espíritos e essências.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "essencia",
+      "nome": "Essência",
+      "tipo": "derivado",
+      "descricao": "A matéria-prima da vida: transmutação e restauração profunda.",
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.1,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "encantamento",
+      "nome": "Encantamento",
+      "tipo": "derivado",
+      "descricao": "Corpo como foco: armas e punhos imbuídos de magia.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "crepusculo",
+      "nome": "Crepúsculo",
+      "tipo": "derivado",
+      "descricao": "A fronteira: revela e oculta ao mesmo tempo.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.15,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "terror",
+      "nome": "Terror",
+      "tipo": "derivado",
+      "descricao": "Medo encarnado: inimigos fogem ou congelam.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "espectro",
+      "nome": "Espectro",
+      "tipo": "derivado",
+      "descricao": "Forma incorpórea: atravessa paredes e ignora armadura.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "parasita",
+      "nome": "Parasita",
+      "tipo": "derivado",
+      "descricao": "Vida roubada: drena o inimigo para curar você.",
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.15,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "assassinio",
+      "nome": "Assassínio",
+      "tipo": "derivado",
+      "descricao": "A arte do golpe único: dano massivo pelas costas.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.15,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "heresia",
+      "nome": "Heresia",
+      "tipo": "derivado",
+      "descricao": "Luz falsa: ilusões sagradas e milagres corrompidos.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.15,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "julgamento",
+      "nome": "Julgamento",
+      "tipo": "derivado",
+      "descricao": "O veredito final: executa alvos enfraquecidos.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.15,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "santidade",
+      "nome": "Santidade",
+      "tipo": "derivado",
+      "descricao": "Graça plena: a cura mais pura do sistema.",
+      "pesos": {
+        "dano": 0.15,
+        "controle": 0,
+        "cura": 0.44999999999999996,
+        "defesa": 0.2,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "bravura",
+      "nome": "Bravura",
+      "tipo": "derivado",
+      "descricao": "Coragem radiante: aura que fortalece a linha de frente.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0,
+        "cura": 0.15,
+        "defesa": 0.25,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "praga",
+      "nome": "Praga",
+      "tipo": "derivado",
+      "descricao": "Corrupção contagiosa: veneno e maldição se espalham.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "mutacao",
+      "nome": "Mutação",
+      "tipo": "derivado",
+      "descricao": "Carne moldável: transforma o próprio corpo em arma.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0.15,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "carnificina",
+      "nome": "Carnificina",
+      "tipo": "derivado",
+      "descricao": "Sede de sangue: quanto mais fere, mais forte fica.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.15,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "equilibrio",
+      "nome": "Equilíbrio",
+      "tipo": "derivado",
+      "descricao": "Vida e morte na mesma mão: converte dano em cura e cura em dano.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0.15,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "morte",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "ceifa",
+      "nome": "Ceifa",
+      "tipo": "derivado",
+      "descricao": "A foice encarnada: golpes físicos que colhem almas.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.15,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "vitalidade",
+      "nome": "Vitalidade",
+      "tipo": "derivado",
+      "descricao": "Regeneração contínua: o corpo que não aceita cair.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0,
+        "cura": 0.3,
+        "defesa": 0.25,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "forja",
+      "nome": "Forja",
+      "tipo": "derivado",
+      "descricao": "Armas nascidas do fogo: lâminas incandescentes e martelos de brasa.",
+      "pesos": {
+        "dano": 0.85,
+        "controle": 0.05,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "tempera",
+      "nome": "Têmpera",
+      "tipo": "derivado",
+      "descricao": "O fio perfeito: lâminas temperadas que nunca perdem o corte.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.25,
+        "cura": 0.1,
+        "defesa": 0.1,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "aco",
+      "nome": "Aço",
+      "tipo": "derivado",
+      "descricao": "Metal da terra: armas pesadas e armaduras vivas.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.15000000000000002,
+        "cura": 0,
+        "defesa": 0.35,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "esgrima",
+      "nome": "Esgrima",
+      "tipo": "derivado",
+      "descricao": "A dança da lâmina leve: estocadas rápidas como o vento.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "aco_voltaico",
+      "nome": "Aço Voltaico",
+      "tipo": "derivado",
+      "descricao": "Armas condutoras: cada golpe descarrega um relâmpago.",
+      "pesos": {
+        "dano": 0.75,
+        "controle": 0.15000000000000002,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "arsenal",
+      "nome": "Arsenal",
+      "tipo": "derivado",
+      "descricao": "Armas conjuradas do nada: um arsenal etéreo ao seu dispor.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.15000000000000002,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "lamina_oculta",
+      "nome": "Lâmina Oculta",
+      "tipo": "derivado",
+      "descricao": "A arma que ninguém vê: golpes das sombras.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "lamina_radiante",
+      "nome": "Lâmina Radiante",
+      "tipo": "derivado",
+      "descricao": "A espada-voto: arde contra o profano e protege o portador.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.05,
+        "cura": 0.15,
+        "defesa": 0.2,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "serrilha",
+      "nome": "Serrilha",
+      "tipo": "derivado",
+      "descricao": "Armas cruéis: feridas que não fecham.",
+      "pesos": {
+        "dano": 0.6499999999999999,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "fio_funebre",
+      "nome": "Fio Fúnebre",
+      "tipo": "derivado",
+      "descricao": "A lâmina que colhe: cada abate fortalece o próximo golpe.",
+      "pesos": {
+        "dano": 0.6499999999999999,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "lamina_viva",
+      "nome": "Lâmina Viva",
+      "tipo": "derivado",
+      "descricao": "Armas que crescem: madeira viva, espinhos e seiva.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.05,
+        "cura": 0.3,
+        "defesa": 0.2,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "maestria",
+      "nome": "Maestria",
+      "tipo": "derivado",
+      "descricao": "Corpo e arma como um só: a técnica além da perfeição.",
+      "pesos": {
+        "dano": 0.6499999999999999,
+        "controle": 0.05,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "pira_eterna",
+      "nome": "Pira Eterna",
+      "tipo": "derivado",
+      "descricao": "Fogo que arde desde sempre: queima acelerada que nunca se apaga.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "erosao",
+      "nome": "Erosão",
+      "tipo": "derivado",
+      "descricao": "A água que desgasta a montanha: dano que cresce com o tempo.",
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.45,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "fossil",
+      "nome": "Fossilização",
+      "tipo": "derivado",
+      "descricao": "O peso das eras: petrifica e imobiliza lentamente.",
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "aceleracao",
+      "nome": "Aceleração",
+      "tipo": "derivado",
+      "descricao": "O vento apressado: velocidade e reflexos sobre-humanos.",
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.45,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "instante",
+      "nome": "Instante",
+      "tipo": "derivado",
+      "descricao": "O relâmpago fora do tempo: golpe que acontece antes de ser visto.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "cronomancia",
+      "nome": "Cronomancia",
+      "tipo": "derivado",
+      "descricao": "A magia pura do tempo: pressa, lentidão e paradas temporais.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "entropia",
+      "nome": "Entropia",
+      "tipo": "derivado",
+      "descricao": "A desordem inevitável: tudo se desfaz e nada retorna.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "eon",
+      "nome": "Éon",
+      "tipo": "derivado",
+      "descricao": "A luz das eras: cura o que o tempo feriu e revela o que virá.",
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.25,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "ruina",
+      "nome": "Ruína",
+      "tipo": "derivado",
+      "descricao": "A maldição da idade: corrói corpo e vontade lentamente.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "ocaso",
+      "nome": "Ocaso",
+      "tipo": "derivado",
+      "descricao": "O relógio que sempre para: acelera o fim de tudo que vive.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "florescer",
+      "nome": "Florescer",
+      "tipo": "derivado",
+      "descricao": "O tempo a favor da vida: crescimento e rejuvenescimento acelerados.",
+      "pesos": {
+        "dano": 0.1,
+        "controle": 0.25,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "frenesi",
+      "nome": "Frenesi",
+      "tipo": "derivado",
+      "descricao": "O corpo além do limite: cada segundo vale por dois.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "contratempo",
+      "nome": "Contratempo",
+      "tipo": "derivado",
+      "descricao": "A lâmina no tempo certo: contragolpes e cortes preemptivos.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "estrondo",
+      "nome": "Estrondo",
+      "tipo": "derivado",
+      "descricao": "Explosão sonora: o estouro que ensurdece e queima.",
+      "pesos": {
+        "dano": 0.7,
+        "controle": 0.15,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "sonar",
+      "nome": "Sonar",
+      "tipo": "derivado",
+      "descricao": "Eco das profundezas: revela o oculto e esmaga sob a água.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.35,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "terremoto",
+      "nome": "Terremoto",
+      "tipo": "derivado",
+      "descricao": "Ondas sísmicas: o chão treme e rasga em área.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "estampido",
+      "nome": "Estampido",
+      "tipo": "derivado",
+      "descricao": "Estrondo sônico: barreira de ar que empurra tudo.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "trovao",
+      "nome": "Trovão",
+      "tipo": "derivado",
+      "descricao": "O estouro do raio: choque e onda de choque juntos.",
+      "pesos": {
+        "dano": 0.6000000000000001,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "cantico",
+      "nome": "Cântico",
+      "tipo": "derivado",
+      "descricao": "Palavra cantada de poder: encantamentos que ecoam.",
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "sussurro",
+      "nome": "Sussurro",
+      "tipo": "derivado",
+      "descricao": "Vozes que enlouquecem: medo sussurrado ao ouvido.",
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "harmonia",
+      "nome": "Harmonia",
+      "tipo": "derivado",
+      "descricao": "Acorde perfeito: cura e conforto que restauram a alma.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.15,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "dissonancia",
+      "nome": "Dissonância",
+      "tipo": "derivado",
+      "descricao": "Acorde quebrado: dor que corrói a mente.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "requiem",
+      "nome": "Réquiem",
+      "tipo": "derivado",
+      "descricao": "A canção fúnebre: paralisa os vivos e comanda os mortos.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "melodia",
+      "nome": "Melodia Vital",
+      "tipo": "derivado",
+      "descricao": "Canção de ninar: regeneração embalada em harmonia.",
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.15,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "brado",
+      "nome": "Brado",
+      "tipo": "derivado",
+      "descricao": "Grito de guerra: inflama aliados e apavora inimigos.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.15,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "cadencia",
+      "nome": "Cadência",
+      "tipo": "derivado",
+      "descricao": "Ritmo de batalha: golpes no compasso perfeito.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "eco",
+      "nome": "Eco",
+      "tipo": "derivado",
+      "descricao": "O som que volta do passado: repete efeitos com atraso.",
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "fornalha_estelar",
+      "nome": "Fornalha Estelar",
+      "tipo": "derivado",
+      "descricao": "O coração de uma estrela: fusão que consome tudo por perto.",
+      "pesos": {
+        "dano": 0.75,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "voragem",
+      "nome": "Voragem",
+      "tipo": "derivado",
+      "descricao": "Redemoinho colossal: engole e afoga em espiral.",
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.4,
+        "cura": 0.1,
+        "defesa": 0.05,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "colapso",
+      "nome": "Colapso",
+      "tipo": "derivado",
+      "descricao": "Desabamento: o terreno afunda sobre os inimigos.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.30000000000000004,
+        "cura": 0,
+        "defesa": 0.3,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "vacuo",
+      "nome": "Vácuo",
+      "tipo": "derivado",
+      "descricao": "Ausência de ar: sufoca e implode de dentro.",
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "magnetar",
+      "nome": "Magnetar",
+      "tipo": "derivado",
+      "descricao": "Campo magnético estelar: prende, atrai e eletrocuta.",
+      "pesos": {
+        "dano": 0.65,
+        "controle": 0.30000000000000004,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "singularidade",
+      "nome": "Singularidade",
+      "tipo": "derivado",
+      "descricao": "Ponto de massa infinita: dobra as regras da realidade.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.30000000000000004,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "buraco_negro",
+      "nome": "Buraco Negro",
+      "tipo": "derivado",
+      "descricao": "Nem a luz escapa: engole tudo num ponto de trevas.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "halo_gravitacional",
+      "nome": "Halo Gravitacional",
+      "tipo": "derivado",
+      "descricao": "Lente de luz curvada: cega e revela ao mesmo tempo.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.2,
+        "cura": 0.15,
+        "defesa": 0.15000000000000002,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "jugo",
+      "nome": "Jugo",
+      "tipo": "derivado",
+      "descricao": "O peso da opressão: prende o alvo esmagado ao solo.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "implosao",
+      "nome": "Implosão",
+      "tipo": "derivado",
+      "descricao": "Colapso interno: comprime o alvo até o fim.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "ancora_vital",
+      "nome": "Âncora Vital",
+      "tipo": "derivado",
+      "descricao": "Massa que fixa a alma: impede que os aliados caiam.",
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.2,
+        "cura": 0.3,
+        "defesa": 0.15000000000000002,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "peso_descomunal",
+      "nome": "Peso Descomunal",
+      "tipo": "derivado",
+      "descricao": "Força multiplicada: golpes que carregam toneladas.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "ariete",
+      "nome": "Aríete",
+      "tipo": "derivado",
+      "descricao": "A arma que pesa mundos: impacto que atravessa muralhas.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.15000000000000002,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "dilatacao",
+      "nome": "Dilatação",
+      "tipo": "derivado",
+      "descricao": "O tempo curvado pela massa: retarda tudo num campo.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.45,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "onda_de_choque",
+      "nome": "Onda de Choque",
+      "tipo": "derivado",
+      "descricao": "Pulso gravitacional sonoro: empurra e atordoa em anel.",
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "meteoro",
+      "nome": "Meteoro",
+      "tipo": "derivado",
+      "descricao": "Rocha em chamas do céu: impacto devastador em área.",
+      "pesos": {
+        "dano": 0.65,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "cometa",
+      "nome": "Cometa",
+      "tipo": "derivado",
+      "descricao": "Bola de gelo sideral: risca o céu e congela ao cair.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.4,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "asteroide",
+      "nome": "Asteroide",
+      "tipo": "derivado",
+      "descricao": "Fragmento de mundo: bombardeio de rocha do espaço.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0.30000000000000004,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "estratosfera",
+      "nome": "Estratosfera",
+      "tipo": "derivado",
+      "descricao": "O ar rarefeito das alturas: levita e sufoca lá em cima.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "pulsar",
+      "nome": "Pulsar",
+      "tipo": "derivado",
+      "descricao": "Farol estelar: pulsos de energia em intervalos precisos.",
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.30000000000000004,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "portal",
+      "nome": "Portal",
+      "tipo": "derivado",
+      "descricao": "Dobra do espaço: teleporte, banimento e reposicionamento.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.30000000000000004,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "vazio",
+      "nome": "Vazio",
+      "tipo": "derivado",
+      "descricao": "O Nada entre estrelas: apaga o que toca.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "constelacao",
+      "nome": "Constelação",
+      "tipo": "derivado",
+      "descricao": "Mapa de estrelas: guia, abençoa e marca alvos.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0.2,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "devorador",
+      "nome": "Devorador",
+      "tipo": "derivado",
+      "descricao": "O que vem de além: horror cósmico que não deveria existir.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "nebulosa",
+      "nome": "Nebulosa",
+      "tipo": "derivado",
+      "descricao": "Berço e túmulo de estrelas: névoa que mata e cria.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "semente_estelar",
+      "nome": "Semente Estelar",
+      "tipo": "derivado",
+      "descricao": "Vida vinda do cosmos: brota onde nada deveria crescer.",
+      "pesos": {
+        "dano": 0.15,
+        "controle": 0.2,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "gigante_estelar",
+      "nome": "Gigante Estelar",
+      "tipo": "derivado",
+      "descricao": "Corpo de proporções cósmicas: força além da escala.",
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.15,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "lamina_sideral",
+      "nome": "Lâmina Sideral",
+      "tipo": "derivado",
+      "descricao": "Corte que atravessa a distância: fende o próprio espaço.",
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "continuum",
+      "nome": "Continuum",
+      "tipo": "derivado",
+      "descricao": "Espaço-tempo dominado: mover-se por onde e quando quiser.",
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.45,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "silencio_cosmico",
+      "nome": "Silêncio Cósmico",
+      "tipo": "derivado",
+      "descricao": "O vácuo não propaga som: sufoca canções e magias.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.35,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        }
+      ]
+    },
+    {
+      "id": "dobra",
+      "nome": "Dobra",
+      "tipo": "derivado",
+      "descricao": "O espaço curvado sobre si: encurta distâncias e esmaga.",
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "chama_demoniaca",
+      "nome": "Chama Demoníaca",
+      "tipo": "derivado",
+      "descricao": "Fogo alimentado por pacto e morte: queima corpo, alma e contrato.",
+      "pesos": {
+        "dano": 0.7333333333333333,
+        "controle": 0.19999999999999998,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.06666666666666667
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "paradoxo",
+      "nome": "Paradoxo",
+      "tipo": "derivado",
+      "descricao": "Vida e morte fora de ordem: desfaz causas e efeitos.",
+      "pesos": {
+        "dano": 0.43333333333333335,
+        "controle": 0.3333333333333333,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.2333333333333333
+      },
+      "receita": [
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "big_bang",
+      "nome": "Big Bang",
+      "tipo": "derivado",
+      "descricao": "O início e o fim de tudo: a criação comprimida num instante.",
+      "pesos": {
+        "dano": 0.3333333333333333,
+        "controle": 0.43333333333333335,
+        "cura": 0,
+        "defesa": 0.03333333333333333,
+        "suporte": 0.19999999999999998
+      },
+      "receita": [
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "sinfonia",
+      "nome": "Sinfonia",
+      "tipo": "derivado",
+      "descricao": "A canção da criação: aura que cura, protege e inspira em grande área.",
+      "pesos": {
+        "dano": 0.23333333333333334,
+        "controle": 0.09999999999999999,
+        "cura": 0.3,
+        "defesa": 0.13333333333333333,
+        "suporte": 0.23333333333333334
+      },
+      "receita": [
+        {
+          "elemento": "som",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "furacao",
+      "nome": "Furacão",
+      "tipo": "derivado",
+      "descricao": "A tempestade perfeita: área devastadora que se move sozinha.",
+      "pesos": {
+        "dano": 0.5333333333333333,
+        "controle": 0.3333333333333333,
+        "cura": 0.06666666666666667,
+        "defesa": 0,
+        "suporte": 0.06666666666666667
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "selva",
+      "nome": "Selva",
+      "tipo": "derivado",
+      "descricao": "Ecossistema vivo: terreno inteiro que luta por você.",
+      "pesos": {
+        "dano": 0.23333333333333334,
+        "controle": 0.2,
+        "cura": 0.26666666666666666,
+        "defesa": 0.23333333333333334,
+        "suporte": 0.06666666666666667
+      },
+      "receita": [
+        {
+          "elemento": "agua",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "abominacao",
+      "nome": "Abominação",
+      "tipo": "derivado",
+      "descricao": "O horror completo: criaturas que não deveriam existir.",
+      "pesos": {
+        "dano": 0.5666666666666667,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0,
+        "suporte": 0.13333333333333333
+      },
+      "receita": [
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "eclipse",
+      "nome": "Eclipse",
+      "tipo": "derivado",
+      "descricao": "O instante em que os opostos se alinham: anula magias alheias.",
+      "pesos": {
+        "dano": 0.43333333333333335,
+        "controle": 0.16666666666666666,
+        "cura": 0.09999999999999999,
+        "defesa": 0.06666666666666667,
+        "suporte": 0.23333333333333334
+      },
+      "receita": [
+        {
+          "elemento": "luz",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "reencarnacao",
+      "nome": "Reencarnação",
+      "tipo": "derivado",
+      "descricao": "O ciclo dominado: retorno da morte e segunda chance.",
+      "pesos": {
+        "dano": 0.36666666666666664,
+        "controle": 0.16666666666666666,
+        "cura": 0.19999999999999998,
+        "defesa": 0.06666666666666667,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "sobrecarga",
+      "nome": "Sobrecarga",
+      "tipo": "derivado",
+      "descricao": "Corpo-condutor: velocidade e poder além do limite seguro.",
+      "pesos": {
+        "dano": 0.6333333333333333,
+        "controle": 0.13333333333333333,
+        "cura": 0,
+        "defesa": 0.09999999999999999,
+        "suporte": 0.13333333333333333
+      },
+      "receita": [
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "ascensao",
+      "nome": "Ascensão",
+      "tipo": "derivado",
+      "descricao": "Forma exaltada: transcende brevemente a condição mortal.",
+      "pesos": {
+        "dano": 0.3,
+        "controle": 0,
+        "cura": 0.3,
+        "defesa": 0.23333333333333334,
+        "suporte": 0.16666666666666666
+      },
+      "receita": [
+        {
+          "elemento": "luz",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "nucleo",
+      "nome": "Núcleo",
+      "tipo": "derivado",
+      "descricao": "O coração do mundo: erupções magnéticas e magma pressurizado.",
+      "pesos": {
+        "dano": 0.7,
+        "controle": 0.13333333333333333,
+        "cura": 0,
+        "defesa": 0.16666666666666666,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "avatar_de_guerra",
+      "nome": "Avatar de Guerra",
+      "tipo": "derivado",
+      "descricao": "A guerra encarnada: cem armas orbitando um corpo perfeito.",
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0.16666666666666666,
+        "suporte": 0.13333333333333333
+      },
+      "receita": [
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        }
+      ]
+    },
+    {
+      "id": "primordial",
+      "nome": "Primordial",
+      "tipo": "especial",
+      "descricao": "Os cinco primais em harmonia: comanda o próprio terreno da batalha.",
+      "pesos": {
+        "dano": 0.5800000000000001,
+        "controle": 0.24000000000000002,
+        "cura": 0.04,
+        "defesa": 0.1,
+        "suporte": 0.04
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "ciclo",
+      "nome": "Ciclo",
+      "tipo": "especial",
+      "descricao": "Nascimento, morte, dia e noite: inverte estados — cura vira dano, buff vira maldição.",
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.15,
+        "cura": 0.22499999999999998,
+        "defesa": 0.1,
+        "suporte": 0.175
+      },
+      "receita": [
+        {
+          "elemento": "vida",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 12
+        }
+      ]
+    },
+    {
+      "id": "nulo",
+      "nome": "Nulo",
+      "tipo": "especial",
+      "descricao": "O elemento de quem dominou todos: nega, absorve e devolve qualquer coisa.",
+      "pesos": {
+        "dano": 0.47647058823529415,
+        "controle": 0.23529411764705882,
+        "cura": 0.06470588235294117,
+        "defesa": 0.08823529411764705,
+        "suporte": 0.1352941176470588
+      },
+      "receita": [
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "som",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 8
+        }
+      ]
+    }
+  ],
+  "families": [
+    {
+      "id": "besta",
+      "nome": "Besta",
+      "descricao": "Animais terrestres de carne e instinto."
+    },
+    {
+      "id": "ave",
+      "nome": "Ave",
+      "descricao": "Criaturas aladas."
+    },
+    {
+      "id": "aquatica",
+      "nome": "Aquática",
+      "descricao": "Seres das águas e profundezas."
+    },
+    {
+      "id": "ignea",
+      "nome": "Ígnea",
+      "descricao": "Feras nascidas do fogo e da lava."
+    },
+    {
+      "id": "morto_vivo",
+      "nome": "Morto-vivo",
+      "descricao": "O que retornou da morte."
+    },
+    {
+      "id": "aberracao",
+      "nome": "Aberração",
+      "descricao": "Horrores das sombras e da corrupção."
+    },
+    {
+      "id": "planta",
+      "nome": "Planta",
+      "descricao": "Vida vegetal desperta."
+    },
+    {
+      "id": "espirito",
+      "nome": "Espírito",
+      "descricao": "Entes etéreos e arcanos."
+    },
+    {
+      "id": "construto",
+      "nome": "Construto",
+      "descricao": "Máquinas, golens e formas montadas."
+    },
+    {
+      "id": "demonio",
+      "nome": "Demônio",
+      "descricao": "Entidades de pacto e vileza."
+    },
+    {
+      "id": "draconico",
+      "nome": "Dracônico",
+      "descricao": "Parentes dos dragões — raros e poderosos."
+    },
+    {
+      "id": "gigante",
+      "nome": "Gigante/Titã",
+      "descricao": "Seres de escala descomunal, força ou presença colossal."
+    },
+    {
+      "id": "geleia",
+      "nome": "Geleia/Slime",
+      "descricao": "Massas amorfas que engolem e dissolvem."
+    },
+    {
+      "id": "humanoide",
+      "nome": "Humanoide",
+      "descricao": "Povos de fala e ferramenta — não bestas, não monstros."
+    }
+  ]
+}

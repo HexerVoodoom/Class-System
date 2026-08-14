@@ -25,7 +25,10 @@ export type FamiliaCriatura =
   | 'espirito'
   | 'construto'
   | 'demonio'
-  | 'draconico';
+  | 'draconico'
+  | 'gigante'
+  | 'geleia'
+  | 'humanoide';
 
 export interface CriaturaDef {
   id: string;
@@ -53,6 +56,9 @@ export const FAMILIAS: Record<FamiliaCriatura, { nome: string; descricao: string
   construto: { nome: 'Construto', descricao: 'Máquinas, golens e formas montadas.' },
   demonio: { nome: 'Demônio', descricao: 'Entidades de pacto e vileza.' },
   draconico: { nome: 'Dracônico', descricao: 'Parentes dos dragões — raros e poderosos.' },
+  gigante: { nome: 'Gigante/Titã', descricao: 'Seres de escala descomunal, força ou presença colossal.' },
+  geleia: { nome: 'Geleia/Slime', descricao: 'Massas amorfas que engolem e dissolvem.' },
+  humanoide: { nome: 'Humanoide', descricao: 'Povos de fala e ferramenta — não bestas, não monstros.' },
 };
 
 const c = (

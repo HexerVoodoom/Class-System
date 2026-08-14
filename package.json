@@ -11,6 +11,7 @@
   "license": "ISC",
   "scripts": {
     "demo": "tsx src/demo.ts",
+    "export:taxonomy": "tsx scripts/export-taxonomy.ts",
     "sigilos": "node scripts/gerar-sigilos.mjs",
     "build:sim": "node scripts/gerar-sigilos.mjs && node scripts/build-simulador.mjs",
     "test": "vitest run",
