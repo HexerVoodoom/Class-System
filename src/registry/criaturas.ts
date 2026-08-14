@@ -109,6 +109,15 @@ export const CRIATURAS: Record<string, CriaturaDef> = Object.fromEntries(
     // dracônicos — raros, exigem afinidade dupla e muito poder
     c('wyvern', 'Wyvern', 'draconico', ['ar', 'fogo'], 90, 'Primo alado dos dragões.'),
     c('dragao_jovem', 'Dragão Jovem', 'draconico', ['fogo', 'arcano'], 120, 'Ainda jovem — e já aterrador.'),
+    // gigantes — vigor/terra, corpanzil e força bruta
+    c('troll_montanhes', 'Troll Montanhês', 'gigante', ['vigor', 'terra'], 56, 'Regenera o que perde em combate.'),
+    c('ciclope_forjador', 'Ciclope Forjador', 'gigante', ['vigor', 'fogo'], 74, 'Um olho só, martelo enorme.'),
+    // geleias — água/vileza, massas amorfas
+    c('gosma_acida', 'Gosma Ácida', 'geleia', ['agua', 'vileza'], 26, 'Dissolve o que toca aos poucos.'),
+    c('slime_cristalino', 'Slime Cristalino', 'geleia', ['terra', 'agua'], 40, 'Núcleo mineral, corpo líquido.'),
+    // humanoides — marcial/arcano, povos de fala e ferramenta
+    c('batedor_orc', 'Batedor Orc', 'humanoide', ['marcial', 'vigor'], 32, 'Rastreador implacável das fronteiras.'),
+    c('arauto_elfico', 'Arauto Élfico', 'humanoide', ['arcano', 'ar'], 46, 'Mensageiro de uma corte antiga.'),
   ].map((def) => [def.id, def]),
 );
 
