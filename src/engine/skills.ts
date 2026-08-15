@@ -213,7 +213,28 @@ const RAREZA_DIVISOR = 250; // poderBase/divisor → bônus de raridade
  * sempre um encadeamento que quebra a economia. O produto dos modificadores
  * é grampeado aqui, e o resultado avisa quando o teto mordeu.
  */
-const TETO_MULT_MODIFICADORES = 2.2;
+export const TETO_MULT_MODIFICADORES = 2.2;
+/**
+ * TETO DE EFICIÊNCIA DOS MODIFICADORES.
+ *
+ * O teto absoluto acima grampeia só o produto dos multiplicadores de PODER, e
+ * isso deixava duas frestas por onde a composição escapava:
+ *
+ *  1. `tempo_fracao` alimenta √tempo no orçamento e fica FORA do produto
+ *     grampeado — alongar a conjuração comprava poder de graça;
+ *  2. um modificador de poder NEGATIVO (Contenção Disciplinada) abaixava o
+ *     produto grampeado e liberava espaço sob o teto para os positivos.
+ *
+ * Medido, o encadeamento Repetição Ecoada + Canalização Arriscada + Sangria
+ * Arcana + Contenção Disciplinada rendia 2.26× a eficiência da skill nua, e o
+ * aviso de teto nem disparava.
+ *
+ * A correção é a mesma que já resolveu a fusão: amarrar o teto na EFICIÊNCIA
+ * relativa (impacto ÷ custo, contra a mesma skill sem modificadores), o que
+ * captura tempo e custo junto com o poder. O valor 1.4 preserva a troca
+ * honesta de Contenção Disciplinada (1.29) e mata o encadeamento degenerado.
+ */
+export const TETO_EFICIENCIA_MODIFICADORES = 1.4;
 /** Slots de modificador; cada rank de Engenho de Skill abre mais um. */
 export const SLOTS_MODIFICADOR_BASE = 2;
 
@@ -549,10 +570,20 @@ export function calcularSkill(
   }));
 
   // orçamento único de poder
+  const tempoSemMods = Math.max(cfg.tempoConjuracaoSegundos, limites.tempoConjuracaoMinimo);
   const tempo = Math.max(
     cfg.tempoConjuracaoSegundos * (1 + mods.tempoFracao),
     limites.tempoConjuracaoMinimo,
   );
+  // o ganho de eficiência que os modificadores produzem, contando TUDO:
+  // poder, o √tempo que a conjuração alongada compra, e o custo composto
+  const fatorTempoMods = tempoSemMods > 0 ? Math.sqrt(tempo / tempoSemMods) : 1;
+  const ganhoEficienciaMods =
+    (mods.multMais * (1 + mods.aumentado) * fatorTempoMods) / (mods.multCusto || 1);
+  if (mods.aplicados.length && ganhoEficienciaMods > TETO_EFICIENCIA_MODIFICADORES) {
+    mods.multMais *= TETO_EFICIENCIA_MODIFICADORES / ganhoEficienciaMods;
+    mods.tetoAtingido = true;
+  }
   const multTempo = Math.sqrt(tempo); // 1s = 1.0; 4s = 2.0
   // cada nível de um derivado de N componentes representa N elementos no
   // mesmo patamar — o bônus por nível escala com a aridade para compensar

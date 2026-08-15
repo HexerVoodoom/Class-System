@@ -28,10 +28,10 @@
  * obrigatória, e escolha obrigatória não é escolha.
  */
 
-import { type ElementoBaseId, type ElementoId } from '../registry/elementos';
+import { ELEMENTOS, type ElementoBaseId, type ElementoId } from '../registry/elementos';
 import {
+  ARIDADE_MAXIMA,
   aridadeDe,
-  baseDominanteDe,
   coesaoDe,
   elementoDef,
   elementoDePorComponentes,
@@ -185,6 +185,45 @@ export interface ResultadoFusao {
 // Determinação do modo
 // ---------------------------------------------------------------------------
 
+
+/**
+ * Os elementos BASE que compõem um elemento, em qualquer profundidade.
+ *
+ * Reduzir cada componente ao seu "base dominante" era um bug real: fundir uma
+ * skill de Lava (fogo+terra) com uma de Gelo (água+ar) devolvia Vapor — o par
+ * fogo+água — em vez da quádrupla. A fusão perdia aridade em silêncio, e a
+ * promessa "fundir skills funde os elementos delas" só valia para componentes
+ * de elemento base.
+ */
+function basesDe(elemento: ElementoId): ElementoBaseId[] {
+  const def = elementoDef(elemento);
+  if (!def) return [];
+  if (def.tipo === 'base') return [def.id as ElementoBaseId];
+  return (def.receita ?? []).map((c) => c.elemento);
+}
+
+/**
+ * A união das bases de todos os componentes, limitada à aridade máxima do
+ * sistema. Quando a união passa de 4, ficam as bases de maior nível efetivo
+ * (desempate pela ordem canônica) — determinístico, e o excedente vira aviso.
+ */
+function unirBases(
+  componentes: { elemento: ElementoId }[],
+  niveis: Partial<Record<ElementoId, number>>,
+): { bases: ElementoBaseId[]; descartadas: ElementoBaseId[] } {
+  const todas = ordenarComponentes([
+    ...new Set(componentes.flatMap((k) => basesDe(k.elemento))),
+  ]);
+  if (todas.length <= ARIDADE_MAXIMA) return { bases: todas, descartadas: [] };
+  const porNivel = [...todas].sort(
+    (a, b) => (niveis[b] ?? 0) - (niveis[a] ?? 0) || todas.indexOf(a) - todas.indexOf(b),
+  );
+  return {
+    bases: ordenarComponentes(porNivel.slice(0, ARIDADE_MAXIMA)),
+    descartadas: ordenarComponentes(porNivel.slice(ARIDADE_MAXIMA)),
+  };
+}
+
 function determinarModo(bases: ElementoBaseId[], escolas: EscolaId[]): ModoFusaoDef {
   const escolasDistintas = new Set(escolas).size;
   if (bases.length >= 3) return MODOS_FUSAO.prisma;
@@ -243,14 +282,19 @@ export function calcularFusao(
 
   const geracao: 2 | 3 = comps.length >= 3 ? 3 : 2;
 
-  // As bases envolvidas: o elemento base dominante de cada componente, sem repetir.
-  const basesEnvolvidas = ordenarComponentes([
-    ...new Set(comps.map((k) => baseDominanteDe(k.elemento))),
-  ]);
+  // As bases envolvidas: a união das receitas de TODOS os componentes.
+  const { bases: basesEnvolvidas, descartadas } = unirBases(comps, prog.niveisEfetivos);
 
-  if (basesEnvolvidas.length < comps.length) {
+  if (descartadas.length) {
     avisos.push(
-      'Dois componentes compartilham o mesmo elemento base — a fusão não ganha aridade com isso.',
+      `Os componentes reúnem ${basesEnvolvidas.length + descartadas.length} elementos base, e a ` +
+        `aridade máxima do sistema é ${ARIDADE_MAXIMA}. Ficaram os de maior nível; ficaram de fora: ` +
+        `${descartadas.map((b) => ELEMENTOS[b].nome).join(', ')}.`,
+    );
+  }
+  if (basesEnvolvidas.length < 2) {
+    avisos.push(
+      'Os componentes partem do mesmo elemento base — a fusão acontece, mas não ganha aridade.',
     );
   }
 
@@ -478,9 +522,7 @@ export function previewFusao(
   liberado: boolean;
   modo: ModoFusaoDef;
 } {
-  const bases = ordenarComponentes([
-    ...new Set(componentes.map((k) => baseDominanteDe(k.elemento))),
-  ]);
+  const { bases } = unirBases(componentes, prog.niveisEfetivos);
   const modo = determinarModo(
     bases,
     componentes.map((k) => k.escola),

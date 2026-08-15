@@ -94,7 +94,7 @@ Proficiência em recurso (pontos investidos) aumenta pool/regen e suaviza as pen
 
 Escolas: combate físico, longo alcance, evocação, conjuração, bênção (buff), maldição (debuff) — cada uma com seu perfil mecânico.
 
-Talentos moldam o *como* (30 talentos em 9 grupos):
+Talentos moldam o *como* (**65 talentos em 16 grupos**):
 
 - **Gerais**: Área Ampliada, Conjuração Rápida, Alcance Estendido, Canalização Profunda, Economia de Recurso, Persistência.
 - **Entrega** (exclusivos): Impacto Imediato vs. Dano ao Longo do Tempo.
@@ -110,7 +110,7 @@ Talentos de escola exigem nível na escola; ramos exclusivos definem playstyle e
 
 ## Camada 4 — Arquétipos (desbloqueio por combinação)
 
-Não se escolhe arquétipo — ele emerge da distribuição de pontos. São 29, e as condições podem exigir **elementos derivados** (que só existem via combinação):
+Não se escolhe arquétipo — ele emerge da distribuição de pontos. São **79**, e as condições podem exigir **elementos derivados** (que só existem via combinação):
 
 - **Evocadores**: Necromante (morte+evocação), Verdejante (vida+evocação), Demonologista (vileza+evocação), Senhor dos Mortos Vis (demônios *mortos*), Arsenal Espectral (evocação+combate físico+fúria → armas autônomas), Piromante Vegetal, Engenheiro Galvânico (galvanismo → constructos), Senhor das Feras, Tecelão de Abominações, Avatar Primordial.
 - **Conjuradores**: Lavamante, Tempestário, Feiticeiro do Abismo, Arquimago (arcano 20 + três escolas), Portador do Nulo (nega e reflete magia).
@@ -184,7 +184,7 @@ Enriquecimentos trazidos de **Tree of Savior** (principalmente), Ragnarok, Final
 
 Inspirada nas professions de **World of Warcraft** (Ferraria, Alfaiataria, Engenharia…) e na forja elemental de **Ragnarok**. A regra central: **o resto da ficha molda o que você cria.**
 
-- **6 profissões**: Ferreiro (metal), Tecelão (vestes), Artesão (engenhocas), Joalheiro (joias), Alquimista (poções), Curtidor (couro). Cada uma **escala a qualidade** com atributos específicos da ficha (o Ferreiro com vigor/marcial/fogo/terra; o Artesão com arcano/eletricidade/gravidade/espaço…).
+- **11 profissões** (as 6 originais + as 5 da Camada 12): Ferreiro (metal), Tecelão (vestes), Artesão (engenhocas), Joalheiro (joias), Alquimista (poções), Curtidor (couro). Cada uma **escala a qualidade** com atributos específicos da ficha (o Ferreiro com vigor/marcial/fogo/terra; o Artesão com arcano/eletricidade/gravidade/espaço…).
 - **Propriedades emergentes**: a qualidade base vem do nível da profissão + atributos, mas as *propriedades* do item **emergem dos seus elementos com maestria, talentos e nível**. Um ferreiro com **fogo e frio** faz **Têmpera Perfeita**; com **veneno**, uma lâmina **Envenenada**; com **gravidade/espaço**, um machado **Flutuante** (orbita e ataca sozinho). Há 16 propriedades (Flamejante, Gélida, Condutora, Abençoada, Espectral, Regenerativa, Gravitacional, Dimensional, Temporal, Vampírica, Rúnica, Ressonante, Obra-Prima…), cada uma exigindo a combinação certa da ficha e restrita à categoria do item (arma/armadura/acessório/consumível).
 - **Qualidade → raridade**: Comum → Incomum → Raro → Épico → Lendário → Mítico. No simulador, a aba **🔨 Profissão** mostra a bancada de criação com o item resultante, sua raridade, as propriedades que emergiram e de onde veio cada ponto de qualidade — tudo em tempo real.
 - **Ponte com o bestiário**: o **Curtidor** trabalha as **peles das criaturas que você capturou**. Cada família vira um material (Couro Ígneo da salamandra, Escama de Dragão do wyvern, Éctoplasma do espectro…) que adiciona qualidade proporcional ao poder da fera e uma **propriedade própria** — uma Escama de Dragão faz uma peça **Dracônica** (resistência elemental lendária). Assim captura → doma → **couro** conecta a Camada 6 (Evocação) à Camada 9 (Profissões).
@@ -296,6 +296,33 @@ E **14 propriedades emergentes novas**, seis delas exigindo combinações de ari
 | **supervisor-de-balanceamento** | Cético profissional: caça build degenerada e combinação morta |
 | **pesquisador-benchmark** | Traz padrões já familiares ao público de outros jogos |
 | **curador-de-constelacao** | Mantém o céu legível enquanto o conteúdo cresce |
+
+
+## Para programas e agentes
+
+O sistema tem uma superfície própria para consumo por máquina, em `src/api/` —
+determinística, paginada, com erro que ensina. **`AGENTS.md` é o documento que
+um agente de IA lê antes de tocar em qualquer coisa.**
+
+```bash
+npm run cs -- panorama                     # o tamanho do sistema, em números
+npm run cs -- buscar "vulcao"              # acha qualquer coisa por nome
+npm run cs -- explicar lava                # ficha técnica de um elemento
+npm run cs -- integridade                  # consistência interna do conteúdo
+
+npm run cs -- analisar --ficha ficha.json           # o que esta ficha é hoje
+npm run cs -- proximas --ficha ficha.json           # o que está a um passo, e por quanto
+npm run cs -- caminho vulcanologo --ficha ficha.json # plano de pontos até um arquétipo
+npm run cs -- skill --ficha ficha.json --skill s.json
+```
+
+O planejamento é **verificado ponta a ponta**: `caminhoParaArquetipo` monta a
+ficha resultante, roda a progressão e confirma que o arquétipo destrava — um
+plano marcado como não provado é melhor que um número inventado.
+
+`verificarIntegridade()` varre o conteúdo procurando id órfão, requisito
+impossível e arquétipo inalcançável. Rode depois de adicionar conteúdo; leva
+milissegundos.
 
 ## Estendendo
 
