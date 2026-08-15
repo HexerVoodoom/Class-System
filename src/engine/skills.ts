@@ -24,12 +24,24 @@
  * mecânico similar.
  */
 
-import { ELEMENTOS, type ElementoBaseId, type ElementoId, type PerfilPesos } from '../registry/elementos';
+import { type ElementoBaseId, type ElementoId, type PerfilPesos } from '../registry/elementos';
+import {
+  aridadeDe,
+  baseDominanteDe,
+  efetividadeDe,
+  elementoDef,
+} from '../registry/combinacoes';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
 import { CRIATURAS } from '../registry/criaturas';
-import { baseDominante, efetividade, rotuloEfetividade } from '../registry/afinidades';
+import { rotuloEfetividade } from '../registry/afinidades';
+import {
+  MODIFICADORES,
+  ROTULO_TAG,
+  type ModificadorId,
+  type TagSkill,
+} from '../registry/modificadores';
 import {
   ESTADOS,
   ESTADOS_POR_ELEMENTO,
@@ -38,7 +50,7 @@ import {
 } from '../registry/estados';
 import { avaliarMontaria, bonusMontaria, bonusVinculo, MAESTRIA_LIMIAR, type ModoEvocacao } from './evocacao';
 import type { Personagem } from './personagem';
-import type { Progressao } from './progressao';
+import { PENALIDADE_CAPACIDADE_DILUIDA, type Progressao } from './progressao';
 
 /**
  * Fonte da evocação, usada só em skills de escola Evocação:
@@ -87,6 +99,11 @@ export interface SkillConfig {
   montariaId?: string;
   /** Afinidade elemental do alvo, para calcular efetividade (opcional). */
   alvoElemento?: ElementoBaseId;
+  /**
+   * Modificadores de 2ª geração aplicados sobre esta skill (support gems).
+   * Cada um multiplica o custo e exige compatibilidade de tag.
+   */
+  modificadores?: ModificadorId[];
 }
 
 export interface LimitesSkill {
@@ -137,6 +154,14 @@ export interface ResultadoSkill {
   propriedades: { chave: string; rotulo: string; valor: number }[];
   /** Métrica de balanceamento: impacto total ÷ energia investida. */
   eficiencia: number;
+  /** Tags que esta skill exibe — o contrato de compatibilidade legível. */
+  tags: TagSkill[];
+  /** Modificadores efetivamente aplicados, com o custo que cada um cobrou. */
+  modificadoresAplicados: { id: ModificadorId; nome: string; multiplicadorCusto: number }[];
+  /** Produto dos multiplicadores de poder dos modificadores (após o teto). */
+  multModificadores: number;
+  /** true quando o teto anti-composição mordeu o produto de multiplicadores. */
+  tetoModificadoresAtingido: boolean;
 }
 
 // ---- constantes de balanceamento (ajuste fino em um lugar só) ----
@@ -150,6 +175,22 @@ const CUSTO_EXTRA_POR_METRO_ALCANCE = 0.005;
 const DENSIDADE_ALVOS_POR_M2 = 0.15;
 const EFICIENCIA_AREA = 0.9; // leve taxa por espalhar o orçamento
 const BONUS_POR_NIVEL_ELEMENTO = 0.04;
+/**
+ * COMPENSAÇÃO DE ARIDADE — um derivado de N componentes no nível L custou
+ * N×L pontos, mas rende como se fosse um elemento no nível L. Sem correção,
+ * especializar num único elemento domina qualquer combinação, e as triplas e
+ * quádruplas viram conteúdo decorativo.
+ *
+ * Cada nível de um derivado vale por N níveis parciais:
+ *
+ *   bônus por nível = 0.04 × (1 + 0.30 × (N − 1))
+ *
+ * A compensação é deliberadamente PARCIAL (~0.30 e não 1.0): combinar já
+ * paga em largura — mais elementos disponíveis, mais arquétipos, mais fusões.
+ * Com 0.30, uma quádrupla entrega ~95% do poder bruto da especialização pura
+ * pelo mesmo investimento, e compra a largura com os 5% restantes.
+ */
+const FRACAO_BONUS_ARIDADE = 0.3;
 const BONUS_POR_NIVEL_ESCOLA = 0.03;
 const BONUS_TOTAL_DOT_MAXIMO = 0.3;
 const EXPOENTE_DIVISAO_ENXAME = 0.9;
@@ -165,6 +206,16 @@ const BONUS_PRESSA_TETO = 0.35;
 const FONTE_ALEATORIA_FATOR = 0.9;
 const RAREZA_TETO = 0.4; // bônus máx. de raridade da criatura capturada
 const RAREZA_DIVISOR = 250; // poderBase/divisor → bônus de raridade
+/**
+ * TETO ANTI-COMPOSIÇÃO. A fórmula do orçamento já é um produto de oito
+ * multiplicadores; empilhar modificadores multiplicativos por cima, sem teto,
+ * reproduz o modo de falha clássico dos sistemas de composição livre — existe
+ * sempre um encadeamento que quebra a economia. O produto dos modificadores
+ * é grampeado aqui, e o resultado avisa quando o teto mordeu.
+ */
+const TETO_MULT_MODIFICADORES = 2.2;
+/** Slots de modificador; cada rank de Engenho de Skill abre mais um. */
+export const SLOTS_MODIFICADOR_BASE = 2;
 
 function somaEfeitos(
   p: Personagem,
@@ -229,6 +280,132 @@ export function calcularLimites(
   };
 }
 
+
+/**
+ * Tags que uma skill exibe, derivadas da configuração. É o contrato legível
+ * de compatibilidade com os modificadores — a regra dura é `exigeTags`.
+ */
+export function tagsDaSkill(cfg: SkillConfig): TagSkill[] {
+  const escola = ESCOLAS[cfg.escola];
+  const tags = new Set<TagSkill>();
+  tags.add(escola.tipo === 'marcial' ? 'marcial' : 'magica');
+  tags.add(cfg.entrega.tipo === 'continuo' ? 'continuo' : 'instantaneo');
+  tags.add(cfg.area.tipo === 'circulo' ? 'area' : 'unico');
+  if (escola.entregaPadrao === 'invocacao') tags.add('invocacao');
+  else if (escola.entregaPadrao === 'efeito') tags.add('efeito');
+  else tags.add('dano');
+  // projétil: dano lançado à distância, seja flecha ou bola de fogo
+  if (escola.entregaPadrao === 'dano' && cfg.alcanceMetros > 0) tags.add('projetil');
+  if (baseDominanteDe(cfg.elemento) === 'tempo') tags.add('temporal');
+  if ((elementoDef(cfg.elemento)?.receita?.length ?? 0) > 0) tags.add('derivado');
+  return [...tags];
+}
+
+/** Slots de modificador disponíveis, considerando talentos. */
+export function slotsModificador(p: Personagem): number {
+  const extra = somaEfeitos(p, (e, r) =>
+    e.tipo === 'propriedade' && e.chave === 'slots_modificador' ? e.valorPorRank * r : 0,
+  );
+  return SLOTS_MODIFICADOR_BASE + Math.floor(extra);
+}
+
+export interface AvaliacaoModificador {
+  id: ModificadorId;
+  compativel: boolean;
+  motivo?: string;
+}
+
+/** Por que um modificador entra (ou não) numa skill — alimenta a UI. */
+export function avaliarModificador(
+  p: Personagem,
+  cfg: SkillConfig,
+  id: ModificadorId,
+  tags = tagsDaSkill(cfg),
+): AvaliacaoModificador {
+  const def = MODIFICADORES[id];
+  if (!def) return { id, compativel: false, motivo: 'Modificador desconhecido.' };
+  const faltando = def.exigeTags.filter((t) => !tags.includes(t));
+  if (faltando.length) {
+    return {
+      id,
+      compativel: false,
+      motivo: `Exige skill com ${faltando.map((t) => ROTULO_TAG[t]).join(' + ')}.`,
+    };
+  }
+  const proibida = (def.proibeTags ?? []).find((t) => tags.includes(t));
+  if (proibida) {
+    return { id, compativel: false, motivo: `Incompatível com skills de ${ROTULO_TAG[proibida]}.` };
+  }
+  const req = def.requisito;
+  if (req?.escola && (p.escolas[req.escola] ?? 0) < (req.nivelMinimo ?? 0)) {
+    return {
+      id,
+      compativel: false,
+      motivo: `Exige ${req.nivelMinimo} em ${ESCOLAS[req.escola].nome}.`,
+    };
+  }
+  if (req?.talento && !(p.talentos[req.talento] ?? 0)) {
+    return { id, compativel: false, motivo: `Exige o talento ${TALENTOS[req.talento].nome}.` };
+  }
+  return { id, compativel: true };
+}
+
+interface EfeitoAgregado {
+  multMais: number;
+  aumentado: number;
+  raioBonus: number;
+  alvosMult: number;
+  tempoFracao: number;
+  duracaoMult: number;
+  invocacoesMult: number;
+  multCusto: number;
+  tetoAtingido: boolean;
+  aplicados: { id: ModificadorId; nome: string; multiplicadorCusto: number }[];
+  propriedades: { chave: string; rotulo: string; valor: number }[];
+}
+
+function agregarModificadores(
+  p: Personagem,
+  cfg: SkillConfig,
+  tags: TagSkill[],
+): EfeitoAgregado {
+  const ag: EfeitoAgregado = {
+    multMais: 1, aumentado: 0, raioBonus: 0, alvosMult: 1, tempoFracao: 0,
+    duracaoMult: 1, invocacoesMult: 1, multCusto: 1, tetoAtingido: false,
+    aplicados: [], propriedades: [],
+  };
+  const vistos = new Set<ModificadorId>();
+  for (const id of cfg.modificadores ?? []) {
+    if (vistos.has(id)) continue; // o mesmo modificador não empilha consigo
+    if (!avaliarModificador(p, cfg, id, tags).compativel) continue;
+    vistos.add(id);
+    const def = MODIFICADORES[id];
+    ag.multCusto *= def.multiplicadorCusto;
+    ag.aplicados.push({ id, nome: def.nome, multiplicadorCusto: def.multiplicadorCusto });
+    for (const ef of def.efeitos) {
+      switch (ef.tipo) {
+        case 'poder_mais': ag.multMais *= 1 + ef.valor; break;
+        case 'poder_aumentado': ag.aumentado += ef.valor; break;
+        case 'raio_bonus': ag.raioBonus += ef.valor; break;
+        case 'alvos_mult': ag.alvosMult *= ef.valor; break;
+        case 'tempo_fracao': ag.tempoFracao += ef.valor; break;
+        case 'duracao_mult': ag.duracaoMult *= ef.valor; break;
+        case 'invocacoes_mult': ag.invocacoesMult *= ef.valor; break;
+        case 'propriedade':
+          ag.propriedades.push({ chave: ef.chave, rotulo: ef.rotulo, valor: ef.valor });
+          break;
+      }
+    }
+  }
+  const bruto = ag.multMais * (1 + ag.aumentado);
+  if (bruto > TETO_MULT_MODIFICADORES) {
+    ag.tetoAtingido = true;
+    ag.multMais = TETO_MULT_MODIFICADORES;
+    ag.aumentado = 0;
+  }
+  return ag;
+}
+
 export function validarSkill(
   p: Personagem,
   prog: Progressao,
@@ -237,8 +414,10 @@ export function validarSkill(
   const erros: string[] = [];
   const limites = calcularLimites(p, cfg.escola, cfg.fontes);
 
-  if (prog.niveisEfetivos[cfg.elemento] <= 0) {
-    erros.push(`Elemento "${ELEMENTOS[cfg.elemento].nome}" ainda não foi liberado.`);
+  if ((prog.niveisEfetivos[cfg.elemento] ?? 0) <= 0) {
+    erros.push(
+      `Elemento "${elementoDef(cfg.elemento)?.nome ?? cfg.elemento}" ainda não foi liberado.`,
+    );
   }
   if ((p.escolas[cfg.escola] ?? 0) <= 0) {
     erros.push(`Sem pontos na escola "${ESCOLAS[cfg.escola].nome}".`);
@@ -288,9 +467,14 @@ export function validarSkill(
   if (cfg.entrega.tipo === 'continuo' && cfg.entrega.duracaoSegundos <= 0) {
     erros.push('Duração do efeito contínuo deve ser positiva.');
   }
-  if (cfg.capacidadeExigida && !prog.capacidades.has(cfg.capacidadeExigida)) {
+  if (
+    cfg.capacidadeExigida &&
+    !prog.capacidades.has(cfg.capacidadeExigida) &&
+    !prog.capacidadesDiluidas.has(cfg.capacidadeExigida)
+  ) {
     erros.push(
-      `Exige a capacidade "${cfg.capacidadeExigida}" — desbloqueie o arquétipo correspondente.`,
+      `Exige a capacidade "${cfg.capacidadeExigida}" — desbloqueie o arquétipo correspondente ` +
+        `ou uma combinação ampla que o contenha.`,
     );
   }
   // fonte da evocação (só em escola de invocação)
@@ -300,6 +484,22 @@ export function validarSkill(
       erros.push('Selecione uma criatura capturada para a evocação.');
     } else if (!p.bestiario.some((b) => b.criaturaId === cri.id)) {
       erros.push(`"${cri.nome}" não está no seu bestiário — capture-a antes de evocá-la.`);
+    }
+  }
+  // modificadores de 2ª geração: slots e compatibilidade
+  const modsPedidos = [...new Set(cfg.modificadores ?? [])];
+  const slots = slotsModificador(p);
+  if (modsPedidos.length > slots) {
+    erros.push(
+      `${modsPedidos.length} modificadores para ${slots} slots ` +
+        `(o talento Engenho de Skill abre mais).`,
+    );
+  }
+  const tagsCfg = tagsDaSkill(cfg);
+  for (const id of modsPedidos) {
+    const av = avaliarModificador(p, cfg, id, tagsCfg);
+    if (!av.compativel) {
+      erros.push(`Modificador "${MODIFICADORES[id]?.nome ?? id}": ${av.motivo}`);
     }
   }
   // montaria: a fera-veículo precisa ser montável
@@ -320,9 +520,11 @@ export function calcularSkill(
 ): ResultadoSkill {
   const { erros, limites } = validarSkill(p, prog, cfg);
 
-  const nivelElemento = prog.niveisEfetivos[cfg.elemento];
+  const nivelElemento = prog.niveisEfetivos[cfg.elemento] ?? 0;
+  const defElemento = elementoDef(cfg.elemento);
+  const aridadeElemento = aridadeDe(cfg.elemento);
   const nivelEscola = p.escolas[cfg.escola] ?? 0;
-  const fatorPotencia = ELEMENTOS[cfg.elemento]?.fatorPotencia ?? 1;
+  const fatorPotencia = defElemento?.fatorPotencia ?? 1;
 
   const fontes = normalizarFontes(cfg.fontes);
   const prof = proficienciaPonderada(p, cfg.fontes);
@@ -332,22 +534,33 @@ export function calcularSkill(
     e.tipo === 'custo_reducao_fracao' ? e.valorPorRank * r : 0,
   );
   const reducaoProf = Math.min(REDUCAO_CUSTO_MAXIMA, REDUCAO_CUSTO_POR_PROFICIENCIA * prof);
+  const tags = tagsDaSkill(cfg);
+  const mods = agregarModificadores(p, cfg, tags);
+  // o custo dos modificadores é MULTIPLICATIVO — é ele que impede empilhar tudo
   const custoTotal =
     cfg.energia *
     Math.max(0.5, 1 - reducaoTalento) *
     (1 - reducaoProf) *
-    (1 + CUSTO_EXTRA_POR_METRO_ALCANCE * cfg.alcanceMetros);
+    (1 + CUSTO_EXTRA_POR_METRO_ALCANCE * cfg.alcanceMetros) *
+    mods.multCusto;
   const custoPorFonte = fontes.map((f) => ({
     recurso: f.recurso,
     custo: custoTotal * f.proporcao,
   }));
 
   // orçamento único de poder
-  const tempo = Math.max(cfg.tempoConjuracaoSegundos, limites.tempoConjuracaoMinimo);
+  const tempo = Math.max(
+    cfg.tempoConjuracaoSegundos * (1 + mods.tempoFracao),
+    limites.tempoConjuracaoMinimo,
+  );
   const multTempo = Math.sqrt(tempo); // 1s = 1.0; 4s = 2.0
+  // cada nível de um derivado de N componentes representa N elementos no
+  // mesmo patamar — o bônus por nível escala com a aridade para compensar
+  const bonusPorNivelElemento =
+    BONUS_POR_NIVEL_ELEMENTO * (1 + FRACAO_BONUS_ARIDADE * (aridadeElemento - 1));
   const multNivel =
     fatorPotencia *
-    (1 + BONUS_POR_NIVEL_ELEMENTO * nivelElemento) *
+    (1 + bonusPorNivelElemento * nivelElemento) *
     (1 + BONUS_POR_NIVEL_ESCOLA * nivelEscola);
   const bonusFoco = somaEfeitos(p, (e, r) =>
     e.tipo === 'foco_entrega' && e.entrega === cfg.entrega.tipo
@@ -364,30 +577,50 @@ export function calcularSkill(
   const multProficiencia = 1 + BONUS_IMPACTO_POR_PROFICIENCIA * prof;
   // pressa do Cronomante: elementos temporais aceleram a conjuração,
   // rendendo mais poder por segundo de cast (escala com o nível do elemento)
-  const ehTemporal = baseDominante(cfg.elemento) === 'tempo';
+  const ehTemporal = baseDominanteDe(cfg.elemento) === 'tempo';
   const multPressa = ehTemporal
     ? 1 + Math.min(BONUS_PRESSA_TETO, BONUS_PRESSA_POR_NIVEL * nivelElemento)
     : 1;
   const orcamento =
-    cfg.energia * multTempo * multNivel * (1 + bonusFoco) * multFontes * multProficiencia * multPressa;
+    cfg.energia *
+    multTempo *
+    multNivel *
+    (1 + bonusFoco) *
+    multFontes *
+    multProficiencia *
+    multPressa *
+    mods.multMais *
+    (1 + mods.aumentado);
 
   // área: espalhar o orçamento entre alvos esperados
+  const raioEfetivo =
+    cfg.area.tipo === 'circulo' ? Math.max(0.5, cfg.area.raioMetros + mods.raioBonus) : 0;
   const alvosEsperados =
-    cfg.area.tipo === 'unico'
+    (cfg.area.tipo === 'unico'
       ? 1
-      : Math.max(1, 1 + DENSIDADE_ALVOS_POR_M2 * Math.PI * cfg.area.raioMetros ** 2);
+      : Math.max(1, 1 + DENSIDADE_ALVOS_POR_M2 * Math.PI * raioEfetivo ** 2)) * mods.alvosMult;
   const eficienciaArea = cfg.area.tipo === 'unico' ? 1 : EFICIENCIA_AREA;
 
   // entrega: DoT rende um pouco mais no total, mas diluído na duração
   let impactoTotal = orcamento * eficienciaArea;
   let impactoPorSegundo: number | undefined;
   if (cfg.entrega.tipo === 'continuo') {
-    const bonusDot = Math.min(
-      BONUS_TOTAL_DOT_MAXIMO,
-      0.02 * cfg.entrega.duracaoSegundos,
-    );
+    const duracao = cfg.entrega.duracaoSegundos * mods.duracaoMult;
+    const bonusDot = Math.min(BONUS_TOTAL_DOT_MAXIMO, 0.02 * duracao);
     impactoTotal *= 1 + bonusDot;
-    impactoPorSegundo = impactoTotal / cfg.entrega.duracaoSegundos;
+    impactoPorSegundo = impactoTotal / duracao;
+  }
+
+  // meia-identidade: a capacidade veio de uma combinação ampla, não do
+  // arquétipo pleno — funciona, mas rende menos
+  const capacidadeDiluida = Boolean(
+    cfg.capacidadeExigida &&
+      !prog.capacidades.has(cfg.capacidadeExigida) &&
+      prog.capacidadesDiluidas.has(cfg.capacidadeExigida),
+  );
+  if (capacidadeDiluida) {
+    impactoTotal *= 1 - PENALIDADE_CAPACIDADE_DILUIDA;
+    if (impactoPorSegundo) impactoPorSegundo *= 1 - PENALIDADE_CAPACIDADE_DILUIDA;
   }
 
   // montaria: lançar a skill cavalgando uma fera amplifica o resultado
@@ -410,11 +643,14 @@ export function calcularSkill(
     const potenciaBonus = somaEfeitos(p, (e, r) =>
       e.tipo === 'invocacao_potencia_bonus_fracao' ? e.valorPorRank * r : 0,
     );
-    const quantidade = 1 + Math.floor(quantidadeBonus);
+    const quantidade = Math.max(
+      1,
+      Math.round((1 + Math.floor(quantidadeBonus)) * mods.invocacoesMult),
+    );
 
     // fonte da evocação: define quem é invocado e um fator sobre o poder
     const modo = cfg.evocacao?.modo ?? 'elemental';
-    const nomeElemento = ELEMENTOS[cfg.elemento]?.nome ?? cfg.elemento;
+    const nomeElemento = defElemento?.nome ?? cfg.elemento;
     let fatorFonte = 1;
     let nomeCriatura = `Elemental de ${nomeElemento}`;
     let familia: string | undefined = 'elemental';
@@ -449,7 +685,7 @@ export function calcularSkill(
   }
 
   // perfil mecânico: média dos pesos do elemento e da escola × impacto
-  const pesosElemento = ELEMENTOS[cfg.elemento]?.pesos ?? {
+  const pesosElemento = defElemento?.pesos ?? {
     dano: 1,
     controle: 0,
     cura: 0,
@@ -502,6 +738,25 @@ export function calcularSkill(
       valor: prof,
     });
   }
+  if (capacidadeDiluida) {
+    propriedades.push({
+      chave: 'capacidade_diluida',
+      rotulo:
+        `Meia-identidade: "${cfg.capacidadeExigida}" vem de uma combinação ampla, ` +
+        `não do arquétipo pleno — impacto −${Math.round(PENALIDADE_CAPACIDADE_DILUIDA * 100)}%`,
+      valor: -PENALIDADE_CAPACIDADE_DILUIDA,
+    });
+  }
+  for (const pr of mods.propriedades) propriedades.push(pr);
+  if (mods.aplicados.length) {
+    propriedades.push({
+      chave: 'custo_modificadores',
+      rotulo:
+        `${mods.aplicados.length} modificador(es): custo ×${mods.multCusto.toFixed(2)}` +
+        (mods.tetoAtingido ? ' — TETO de composição atingido' : ''),
+      valor: mods.multCusto,
+    });
+  }
   if (ehTemporal && multPressa > 1) {
     propriedades.push({
       chave: 'pressa',
@@ -511,7 +766,7 @@ export function calcularSkill(
   }
 
   // estados/condições que a skill pode infligir (elemento + escola), sem repetir
-  const baseElem = baseDominante(cfg.elemento);
+  const baseElem = baseDominanteDe(cfg.elemento);
   const estadoIds = new Set<EstadoId>([
     ...(ESTADOS_POR_ELEMENTO[baseElem] ?? []),
     ...(ESTADOS_POR_ESCOLA[cfg.escola] ?? []),
@@ -526,7 +781,7 @@ export function calcularSkill(
   // preserva o invariante de balanceamento e apenas informa o "vs alvo")
   let efet: ResultadoSkill['efetividade'];
   if (cfg.alvoElemento) {
-    const mult = efetividade(cfg.elemento, cfg.alvoElemento);
+    const mult = efetividadeDe(cfg.elemento, cfg.alvoElemento);
     efet = {
       alvo: cfg.alvoElemento,
       multiplicador: mult,
@@ -554,5 +809,9 @@ export function calcularSkill(
     perfil,
     propriedades,
     eficiencia: impactoTotal / cfg.energia,
+    tags,
+    modificadoresAplicados: mods.aplicados,
+    multModificadores: mods.multMais * (1 + mods.aumentado),
+    tetoModificadoresAtingido: mods.tetoAtingido,
   };
 }

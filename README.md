@@ -13,7 +13,7 @@ npm run build:sim  # regenera o simulador interativo (simulador.html)
 
 Abra **`simulador.html`** no navegador (arquivo único, auto-contido — o motor real é empacotado dentro dele). Está organizado em **abas**, no espírito do License Board do FFXII:
 
-- **Elementos — o Céu dos Elementos**: um tabuleiro celeste onde os 17 elementos base formam o anel externo e as 136 combinações orbitam em anéis concêntricos rumo ao centro (pares de vizinhos na borda, pares de opostos mais fundo), triplas num anel interno e o **Nulo no coração do céu**. Clique numa estrela para investir; derivados acendem quando os componentes evoluem juntos, e as linhas de receita se iluminam.
+- **Elementos — o Céu dos Elementos**: um tabuleiro celeste onde os 17 elementos base formam o anel externo e **3.196 combinações de 2 a 4 elementos** orbitam rumo ao centro em faixas por aridade — pares, triplas, quádruplas — com o **Nulo no coração do céu**. Cada combinação tem um **endereço permanente**: a direção diz de quais elementos ela nasce, a profundidade diz quão dispersos eles são, e a faixa diz quantos são. Uma estrela nunca se move porque outra apareceu. Controles de **profundidade (2/3/4)**, **lente**, **zoom** e **busca** decidem o que vira desenho; o **foco de linhagem** acende ancestrais e descendentes do que você selecionou e apaga o resto.
 - **Escolas**: pontos por escola + os arquétipos que emergem da combinação.
 - **Recursos**: proficiência nas cinco fontes de energia (mana, fé, fúria, soullink, ressonância). Cada ponto reduz custo, aumenta regeneração/impacto e encurta a conjuração — e a bancada simula as fontes da skill atual em tempo real.
 - **Talentos**: em **árvore** (trilhas e tiers) ou **cartas**.
@@ -26,7 +26,10 @@ O estado persiste no `localStorage` entre visitas; dá para **exportar/importar*
 ```
 src/
   registry/     ← DADOS: o conteúdo do jogo, editável sem tocar no motor
-    elementos.ts   elementos base, derivados, sinergias de transbordo
+    elementos.ts   17 elementos base, os 136 pares nomeados, sinergias
+    combinacoes.ts as 680 triplas + 2.380 quádruplas: curadas onde importa,
+                   procedurais no resto, resolvidas sob demanda
+    modificadores.ts modificadores de skill (2ª geração), com tags e custo
     recursos.ts    mana, fé, fúria, soullink, ressonância e seus parâmetros
     escolas.ts     combate físico, longo alcance, evocação, conjuração, bênção, maldição
     talentos.ts    talentos com ranks, requisitos e ramos exclusivos
@@ -41,6 +44,9 @@ src/
     skills.ts      construtor + calculadora de skills (orçamento de poder)
     recursos.ts    simuladores em tempo real de mana/fé/fúria
     evocacao.ts    captura, doma (vínculo) e os 3 modos de evocar
+    fusao.ts       fusão de 2 a 4 skills → 2ª e 3ª geração
+  ui/
+    ceu-layout.ts  matemática pura do Céu dos Elementos (sem DOM, testável)
 ```
 
 A separação é deliberada: **adicionar um elemento, uma receita, uma sinergia ou um arquétipo é só adicionar uma entrada no registro** — o motor lê tudo de forma declarativa.
@@ -183,6 +189,114 @@ Inspirada nas professions de **World of Warcraft** (Ferraria, Alfaiataria, Engen
 - **Qualidade → raridade**: Comum → Incomum → Raro → Épico → Lendário → Mítico. No simulador, a aba **🔨 Profissão** mostra a bancada de criação com o item resultante, sua raridade, as propriedades que emergiram e de onde veio cada ponto de qualidade — tudo em tempo real.
 - **Ponte com o bestiário**: o **Curtidor** trabalha as **peles das criaturas que você capturou**. Cada família vira um material (Couro Ígneo da salamandra, Escama de Dragão do wyvern, Éctoplasma do espectro…) que adiciona qualidade proporcional ao poder da fera e uma **propriedade própria** — uma Escama de Dragão faz uma peça **Dracônica** (resistência elemental lendária). Assim captura → doma → **couro** conecta a Camada 6 (Evocação) à Camada 9 (Profissões).
 
+
+## Camada 10 — O espaço completo de combinações
+
+Os 136 pares dos 17 elementos base são nomeados à mão. A partir de 3 componentes o espaço explode: **C(17,3) = 680 triplas** e **C(17,4) = 2.380 quádruplas**. Curar 3.060 entradas é inviável — e desnecessário.
+
+A estratégia é **híbrida**:
+
+- **Curadas** (64 e contando): combinações com identidade forte ganham nome, descrição e arquétipo à mão — Vulcão, Supernova, Peste Negra, Hipnose, Tempestade Perfeita, Ragnarök, Arquiteto da Realidade.
+- **Procedurais** (as outras ~3.000): existem, são alcançáveis e aparecem na constelação, mas nome, descrição, perfil e números são **derivados das partes**, sob demanda e em cache.
+
+**A nomenclatura procedural é composicional e ensina a linhagem:**
+
+```
+tripla     {a,b,c}   →  "{Par(a,b)} {adjetivo(c)}"     →  Lava Umbria
+quádrupla  {a,b,c,d} →  "{Par(a,b)} d{o|a} {Par(c,d)}" →  Lava do Espectro
+```
+
+Como os pares já são únicos e a ordenação dos componentes é determinística, os nomes gerados são **provadamente únicos** — um teste verifica os 3.060. E a preposição concorda em gênero (`Lava do Espectro`, `Vapor da Praga`), com heurística de português e uma lista de exceções para os casos que a terminação engana (Miasma é masculino, Fênix é feminino).
+
+**Coerência: nem toda convergência custa o mesmo.** Para cada par de componentes o motor olha as sinergias (aliados) e a tabela de afinidade (opostos):
+
+| Coerência | Quando | Efeito |
+|---|---|---|
+| **Harmônica** | maioria de componentes aliados | mínimo menor, potência contida |
+| **Neutra** | componentes independentes | valores medianos |
+| **Em Tensão** | ≥25% dos pares em oposição | exige mais de cada parte, paga melhor |
+| **Paradoxal** | ≥50% dos pares em oposição | o extremo dos dois eixos |
+
+Distribuição real do espaço: 85 harmônicas, 1.701 neutras, 1.000 em tensão, 274 paradoxais.
+
+**Compensação de aridade.** Um derivado de N componentes no nível L custou N×L pontos, mas rendia como um elemento no nível L — o que fazia especializar dominar qualquer combinação. Agora o bônus por nível escala com a aridade:
+
+```
+bônus por nível = 0.04 × (1 + 0.30 × (N − 1))
+```
+
+A compensação é **deliberadamente parcial**: combinar já paga em largura. Medido, com 100 pontos de orçamento:
+
+| Rota | Impacto | vs. especializar |
+|---|---|---|
+| Fogo puro (100 pts) | 208 | — |
+| Par (50+50) | 172 | 83% |
+| Tripla (33×3) | 175 | 84% |
+| Quádrupla (25×4) | 185 | 89% |
+
+Especializar ainda vence no poder bruto de uma skill — e deve vencer. Quem combina troca ~11% de poder por 15 elementos disponíveis em vez de 1, mais arquétipos e mais fusões.
+
+**Meias-identidades.** Toda combinação de 3+ componentes concede versões **diluídas** das capacidades dos arquétipos contidos na sua receita (−18% de impacto). É a resposta ao modo de falha clássico dos sistemas de aridade alta: se combinar mais só desse um multiplicador maior, o jogador ótimo sempre subiria a escada e as combinações menores virariam conteúdo de passagem. Aqui, combinar mais compra **largura de identidade** — várias meias-classes em vez de uma classe mais forte.
+
+**Talentos que mexem na estrutura**: *Sintonia de Receita* (−2 níveis/rank no mínimo de toda receita — o caminho prático para as quádruplas), *Convergência Elemental* (+1 nível em todo derivado), *Transbordo Ampliado*, *Maestria Paradoxal*, *Leitor de Constelação*.
+
+## Camada 11 — Skills de 2ª e 3ª geração
+
+Duas camadas independentes que se compõem.
+
+### Modificadores (o modelo *support gem*)
+
+Você não inventa uma skill nova; pega uma que já entende e **aumenta a aposta**. 23 modificadores, e quatro regras que fazem isso funcionar:
+
+1. **O custo é multiplicativo.** Sobrecarga Bruta (×1.45) + Canalização Arriscada (×1.28) = ×1.86, não ×1.73. É esse composto que impede encaixar tudo.
+2. **Compatibilidade por tag.** Cada skill exibe tags derivadas da configuração (`projetil`, `area`, `continuo`, `invocacao`, `derivado`…); um modificador de área não entra numa skill de alvo único. A maioria das células da matriz simplesmente não existe.
+3. **Nenhum é ganho puro.** Sobrecarga Bruta rende 1.34× de impacto por 1.45× de custo — eficiência 0.92. *Contenção Disciplinada* é a troca inversa: 0.80× de impacto por 0.62× de custo.
+4. **Slots, não escassez global.** 2 slots de base, +1 por rank de *Engenho de Skill*. Nada de "cada modificador uma vez por build" — essa regra é elegante no papel e irritante na mão.
+
+Um **teto duro** (×2.2) grampeia o produto dos multiplicadores e avisa quando mordeu.
+
+### Fusão
+
+**Fundir skills funde os elementos delas.** Uma skill de Fogo + uma de Terra viram uma skill de **Lava**. Três viram a tripla. Quatro, a quádrupla. A árvore de combinações deixa de ser só um mapa de progressão e vira a **gramática das fusões**.
+
+- **2 componentes → 2ª geração · 3 ou 4 → 3ª geração.**
+- **O modo emerge da relação**, não da escolha: *Sequência* (mesma escola), *Amálgama* (escolas distintas), *Ressonância* (elementos aliados — a mais barata), *Catálise* (elementos em oposição — a mais potente e cara), *Prisma* (3+ correntes, o efeito se abre em faixas simultâneas).
+- **Sem fórmula própria.** A fusão monta uma `SkillConfig` sintética e chama `calcularSkill`, herdando o invariante de orçamento inteiro. Por cima aplica só o fator do modo e a taxa de custo (1.15× na 2ª geração, 1.35× na 3ª).
+
+**O teto é de eficiência relativa, não de impacto absoluto.** Um teto sobre o impacto teria de ser recalibrado a cada aridade, e concentrar energia numa skill já é naturalmente superlinear neste motor. Medido antes da correção, um Prisma de 3 componentes entregava 1.90× o impacto somado por 1.46× o custo — fundir virava obrigatório. Amarrando o teto na eficiência (1.10×), a intenção de design fica escrita direto na regra:
+
+| | ganho de impacto | taxa de custo | eficiência vs. separado |
+|---|---|---|---|
+| 2ª geração (Catálise) | 1.39× | 1.36× | **1.03×** |
+| 3ª geração (Prisma) | 1.60× | 1.46× | **1.10×** (no teto) |
+
+Fundir é **aproximadamente neutro no numérico**. O que se compra é qualitativo: uma ação em vez de N, o perfil e os estados do elemento combinado, e as propriedades emergentes. Fusão sempre melhor seria fusão obrigatória, e escolha obrigatória não é escolha.
+
+## Camada 12 — Mais cinco ofícios
+
+Além de Ferreiro, Tecelão, Artesão, Joalheiro, Alquimista e Curtidor:
+
+- **Encantador** — grava elementos em objetos prontos. É a profissão que mais depende de combinações.
+- **Escriba** — pergaminhos, glifos e contratos vinculantes.
+- **Cozinheiro** — banquetes e rações que sustentam o grupo.
+- **Luthier** — instrumentos que conduzem canções de guerra (o ofício do elemento Som).
+- **Cartógrafo** — cartas do espaço, do tempo e do que há entre eles.
+
+E **14 propriedades emergentes novas**, seis delas exigindo combinações de aridade alta: *Tempestuosa* (água+ar+eletricidade), *Cataclísmica* (terra+gravidade+fogo), *Sepulcral* (morte+sombra+vileza), *Consagrada* (luz+vida+vigor), *Paradoxal* (tempo+espaço) e *Primordial* (os cinco primais, nível 15 de profissão).
+
+## Os agentes do projeto
+
+`.claude/agents/` traz seis especialistas que sabem as regras deste sistema:
+
+| Agente | Papel |
+|---|---|
+| **arquiteto-de-sistema** | Onde uma mecânica nova entra, e o que ela quebra |
+| **combinador** | Nomeia e dá alma a combinações; desenha léxicos |
+| **experimentador** | Mede. Varreduras de build, curvas, outliers — número, não palpite |
+| **supervisor-de-balanceamento** | Cético profissional: caça build degenerada e combinação morta |
+| **pesquisador-benchmark** | Traz padrões já familiares ao público de outros jogos |
+| **curador-de-constelacao** | Mantém o céu legível enquanto o conteúdo cresce |
+
 ## Estendendo
 
 - **Novo elemento derivado**: adicione em `ELEMENTOS` com `receita` (qualquer aridade — pares, triplas, ou "todos", como o Nulo).
@@ -192,4 +306,7 @@ Inspirada nas professions de **World of Warcraft** (Ferraria, Alfaiataria, Engen
 - **Ajustar afinidade elemental**: edite `AFINIDADES` (forte/fraco por elemento base).
 - **Novo estado/condição**: entrada em `ESTADOS` + mapeie em `ESTADOS_POR_ELEMENTO`/`ESTADOS_POR_ESCOLA`.
 - **Nova profissão/item/propriedade**: entradas em `PROFISSOES`, `ITENS_BASE` e `PROPRIEDADES_ITEM` (com os requisitos de elemento/talento/nível que a fazem emergir).
-- **Ajuste de balanceamento**: todas as constantes estão no topo de `src/engine/skills.ts`.
+- **Nova combinação curada de 3/4**: uma entrada em `CURADAS` (`src/registry/combinacoes.ts`). Tudo que não está lá continua existindo, gerado sob demanda.
+- **Novo modificador de skill**: entrada em `MODIFICADORES` com `exigeTags` e `multiplicadorCusto`.
+- **Novo modo de fusão**: entrada em `MODOS_FUSAO` + a regra em `determinarModo`.
+- **Ajuste de balanceamento**: as constantes estão no topo de `src/engine/skills.ts` (orçamento e modificadores), `src/engine/fusao.ts` (fusão) e `src/registry/combinacoes.ts` (fator de potência e mínimos por aridade).

@@ -76,7 +76,29 @@ export type TalentoId =
   | 'fluxo_constante'
   | 'sede_de_batalha'
   | 'elo_profundo'
-  | 'afinacao';
+  | 'afinacao'
+  // fusão e modificadores (2ª e 3ª geração)
+  | 'engenho_de_skill'
+  | 'arte_da_fusao'
+  | 'catalisador'
+  | 'prisma_interior'
+  | 'estabilizador'
+  // combinação de elementos (constelação)
+  | 'sintonia_de_receita'
+  | 'convergencia_elemental'
+  | 'leitor_de_constelacao'
+  | 'transbordo_ampliado'
+  | 'maestria_paradoxal'
+  // ofício
+  | 'mao_de_mestre'
+  | 'olho_de_materiais'
+  | 'assinatura_do_artesao'
+  | 'linha_de_producao'
+  // híbridos entre escolas
+  | 'duplo_chaveamento'
+  | 'ritmo_de_guerra'
+  | 'pacto_de_sangue'
+  | 'eco_de_batalha';
 
 export type EfeitoTalento =
   | { tipo: 'raio_maximo_bonus'; valorPorRank: number }
@@ -87,6 +109,14 @@ export type EfeitoTalento =
   | { tipo: 'foco_entrega'; entrega: 'instantaneo' | 'continuo'; bonusFracaoPorRank: number }
   | { tipo: 'invocacao_quantidade_bonus'; valorPorRank: number }
   | { tipo: 'invocacao_potencia_bonus_fracao'; valorPorRank: number }
+  /**
+   * Reduz o nível mínimo exigido de CADA componente das receitas de elementos
+   * derivados. É o que torna triplas e quádruplas alcançáveis sem forçar o
+   * jogador a espalhar dezenas de pontos antes de ver qualquer retorno.
+   */
+  | { tipo: 'receita_minimo_reducao'; valorPorRank: number }
+  /** Soma ao nível efetivo de todo elemento derivado já desbloqueado. */
+  | { tipo: 'nivel_derivado_bonus'; valorPorRank: number }
   /**
    * Propriedade qualitativa que aparece na skill calculada (o runtime do
    * jogo aplica o efeito; a calculadora exibe chave + magnitude).
@@ -519,5 +549,145 @@ export const TALENTOS: Record<TalentoId, TalentoDef> = {
     ranksMaximos: 3,
     requisito: { recurso: 'ressonancia', nivelMinimo: 5 },
     efeitos: [{ tipo: 'propriedade', chave: 'ressonancia_janela_extra', rotulo: 'Janela extra antes do reset (s)', valorPorRank: 2 }],
+  },
+
+  // ------------- fusão e modificadores (2ª e 3ª geração) -------------
+  engenho_de_skill: {
+    id: 'engenho_de_skill',
+    nome: 'Engenho de Skill',
+    descricao: 'Abre +1 slot de modificador por rank em todas as suas skills.',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'propriedade', chave: 'slots_modificador', rotulo: 'Slots de modificador', valorPorRank: 1 }],
+  },
+  arte_da_fusao: {
+    id: 'arte_da_fusao',
+    nome: 'Arte da Fusão',
+    descricao: 'Reduz em 20%/rank a taxa de custo cobrada por fundir skills.',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'propriedade', chave: 'desconto_fusao', rotulo: 'Desconto na taxa de fusão', valorPorRank: 0.2 }],
+  },
+  catalisador: {
+    id: 'catalisador',
+    nome: 'Catalisador',
+    descricao: 'Fusões de elementos em oposição (modo Catálise) rendem +8%/rank.',
+    ranksMaximos: 3,
+    exclusivoCom: ['estabilizador'],
+    efeitos: [{ tipo: 'propriedade', chave: 'bonus_catalise', rotulo: 'Bônus em fusões por catálise', valorPorRank: 0.08 }],
+  },
+  estabilizador: {
+    id: 'estabilizador',
+    nome: 'Estabilizador',
+    descricao: 'Fusões harmônicas custam 10%/rank menos e nunca falham (exclui Catalisador).',
+    ranksMaximos: 3,
+    exclusivoCom: ['catalisador'],
+    efeitos: [{ tipo: 'propriedade', chave: 'bonus_estabilidade', rotulo: 'Economia em fusões harmônicas', valorPorRank: 0.1 }],
+  },
+  prisma_interior: {
+    id: 'prisma_interior',
+    nome: 'Prisma Interior',
+    descricao: 'Fusões de 3+ componentes abrem uma faixa simultânea extra por rank.',
+    ranksMaximos: 2,
+    requisito: { escola: 'conjuracao', nivelMinimo: 12 },
+    efeitos: [{ tipo: 'propriedade', chave: 'faixas_extras', rotulo: 'Faixas extras no modo Prisma', valorPorRank: 1 }],
+  },
+
+  // ------------- combinação de elementos -------------
+  sintonia_de_receita: {
+    id: 'sintonia_de_receita',
+    nome: 'Sintonia de Receita',
+    descricao: 'Reduz em 2 níveis/rank o mínimo exigido de cada componente das receitas — o caminho prático para triplas e quádruplas.',
+    ranksMaximos: 4,
+    efeitos: [{ tipo: 'receita_minimo_reducao', valorPorRank: 2 }],
+  },
+  convergencia_elemental: {
+    id: 'convergencia_elemental',
+    nome: 'Convergência Elemental',
+    descricao: '+1 nível efetivo por rank em TODO elemento derivado já desbloqueado.',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'nivel_derivado_bonus', valorPorRank: 1 }],
+  },
+  leitor_de_constelacao: {
+    id: 'leitor_de_constelacao',
+    nome: 'Leitor de Constelação',
+    descricao: 'Revela e aproxima combinações distantes: +5%/rank de progresso aparente em toda receita não concluída.',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'propriedade', chave: 'leitura_constelacao', rotulo: 'Progresso revelado nas receitas', valorPorRank: 0.05 }],
+  },
+  transbordo_ampliado: {
+    id: 'transbordo_ampliado',
+    nome: 'Transbordo Ampliado',
+    descricao: 'As sinergias entre elementos vazam 25%/rank mais forte para os vizinhos.',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'propriedade', chave: 'transbordo_bonus', rotulo: 'Intensidade do transbordo', valorPorRank: 0.25 }],
+  },
+  maestria_paradoxal: {
+    id: 'maestria_paradoxal',
+    nome: 'Maestria Paradoxal',
+    descricao: 'Elementos de receita paradoxal (componentes opostos) rendem +6%/rank de impacto.',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'propriedade', chave: 'bonus_paradoxo', rotulo: 'Impacto de elementos paradoxais', valorPorRank: 0.06 }],
+  },
+
+  // ------------- ofício -------------
+  mao_de_mestre: {
+    id: 'mao_de_mestre',
+    nome: 'Mão de Mestre',
+    descricao: 'Soma +8 de qualidade por rank a tudo que você cria.',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'propriedade', chave: 'qualidade_bonus', rotulo: 'Qualidade de criação', valorPorRank: 8 }],
+  },
+  olho_de_materiais: {
+    id: 'olho_de_materiais',
+    nome: 'Olho de Materiais',
+    descricao: 'Extrai 30%/rank a mais de qualidade das peles e carcaças do bestiário.',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'propriedade', chave: 'material_bonus', rotulo: 'Aproveitamento de materiais', valorPorRank: 0.3 }],
+  },
+  assinatura_do_artesao: {
+    id: 'assinatura_do_artesao',
+    nome: 'Assinatura do Artesão',
+    descricao: 'Suas obras carregam uma propriedade emergente extra por rank.',
+    ranksMaximos: 2,
+    efeitos: [{ tipo: 'propriedade', chave: 'propriedades_extras', rotulo: 'Propriedades emergentes extras', valorPorRank: 1 }],
+  },
+  linha_de_producao: {
+    id: 'linha_de_producao',
+    nome: 'Linha de Produção',
+    descricao: 'Reduz em 4/rank o nível de profissão exigido pelas propriedades de item.',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'propriedade', chave: 'reducao_requisito_profissao', rotulo: 'Requisito de profissão reduzido', valorPorRank: 4 }],
+  },
+
+  // ------------- híbridos entre escolas -------------
+  duplo_chaveamento: {
+    id: 'duplo_chaveamento',
+    nome: 'Duplo Chaveamento',
+    descricao: 'FF Red Mage: alterna entre duas escolas sem perder o ritmo (+7%/rank em fusões de escolas distintas).',
+    ranksMaximos: 3,
+    efeitos: [{ tipo: 'propriedade', chave: 'troca_escola', rotulo: 'Bônus em fusões de escolas distintas', valorPorRank: 0.07 }],
+  },
+  ritmo_de_guerra: {
+    id: 'ritmo_de_guerra',
+    nome: 'Ritmo de Guerra',
+    descricao: 'Cada skill lançada acelera a próxima em 5%/rank, até três elos.',
+    ranksMaximos: 3,
+    requisito: { escola: 'combate_fisico', nivelMinimo: 10 },
+    efeitos: [{ tipo: 'propriedade', chave: 'ritmo', rotulo: 'Aceleração encadeada', valorPorRank: 0.05 }],
+  },
+  pacto_de_sangue: {
+    id: 'pacto_de_sangue',
+    nome: 'Pacto de Sangue',
+    descricao: 'Pagar com vida em qualquer fonte concede +6%/rank de impacto à fusão inteira.',
+    ranksMaximos: 3,
+    requisito: { recurso: 'soullink', nivelMinimo: 8 },
+    efeitos: [{ tipo: 'propriedade', chave: 'pacto_sangue', rotulo: 'Impacto extra ao pagar com vida', valorPorRank: 0.06 }],
+  },
+  eco_de_batalha: {
+    id: 'eco_de_batalha',
+    nome: 'Eco de Batalha',
+    descricao: 'Skills de 3ª geração deixam um eco que repete 15%/rank do efeito.',
+    ranksMaximos: 3,
+    requisito: { escola: 'conjuracao', nivelMinimo: 15 },
+    efeitos: [{ tipo: 'propriedade', chave: 'eco_geracao', rotulo: 'Eco das skills de 3ª geração', valorPorRank: 0.15 }],
   },
 };

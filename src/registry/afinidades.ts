@@ -8,7 +8,7 @@
  * do primeiro componente da sua receita. Físico (vigor/marcial) é neutro.
  */
 
-import { ELEMENTOS, type ElementoBaseId, type ElementoId } from './elementos';
+import { ELEMENTOS, type ElementoBaseId, type ElementoDef, type ElementoId } from './elementos';
 
 export const MULT_FORTE = 1.5;
 export const MULT_FRACO = 0.5;
@@ -44,12 +44,21 @@ export const AFINIDADES: Record<ElementoBaseId, AfinidadeDef> = {
   espaco: { forteContra: ['gravidade', 'tempo'], fracoContra: ['arcano'] },
 };
 
-/** Reduz um elemento (base ou derivado) ao seu elemento base dominante. */
-export function baseDominante(elemento: ElementoId): ElementoBaseId {
-  const def = ELEMENTOS[elemento];
+/**
+ * Reduz uma DEFINIÇÃO de elemento ao seu base dominante. Trabalhar sobre a
+ * definição (e não sobre o id) permite que combinações procedurais — que não
+ * moram em `ELEMENTOS` — usem a mesma regra sem criar dependência circular
+ * entre este registro e o de combinações.
+ */
+export function baseDominanteDoDef(def: ElementoDef | undefined): ElementoBaseId {
   if (!def) return 'arcano';
-  if (def.tipo === 'base') return elemento as ElementoBaseId;
+  if (def.tipo === 'base') return def.id as ElementoBaseId;
   return (def.receita?.[0]?.elemento ?? 'arcano') as ElementoBaseId;
+}
+
+/** Reduz um elemento (base ou derivado curado) ao seu elemento base dominante. */
+export function baseDominante(elemento: ElementoId): ElementoBaseId {
+  return baseDominanteDoDef(ELEMENTOS[elemento]);
 }
 
 /**

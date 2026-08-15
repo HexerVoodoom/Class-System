@@ -20,6 +20,24 @@ import {
   type ElementoDef,
   type ElementoId,
 } from '../registry/elementos';
+import {
+  TODAS_COMBINACOES,
+  buscarCombinacoes,
+  combinacoesRelevantes,
+  elementoDef,
+} from '../registry/combinacoes';
+import {
+  CENTRO,
+  R_ROTULO_BASE,
+  TETO,
+  VIEWBOX,
+  W as W_CEU,
+  guiasDeFaixa,
+  posicaoBase,
+  posicaoCombinacao,
+  raioComNivel,
+  type PosEstrela,
+} from './ceu-layout';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type TalentoDef, type TalentoId } from '../registry/talentos';
@@ -537,135 +555,272 @@ function renderAbas(): void {
 
 let elementoSelecionado: ElementoId | null = null;
 
-interface PosEstrela {
-  x: number;
-  y: number;
-  r: number;
+/** Controles do céu: profundidade, lente, busca e foco de linhagem. */
+interface EstadoCeu {
+  profundidade: 2 | 3 | 4;
+  lente: 'tudo' | 'desbloqueados' | 'proximos' | 'curados' | 'procedurais';
+  busca: string;
+  foco: boolean;
+  zoom: 1 | 2 | 3;
 }
 
-function posicoesDoCeu(): Map<ElementoId, PosEstrela> {
-  const W = 760;
-  const c = W / 2;
-  const bases = elementosBase().map((e) => e.id as ElementoBaseId);
-  const n = bases.length; // 13
-  const passo = (2 * Math.PI) / n;
-  const angulo = (i: number) => -Math.PI / 2 + i * passo;
-  const R_BASE = 300;
-  const pos = new Map<ElementoId, PosEstrela>();
+const CEU_PADRAO: EstadoCeu = {
+  profundidade: 3,
+  lente: 'tudo',
+  busca: '',
+  foco: true,
+  zoom: 1,
+};
 
-  bases.forEach((id, i) => {
-    pos.set(id, {
-      x: c + Math.cos(angulo(i)) * R_BASE,
-      y: c + Math.sin(angulo(i)) * R_BASE,
-      r: 6,
+let ceu: EstadoCeu = { ...CEU_PADRAO };
+
+const INDICE_BASE = new Map<string, number>(
+  elementosBase().map((e, i) => [e.id, i]),
+);
+
+/** Candidato ao céu: já resolvido, com posição e métricas de prioridade. */
+interface Candidato {
+  def: ElementoDef;
+  aridade: number;
+  nivel: number;
+  progresso: number;
+  curada: boolean;
+  pos: PosEstrela;
+  prioridade: number;
+}
+
+function indicesDe(def: ElementoDef): number[] {
+  if (def.tipo === 'base') return [INDICE_BASE.get(def.id) ?? 0];
+  return (def.receita ?? []).map((r) => INDICE_BASE.get(r.elemento) ?? 0);
+}
+
+function posicaoDe(def: ElementoDef): PosEstrela {
+  const idx = indicesDe(def);
+  if (def.tipo === 'base') return posicaoBase(idx[0]);
+  if (idx.length >= 2 && idx.length <= 4) return posicaoCombinacao(idx);
+  // receitas amplas (primordial, ciclo, nulo) moram no núcleo
+  return { x: CENTRO, y: CENTRO, r: 5, arco: 0, pista: 0 };
+}
+
+const norm = (t: string) =>
+  t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+/** Ancestrais e descendentes do selecionado, por continência de receita. */
+function linhagemDe(id: ElementoId, candidatos: Candidato[]): Map<ElementoId, number> {
+  const alvoDef = elementoDef(id);
+  if (!alvoDef) return new Map();
+  const alvo = new Set<string>(
+    alvoDef.tipo === 'base' ? [alvoDef.id] : (alvoDef.receita ?? []).map((r) => r.elemento),
+  );
+  const m = new Map<ElementoId, number>([[id, 0]]);
+  for (const c of candidatos) {
+    if (c.def.id === id) continue;
+    const seus = new Set<string>(
+      c.def.tipo === 'base' ? [c.def.id] : (c.def.receita ?? []).map((r) => r.elemento),
+    );
+    const contidoNoAlvo = [...seus].every((x) => alvo.has(x));
+    const contemAlvo = [...alvo].every((x) => seus.has(x));
+    if (contidoNoAlvo && seus.size < alvo.size) m.set(c.def.id, alvo.size - seus.size);
+    else if (contemAlvo && seus.size > alvo.size) m.set(c.def.id, -(seus.size - alvo.size));
+  }
+  return m;
+}
+
+function passaLente(c: Candidato): boolean {
+  switch (ceu.lente) {
+    case 'desbloqueados': return c.nivel > 0;
+    case 'proximos': return c.nivel === 0 && c.progresso >= 0.55;
+    case 'curados': return c.curada;
+    case 'procedurais': return !c.curada;
+    default: return true;
+  }
+}
+
+/**
+ * Reúne os candidatos do céu. O espaço completo tem 3.213 nós; esta função
+ * materializa só o que pode importar e a prioridade corta o resto.
+ */
+function candidatosDoCeu(prog: Progressao): Candidato[] {
+  const lista: Candidato[] = [];
+  const vistos = new Set<ElementoId>();
+  const push = (def: ElementoDef, curada: boolean) => {
+    if (vistos.has(def.id)) return;
+    vistos.add(def.id);
+    const aridade = def.tipo === 'base' ? 1 : (def.receita?.length ?? 1);
+    lista.push({
+      def,
+      aridade,
+      nivel: prog.niveisEfetivos[def.id] ?? 0,
+      progresso: def.tipo === 'base' ? 1 : progressoReceita(def, prog),
+      curada,
+      pos: posicaoDe(def),
+      prioridade: 0,
     });
-  });
-
-  const idx = new Map(bases.map((id, i) => [id, i]));
-  const triplas: ElementoDef[] = [];
-  for (const def of elementosDerivados()) {
-    const comps = def.receita!.map((r) => r.elemento);
-    if (comps.length === 2) {
-      let i = idx.get(comps[0])!;
-      let j = idx.get(comps[1])!;
-      let s = (j - i + n) % n;
-      if (s > n / 2) {
-        [i, j] = [j, i];
-        s = n - s;
-      }
-      // anéis concêntricos: pares de componentes vizinhos ficam na borda,
-      // pares de opostos mergulham em direção ao centro — uma mandala 13×6
-      const raio = 300 - 36 * s;
-      const ang = angulo(i) + (s * passo) / 2;
-      pos.set(def.id, { x: c + Math.cos(ang) * raio, y: c + Math.sin(ang) * raio, r: 3 });
-    } else if (comps.length === 3) {
-      triplas.push(def);
+  };
+  for (const b of elementosBase()) push(b, true);
+  for (const d of elementosDerivados()) push(d, true);
+  // combinações de 3/4: relevantes (desbloqueadas ou próximas) + as curadas
+  for (const r of combinacoesRelevantes(prog.niveisEfetivos, {
+    limite: 320,
+    progressoMinimo: 0.35,
+  })) {
+    const def = elementoDef(r.info.id);
+    if (def) push(def, r.info.curada);
+  }
+  for (const info of TODAS_COMBINACOES) {
+    if (!info.curada || vistos.has(info.id)) continue;
+    const def = elementoDef(info.id);
+    if (def) push(def, true);
+  }
+  // resultados de busca entram mesmo que frios
+  if (norm(ceu.busca).length >= 2) {
+    for (const info of buscarCombinacoes(ceu.busca, 120)) {
+      const def = elementoDef(info.id);
+      if (def) push(def, info.curada);
     }
   }
+  return lista;
+}
 
-  // triplas: ordenadas pelo ângulo médio dos componentes, espaçadas num anel interno
-  const anguloMedio = (def: ElementoDef): number => {
-    let sx = 0;
-    let sy = 0;
-    for (const r of def.receita!) {
-      const a = angulo(idx.get(r.elemento)!);
-      sx += Math.cos(a);
-      sy += Math.sin(a);
+function calcularPrioridades(
+  cands: Candidato[],
+  prog: Progressao,
+  linhagem: Map<ElementoId, number>,
+  achados: Set<ElementoId>,
+): void {
+  for (const c of cands) {
+    const k = c.aridade;
+    if (k === 1) { c.prioridade = 1000; continue; }
+    if (c.def.tipo === 'especial') { c.prioridade = 950; continue; }
+    if (elementoSelecionado === c.def.id) { c.prioridade = 900; continue; }
+    if (ceu.foco && linhagem.has(c.def.id)) {
+      c.prioridade = 800 + 40 * (4 - Math.abs(linhagem.get(c.def.id)!));
+      continue;
     }
-    return Math.atan2(sy, sx);
-  };
-  triplas
-    .map((def) => ({ def, ang: anguloMedio(def) }))
-    .sort((a, b) => a.ang - b.ang)
-    .forEach(({ def }, k, arr) => {
-      const ang = -Math.PI / 2 + (k * 2 * Math.PI) / arr.length;
-      pos.set(def.id, { x: c + Math.cos(ang) * 52, y: c + Math.sin(ang) * 52, r: 3.5 });
-    });
-
-  // amplas: primordial no zênite interno, ciclo no nadir; nulo no coração
-  pos.set('primordial', { x: c, y: c - 26, r: 4 });
-  pos.set('ciclo', { x: c, y: c + 26, r: 4 });
-  pos.set('nulo', { x: c, y: c, r: 5 });
-  return pos;
+    if (achados.has(c.def.id)) { c.prioridade = 700; continue; }
+    if (!passaLente(c) || k > ceu.profundidade) { c.prioridade = -1; continue; }
+    if (c.nivel > 0) { c.prioridade = 600 + Math.min(99, c.nivel); continue; }
+    if (c.progresso >= 0.85) { c.prioridade = 500 + Math.round(c.progresso * 99); continue; }
+    if (c.progresso >= 0.55) { c.prioridade = 400 + Math.round(c.progresso * 99); continue; }
+    if (k === 2) { c.prioridade = 300; continue; }
+    if (c.curada) { c.prioridade = 200 + (5 - k) * 10; continue; }
+    if (c.progresso >= 0.25) { c.prioridade = 100 + Math.round(c.progresso * 50); continue; }
+    c.prioridade = -1;
+  }
 }
 
 function classeEstrela(def: ElementoDef, prog: Progressao): string {
-  if (def.tipo === 'base') return 'base';
+  if (def.tipo === 'base') return 'e-base';
   const nivel = prog.niveisEfetivos[def.id] ?? 0;
-  if (nivel > 0) return 'liberado';
+  if (nivel > 0) return 'e-desbloqueado';
   const progresso = progressoReceita(def, prog);
-  return progresso >= 0.5 ? 'proximo' : 'distante';
+  if (progresso >= 0.85) return 'e-iminente';
+  return progresso >= 0.55 ? 'e-proximo' : 'e-distante';
+}
+
+function renderControlesCeu(desenhados: number, total: number): void {
+  const alvo = document.getElementById('ceu-controles');
+  if (!alvo) return;
+  const btn = (grupo: string, val: string, rot: string, ativo: boolean) =>
+    `<button type="button" data-acao="ceu-${grupo}" data-id="${val}" class="${ativo ? 'ativo' : ''}">${rot}</button>`;
+  alvo.innerHTML = `
+    <div class="ceu-grupo"><span class="ceu-rot">Profundidade</span>
+      ${[2, 3, 4].map((d) => btn('prof', String(d), `${d}`, ceu.profundidade === d)).join('')}</div>
+    <div class="ceu-grupo"><span class="ceu-rot">Lente</span>
+      ${btn('lente', 'tudo', 'Tudo', ceu.lente === 'tudo')}
+      ${btn('lente', 'desbloqueados', 'Abertos', ceu.lente === 'desbloqueados')}
+      ${btn('lente', 'proximos', 'Próximos', ceu.lente === 'proximos')}
+      ${btn('lente', 'curados', 'Nomeados', ceu.lente === 'curados')}
+      ${btn('lente', 'procedurais', 'Emergentes', ceu.lente === 'procedurais')}</div>
+    <div class="ceu-grupo"><span class="ceu-rot">Zoom</span>
+      ${[1, 2, 3].map((z) => btn('zoom', String(z), `${z}×`, ceu.zoom === z)).join('')}</div>
+    <div class="ceu-grupo">
+      ${btn('foco', 'toggle', ceu.foco ? '◉ Foco de linhagem' : '○ Foco de linhagem', ceu.foco)}</div>
+    <div class="ceu-grupo ceu-busca">
+      <input id="ceu-busca" type="search" placeholder="buscar entre 3.215 combinações…"
+        value="${esc(ceu.busca)}" aria-label="Buscar elemento ou combinação">
+    </div>
+    <div class="ceu-conta">${desenhados} de ${total} nós desenhados</div>`;
 }
 
 function renderCeuElementos(prog: Progressao): void {
+  const totalEspaco = elementosBase().length + elementosDerivados().length + TODAS_COMBINACOES.length;
   el('conta-elementos').textContent =
-    `${prog.elementosDisponiveis.length} elementos com nível efetivo`;
+    `${prog.elementosDisponiveis.length} com nível efetivo · ${prog.combinacoesLiberadas.length} combinações amplas abertas`;
 
-  const W = 760;
-  const c = W / 2;
-  const pos = posicoesDoCeu();
+  const cands = candidatosDoCeu(prog);
+  const achados = new Set<ElementoId>(
+    norm(ceu.busca).length >= 2
+      ? cands.filter((c) => norm(c.def.nome).includes(norm(ceu.busca))).map((c) => c.def.id)
+      : [],
+  );
+  const linhagem =
+    ceu.foco && elementoSelecionado ? linhagemDe(elementoSelecionado, cands) : new Map<ElementoId, number>();
+
+  calcularPrioridades(cands, prog, linhagem, achados);
+  const visiveis = cands
+    .filter((c) => c.prioridade >= 0)
+    .sort((a, b) => b.prioridade - a.prioridade || a.def.id.localeCompare(b.def.id))
+    .slice(0, TETO.nos);
 
   let seed = 7;
   const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
   let fundo = '';
   for (let i = 0; i < 90; i++) {
-    fundo += `<circle class="fundo-estrela" cx="${(rnd() * W).toFixed(1)}" cy="${(rnd() * W).toFixed(1)}" r="${(0.4 + rnd() * 0.9).toFixed(2)}" opacity="${(0.1 + rnd() * 0.28).toFixed(2)}"/>`;
+    fundo += `<circle class="fundo-estrela" cx="${(rnd() * W_CEU).toFixed(1)}" cy="${(rnd() * W_CEU).toFixed(1)}" r="${(0.4 + rnd() * 0.9).toFixed(2)}" opacity="${(0.1 + rnd() * 0.28).toFixed(2)}"/>`;
   }
 
-  // anel do zodíaco ligando os 13 elementos base
+  // guias de faixa: mostram onde vive cada aridade
+  let guias = '';
+  for (const g of guiasDeFaixa()) {
+    const ativa = ceu.profundidade >= g.aridade ? ' ativa' : '';
+    guias += `<circle class="faixa-aridade${ativa}" cx="${CENTRO}" cy="${CENTRO}" r="${g.raio}"/>`;
+    guias += `<text class="rotulo-anel" x="${CENTRO}" y="${(CENTRO - g.raio + 11).toFixed(1)}">${g.rotulo}</text>`;
+  }
+
   const bases = elementosBase();
   const anelPontos = bases
     .map((b) => {
-      const p = pos.get(b.id)!;
+      const p = posicaoDe(b);
       return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
     })
     .join(' ');
   let ligas = `<polygon class="anel-zodiaco" points="${anelPontos}"/>`;
 
-  // linhas de receita: derivados liberados sempre; selecionado em destaque
-  for (const def of elementosDerivados()) {
-    const nivel = prog.niveisEfetivos[def.id] ?? 0;
-    const selecionada = elementoSelecionado === def.id;
-    if (nivel <= 0 && !selecionada) continue;
-    const de = pos.get(def.id);
-    if (!de) continue;
-    for (const comp of def.receita!) {
-      const ate = pos.get(comp.elemento)!;
-      ligas += `<line class="${selecionada ? 'liga-selecao' : 'liga-receita'}" x1="${de.x.toFixed(1)}" y1="${de.y.toFixed(1)}" x2="${ate.x.toFixed(1)}" y2="${ate.y.toFixed(1)}"/>`;
+  // linhas de receita, com orçamento: quádrupla fraca cai antes de par forte
+  const comLinha = visiveis
+    .filter((c) => c.aridade >= 2 && (c.nivel > 0 || elementoSelecionado === c.def.id || linhagem.has(c.def.id)))
+    .sort((a, b) => a.aridade - b.aridade || b.nivel - a.nivel)
+    .slice(0, TETO.linhas / 3);
+  for (const c of comLinha) {
+    const selecionada = elementoSelecionado === c.def.id;
+    const naLinhagem = linhagem.has(c.def.id);
+    const cls = selecionada ? 'liga-selecao' : naLinhagem ? 'liga-ancestral' : 'liga-receita';
+    for (const comp of c.def.receita ?? []) {
+      const ate = posicaoDe(ELEMENTOS[comp.elemento]);
+      ligas += `<line class="${cls}" x1="${c.pos.x.toFixed(1)}" y1="${c.pos.y.toFixed(1)}" x2="${ate.x.toFixed(1)}" y2="${ate.y.toFixed(1)}"/>`;
     }
   }
 
   let estrelas = '';
   let rotulos = '';
-  for (const def of [...bases, ...elementosDerivados()]) {
-    const p = pos.get(def.id);
-    if (!p) continue;
-    const nivel = prog.niveisEfetivos[def.id] ?? 0;
-    const classe = classeEstrela(def, prog);
-    const selecionado = elementoSelecionado === def.id ? ' selecionado' : '';
-    const raio = def.tipo === 'base' ? p.r + Math.min(5, nivel * 0.25) : p.r + Math.min(3, nivel * 0.12);
+  let orcamentoRotulos = TETO.rotulos;
+  for (const c of visiveis) {
+    const def = c.def;
+    const p = c.pos;
+    const classes = [
+      classeEstrela(def, prog),
+      `a${Math.min(5, c.aridade)}`,
+      c.curada ? 'curado' : 'procedural',
+    ];
+    if (elementoSelecionado === def.id) classes.push('selecionado', 'linhagem-selecionado');
+    else if (linhagem.has(def.id)) {
+      classes.push(linhagem.get(def.id)! > 0 ? 'linhagem-ancestral' : 'linhagem-descendente');
+    }
+    if (achados.has(def.id)) classes.push('achado');
+
+    const raio = def.tipo === 'base' ? p.r + Math.min(5, c.nivel * 0.25) : raioComNivel(p.r, c.nivel);
     const corBase = def.tipo === 'base' ? ` style="fill:${CORES[def.id as ElementoBaseId]}"` : '';
-    // elementos base ganham a arte PNG como disco; derivados seguem pontos de luz
     const arte = sigilo(def.id);
     const corpo =
       def.tipo === 'base' && arte
@@ -677,26 +832,44 @@ function renderCeuElementos(prog: Progressao): void {
         : `<circle class="halo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(raio + 8).toFixed(1)}"/>
       <circle class="nucleo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${raio.toFixed(1)}"${corBase}/>`;
     const raioSel = def.tipo === 'base' && arte ? raio * 2.1 + 5 : raio + 4;
-    estrelas += `<g class="${classe}${selecionado}" data-acao="estrela-ceu" data-id="${def.id}" tabindex="0" role="button"
-      aria-label="${esc(def.nome)} (nível ${nivel})">
+    const dist = linhagem.get(def.id);
+    estrelas += `<g class="${classes.join(' ')}" data-acao="estrela-ceu" data-id="${def.id}" tabindex="0" role="button"${
+      dist !== undefined ? ` data-dist="${Math.abs(dist)}"` : ''
+    }${elementoSelecionado === def.id ? ' aria-current="true"' : ''}
+      aria-label="${esc(def.nome)} (nível ${c.nivel})">
       <title>${esc(def.nome)} — ${esc(def.descricao)}</title>
+      <circle class="alvo" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="8"/>
       ${corpo}
       <circle class="anel-sel" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${raioSel.toFixed(1)}" fill="none"/>
     </g>`;
+
     if (def.tipo === 'base') {
-      const ang = Math.atan2(p.y - c, p.x - c);
-      const lx = c + Math.cos(ang) * 336;
-      const ly = c + Math.sin(ang) * 336;
+      const ang = Math.atan2(p.y - CENTRO, p.x - CENTRO);
+      const lx = CENTRO + Math.cos(ang) * R_ROTULO_BASE;
+      const ly = CENTRO + Math.sin(ang) * R_ROTULO_BASE;
       const anchor = Math.abs(Math.cos(ang)) < 0.3 ? 'middle' : Math.cos(ang) > 0 ? 'start' : 'end';
-      rotulos += `<text class="rotulo-base" x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}">${esc(def.nome)}${nivel > 0 ? ` ${nivel}` : ''}</text>`;
-    } else if (nivel > 0 || elementoSelecionado === def.id) {
-      rotulos += `<text class="rotulo-deriv" x="${p.x.toFixed(1)}" y="${(p.y + raio + 10).toFixed(1)}">${esc(def.nome)}${nivel > 0 ? ` ${nivel}` : ''}</text>`;
+      rotulos += `<text class="rotulo-base" x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}">${esc(def.nome)}${c.nivel > 0 ? ` ${c.nivel}` : ''}</text>`;
+    } else if (
+      orcamentoRotulos > 0 &&
+      (elementoSelecionado === def.id || linhagem.has(def.id) || achados.has(def.id) || c.nivel > 0)
+    ) {
+      orcamentoRotulos--;
+      rotulos += `<text class="rotulo-deriv${c.curada ? '' : ' procedural'}" x="${p.x.toFixed(1)}" y="${(p.y + raio + 10).toFixed(1)}">${esc(def.nome)}${c.nivel > 0 ? ` ${c.nivel}` : ''}</text>`;
     }
   }
 
-  el('ceu-elementos').innerHTML = `<svg viewBox="0 0 ${W} ${W}" role="img" aria-label="Céu dos Elementos">
-    ${fundo}${ligas}${estrelas}${rotulos}
+  const modo = [
+    ceu.foco && elementoSelecionado ? 'foco-ativo' : '',
+    achados.size ? 'busca-ativa' : '',
+    visiveis.length > 380 ? 'densidade-alta' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  el('ceu-elementos').innerHTML = `<svg class="${modo}" viewBox="${VIEWBOX[ceu.zoom]}" role="img" aria-label="Céu dos Elementos">
+    ${fundo}${guias}${ligas}${estrelas}${rotulos}
   </svg>`;
+  renderControlesCeu(visiveis.length, totalEspaco);
 }
 
 function renderMatrizAfinidades(): void {
@@ -723,11 +896,11 @@ function renderMatrizAfinidades(): void {
 
 function renderDetalheElemento(prog: Progressao): void {
   const alvo = el('elemento-detalhe');
-  if (!elementoSelecionado || !ELEMENTOS[elementoSelecionado]) {
+  if (!elementoSelecionado || !elementoDef(elementoSelecionado)) {
     alvo.innerHTML = `<div class="talento-detalhe vazio">Clique numa estrela do céu para ver detalhes e investir pontos.</div>`;
     return;
   }
-  const def = ELEMENTOS[elementoSelecionado];
+  const def = elementoDef(elementoSelecionado)!;
   const nivel = prog.niveisEfetivos[def.id] ?? 0;
 
   if (def.tipo === 'base') {
@@ -1701,6 +1874,22 @@ document.addEventListener('click', (ev) => {
   const p = estado.personagem;
   try {
     switch (acao) {
+      case 'ceu-prof':
+        ceu.profundidade = Number(id) as 2 | 3 | 4;
+        render();
+        return;
+      case 'ceu-lente':
+        ceu.lente = id as EstadoCeu['lente'];
+        render();
+        return;
+      case 'ceu-zoom':
+        ceu.zoom = Number(id) as 1 | 2 | 3;
+        render();
+        return;
+      case 'ceu-foco':
+        ceu.foco = !ceu.foco;
+        render();
+        return;
       case 'aba':
         estado.abaAtiva = id as AbaId;
         renderAbas();
@@ -1851,6 +2040,18 @@ document.addEventListener('click', (ev) => {
 document.addEventListener('input', (ev) => {
   const t = ev.target as HTMLInputElement;
   const s = estado.skill;
+
+  if (t.id === 'ceu-busca') {
+    ceu.busca = t.value;
+    const prog = calcularProgressao(estado.personagem);
+    renderCeuElementos(prog);
+    const campo = document.getElementById('ceu-busca') as HTMLInputElement | null;
+    if (campo) {
+      campo.focus();
+      campo.setSelectionRange(campo.value.length, campo.value.length);
+    }
+    return;
+  }
 
   if (t.id?.startsWith('sk-fonte-')) {
     const recurso = t.id.slice('sk-fonte-'.length) as RecursoId;
