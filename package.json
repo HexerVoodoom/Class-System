@@ -14,7 +14,9 @@
     "sigilos": "node scripts/gerar-sigilos.mjs",
     "build:sim": "node scripts/gerar-sigilos.mjs && node scripts/build-simulador.mjs",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "cs": "tsx src/api/cli.ts",
+    "integridade": "tsx src/api/cli.ts integridade"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",

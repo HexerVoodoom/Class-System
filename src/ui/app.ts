@@ -38,6 +38,11 @@ import {
   raioComNivel,
   type PosEstrela,
 } from './ceu-layout';
+import {
+  MODIFICADORES,
+  ROTULO_TAG,
+  type ModificadorId,
+} from '../registry/modificadores';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type TalentoDef, type TalentoId } from '../registry/talentos';
@@ -82,6 +87,11 @@ import {
   type FonteEnergia,
   type ResultadoSkill,
   type SkillConfig,
+  SLOTS_MODIFICADOR_BASE,
+  TETO_MULT_MODIFICADORES,
+  avaliarModificador,
+  slotsModificador,
+  tagsDaSkill,
 } from '../engine/skills';
 import {
   criarEstadoRecurso,
@@ -91,6 +101,7 @@ import {
   SoullinkEstado,
   type EstadoRecurso,
 } from '../engine/recursos';
+import { calcularFusao, previewFusao } from '../engine/fusao';
 import { sigilo } from './sigilos';
 
 /** <img> do sigilo, ou string vazia se não houver arte para o id. */
@@ -108,7 +119,15 @@ interface Snapshot {
   skill: SkillConfig;
 }
 
-type AbaId = 'elementos' | 'escolas' | 'recursos' | 'talentos' | 'bestiario' | 'profissao' | 'skill';
+type AbaId =
+  | 'elementos'
+  | 'escolas'
+  | 'recursos'
+  | 'talentos'
+  | 'bestiario'
+  | 'profissao'
+  | 'skill'
+  | 'fusao';
 
 interface Estado {
   personagem: Personagem;
@@ -123,6 +142,8 @@ interface Estado {
   abaAtiva: AbaId;
   evocacao: ConfigEvocacao;
   craft: ConfigCraft;
+  /** Índices em `skillsSalvas` marcados como componentes da fusão. */
+  fusao: number[];
 }
 
 const CHAVE_STORAGE = 'class-system-simulador-v1';
@@ -154,6 +175,7 @@ function estadoPadrao(): Estado {
     vistaTalentos: 'arvore',
     abaAtiva: 'elementos',
     evocacao: { modo: 'elemental', elemento: 'fogo' },
+    fusao: [],
     craft: { profissao: 'ferreiro', itemId: 'espada', elementosImbuidos: [] },
   };
 }
@@ -204,9 +226,12 @@ function carregar(): Estado {
       evocacao: salvo.evocacao ?? base.evocacao,
       filtroCriaturas: salvo.filtroCriaturas ?? '',
       craft: salvo.craft ?? base.craft,
+      fusao: Array.isArray(salvo.fusao) ? salvo.fusao : [],
     };
     if ((estado.vistaTalentos as string) === 'constelacao') estado.vistaTalentos = 'arvore';
-    if (!['elementos', 'escolas', 'recursos', 'talentos', 'skill'].includes(estado.abaAtiva)) {
+    // as abas válidas vêm da própria lista de abas — deixar um array literal
+    // aqui foi o que fez Bestiário e Profissão perderem o contexto no reload
+    if (!ABAS_VALIDAS.includes(estado.abaAtiva)) {
       estado.abaAtiva = 'elementos';
     }
     return estado;
@@ -529,6 +554,7 @@ function render(): void {
   renderProfissoes(prog);
   renderFormCraft(prog);
   renderResultadoCraft(prog);
+  renderFusao(prog);
   renderComparacao();
   salvar();
 }
@@ -553,6 +579,22 @@ function renderAbas(): void {
 
 // ------------------------------------------------- céu dos elementos
 
+/**
+ * As abas que o simulador conhece. Vive aqui, e não num array literal solto
+ * dentro de `carregar()`, justamente porque esquecer de atualizar aquele
+ * literal fazia a aba salva ser descartada em silêncio no reload.
+ */
+const ABAS_VALIDAS: string[] = [
+  'elementos',
+  'escolas',
+  'recursos',
+  'talentos',
+  'bestiario',
+  'profissao',
+  'skill',
+  'fusao',
+];
+
 let elementoSelecionado: ElementoId | null = null;
 
 /** Controles do céu: profundidade, lente, busca e foco de linhagem. */
@@ -564,15 +606,44 @@ interface EstadoCeu {
   zoom: 1 | 2 | 3;
 }
 
-const CEU_PADRAO: EstadoCeu = {
-  profundidade: 3,
-  lente: 'tudo',
-  busca: '',
-  foco: true,
-  zoom: 1,
-};
+/**
+ * O céu não tem default fixo — ele tem default DERIVADO da ficha.
+ *
+ * Com uma ficha zerada e `profundidade: 3, lente: 'tudo'`, praticamente todo
+ * derivado cai em `e-distante` e nenhum ganha rótulo: a tela mais cara do
+ * simulador abriria mostrando 17 pontos nomeados e centenas de manchas cinzas
+ * anônimas. Ancorando o default no que a ficha já alcançou, o primeiro contato
+ * é o anel de pares nomeados — um céu que se lê — e o espaço completo continua
+ * a um clique.
+ */
+function ceuPadraoPara(prog: Progressao): EstadoCeu {
+  const maiorAridade = prog.combinacoesLiberadas.reduce(
+    (m, c) => Math.max(m, c.aridade),
+    prog.elementosDisponiveis.some((id) => (elementoDef(id)?.receita?.length ?? 0) >= 2) ? 2 : 1,
+  );
+  const profundidade = Math.min(4, Math.max(2, maiorAridade + 1)) as 2 | 3 | 4;
+  const temElemento = prog.elementosDisponiveis.length > 0;
+  return {
+    profundidade,
+    lente: temElemento ? 'tudo' : 'curados',
+    busca: '',
+    foco: true,
+    zoom: profundidade === 2 ? 1 : profundidade === 3 ? 2 : 3,
+  };
+}
 
-let ceu: EstadoCeu = { ...CEU_PADRAO };
+/**
+ * Configuração corrente. Enquanto `ceuAutomatico` for true, ela é recalculada
+ * a cada render a partir da ficha; assim que o usuário mexe num controle, a
+ * escolha dele passa a mandar e o automático desliga.
+ */
+let ceu: EstadoCeu = { profundidade: 2, lente: 'curados', busca: '', foco: true, zoom: 1 };
+let ceuAutomatico = true;
+
+/** Marca que o usuário assumiu o controle do céu. */
+function ceuManual(): void {
+  ceuAutomatico = false;
+}
 
 const INDICE_BASE = new Map<string, number>(
   elementosBase().map((e, i) => [e.id, i]),
@@ -744,6 +815,7 @@ function renderControlesCeu(desenhados: number, total: number): void {
 }
 
 function renderCeuElementos(prog: Progressao): void {
+  if (ceuAutomatico) ceu = { ...ceuPadraoPara(prog), busca: ceu.busca };
   const totalEspaco = elementosBase().length + elementosDerivados().length + TODAS_COMBINACOES.length;
   el('conta-elementos').textContent =
     `${prog.elementosDisponiveis.length} com nível efetivo · ${prog.combinacoesLiberadas.length} combinações amplas abertas`;
@@ -1001,7 +1073,26 @@ const GRUPOS_TALENTOS: { titulo: string; ids: TalentoId[] }[] = [
   { titulo: 'Combate Físico', ids: ['sequencia_marcial', 'golpe_devastador', 'postura_inabalavel'] },
   { titulo: 'Longo Alcance', ids: ['olho_de_aguia', 'rajada'] },
   { titulo: 'Recursos', ids: ['devocao', 'fluxo_constante', 'sede_de_batalha', 'elo_profundo', 'afinacao'] },
+  { titulo: 'Inspirações', ids: ['metamagia_gemea', 'auto_feitico', 'cancao_persistente', 'salto', 'endossar_elemento'] },
+  { titulo: 'Fusão & Modificadores', ids: ['engenho_de_skill', 'arte_da_fusao', 'catalisador', 'estabilizador', 'prisma_interior'] },
+  { titulo: 'Combinação', ids: ['sintonia_de_receita', 'convergencia_elemental', 'leitor_de_constelacao', 'transbordo_ampliado', 'maestria_paradoxal'] },
+  { titulo: 'Ofício', ids: ['mao_de_mestre', 'olho_de_materiais', 'assinatura_do_artesao', 'linha_de_producao'] },
+  { titulo: 'Híbridos', ids: ['duplo_chaveamento', 'ritmo_de_guerra', 'pacto_de_sangue', 'eco_de_batalha'] },
 ];
+
+/**
+ * Rede de segurança: qualquer talento do registro que não tenha sido
+ * agrupado acima cai aqui, em vez de sumir da interface. Era o que acontecia
+ * antes — 23 dos 65 talentos existiam no motor e não tinham controle nenhum
+ * na tela, entre eles os que destravam a própria Camada 11.
+ */
+const TALENTOS_AGRUPADOS = new Set(GRUPOS_TALENTOS.flatMap((g) => g.ids));
+const TALENTOS_ORFAOS = (Object.keys(TALENTOS) as TalentoId[]).filter(
+  (id) => !TALENTOS_AGRUPADOS.has(id),
+);
+if (TALENTOS_ORFAOS.length) {
+  GRUPOS_TALENTOS.push({ titulo: 'Outros', ids: TALENTOS_ORFAOS });
+}
 
 function requisitoTexto(def: TalentoDef): string {
   if (!def.requisito) return '';
@@ -1216,6 +1307,297 @@ function renderArquetipos(prog: Progressao): void {
 
 // ------------------------------------------------- construtor de skill
 
+
+
+// ------------------------------------------------- aba fusão
+
+/** O veredito de eficiência em duas palavras, não num parágrafo. */
+function vereditoEficiencia(rel: number): string {
+  if (rel < 0.97) return 'fundir custa mais por ponto de impacto';
+  if (rel <= 1.04) return '≈ empate';
+  return 'fundir rende mais por ponto de impacto';
+}
+
+function renderFusao(prog: Progressao): void {
+  const salvas = estado.skillsSalvas;
+  const marcados = estado.fusao.filter((i) => i >= 0 && i < salvas.length);
+
+  const dica = `<p class="dica">Fundir skills funde os elementos delas. Uma skill de Fogo e uma de
+    Terra viram uma skill de <strong>Lava</strong>. Duas viram 2ª geração; três ou quatro, 3ª.</p>`;
+
+  if (salvas.length === 0) {
+    el('fusao-componentes').innerHTML = `${dica}
+      <div class="vazio"><strong>Nenhuma skill para fundir ainda.</strong><br>
+      A fusão trabalha em cima de skills que você já salvou. Vá em <strong>⚔ Criar Skill</strong>,
+      monte uma e clique em “Salvar skill na build”. Repita com um elemento diferente — Fogo e
+      Terra, por exemplo — e volte aqui.</div>`;
+    el('fusao-resultado').innerHTML = '';
+    return;
+  }
+
+  const cartoes = salvas
+    .map((sk, i) => {
+      const def = elementoDef(sk.elemento);
+      const marcado = marcados.includes(i);
+      const cheio = !marcado && marcados.length >= 4;
+      return `<label class="cartao-fusao${marcado ? ' marcado' : ''}${cheio ? ' bloqueado' : ''}">
+        <input type="checkbox" data-acao="fusao-toggle" data-id="${i}" ${marcado ? 'checked' : ''}${cheio ? ' disabled' : ''}>
+        ${sig(sk.elemento)}
+        <span class="cf-nome">${esc(sk.nome)}</span>
+        <span class="cf-meta">${esc(def?.nome ?? sk.elemento)} · ${esc(ESCOLAS[sk.escola].nome)} · ${sk.energia} en</span>
+      </label>`;
+    })
+    .join('');
+
+  el('fusao-componentes').innerHTML = `${dica}
+    <div class="fusao-cabecalho"><h4>Componentes</h4><span class="num">${marcados.length} de 4</span></div>
+    <div class="fusao-cartoes">${cartoes}</div>`;
+
+  if (marcados.length === 0) {
+    el('fusao-resultado').innerHTML = salvas.length === 1
+      ? `<div class="vazio"><strong>Falta uma segunda skill.</strong><br>
+         Você salvou <strong>${esc(salvas[0].nome)}</strong>. Toda fusão precisa de pelo menos duas.
+         Salve outra com um elemento diferente e a prévia da combinação aparece aqui na hora.</div>`
+      : `<div class="vazio">Marque de 2 a 4 skills acima. A combinação dos elementos aparece aqui
+         antes de você confirmar.</div>`;
+    return;
+  }
+  if (marcados.length === 1) {
+    el('fusao-resultado').innerHTML =
+      `<div class="vazio">Marque mais uma. Com dois elementos diferentes, esta linha mostra qual
+       combinação nasce.</div>`;
+    return;
+  }
+
+  const componentes = marcados.map((i) => salvas[i]);
+  const pv = previewFusao(prog, componentes);
+
+  // a linha de convergência: sigilos, seta, o elemento que nasce
+  const bases = pv.bases
+    .map((b) => `<span class="conv-item">${sig(b)}<span>${esc(ELEMENTOS[b].nome)}</span></span>`)
+    .join('<span class="conv-mais">+</span>');
+  const resultadoNome = pv.nome ?? '—';
+  const convergencia = `<div class="convergencia${pv.liberado ? '' : ' travada'}">
+    ${bases}
+    <span class="conv-seta">→</span>
+    <span class="conv-alvo">${pv.elemento ? sig(String(pv.elemento)) : ''}
+      <strong${pv.liberado ? '' : ' class="riscado"'}>${esc(resultadoNome)}</strong>
+      <em>${pv.geracao}ª geração · modo ${esc(pv.modo.nome)}</em></span>
+  </div>`;
+
+  const r = calcularFusao(estado.personagem, prog, { nome: 'Fusão', componentes });
+
+  const avisos = r.avisos.length
+    ? `<div class="req">${r.avisos.map((a) => esc(a)).join('<br>')}</div>`
+    : '';
+  const erros = r.erros.length
+    ? `<ul class="erros">${r.erros.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`
+    : '';
+
+  const maxImp = Math.max(r.impactoSeparado, r.resultado.impactoTotal) || 1;
+  const maxCus = Math.max(r.custoSeparado, r.resultado.custoTotal) || 1;
+  const barra = (v: number, max: number, classe: string) =>
+    `<span class="barra-comp ${classe}"><i style="width:${((v / max) * 100).toFixed(1)}%"></i></span>`;
+  const rel = r.taxaDeCusto > 0 ? r.ganhoDeFusao / r.taxaDeCusto : 1;
+
+  const comparacao = `<table class="comparacao-fusao">
+    <tr><th></th><th>impacto</th><th>custo</th></tr>
+    <tr><td>Separadas</td>
+      <td>${barra(r.impactoSeparado, maxImp, 'imp')}<span class="num">${r.impactoSeparado.toFixed(0)}</span></td>
+      <td>${barra(r.custoSeparado, maxCus, 'cus')}<span class="num">${r.custoSeparado.toFixed(0)}</span></td></tr>
+    <tr><td>Fundida</td>
+      <td>${barra(r.resultado.impactoTotal, maxImp, 'imp')}<span class="num">${r.resultado.impactoTotal.toFixed(0)}</span>${r.tetoGanhoAtingido ? '<i class="corte-teto" title="Teto de fusão: a eficiência foi limitada a 1,10× a de lançar as skills separadamente."></i>' : ''}</td>
+      <td>${barra(r.resultado.custoTotal, maxCus, 'cus')}<span class="num">${r.resultado.custoTotal.toFixed(0)}</span></td></tr>
+    <tr class="veredito"><td>eficiência da fusão</td>
+      <td class="num">${rel.toFixed(2)}×</td><td>${esc(vereditoEficiencia(rel))}</td></tr>
+  </table>`;
+
+  const selos = [
+    `1 ação em vez de ${componentes.length}`,
+    `Elemento ${r.nomeElementoResultante} — perfil e estados próprios`,
+    r.resultado.estados
+      .slice(0, 4)
+      .map((e) => e.nome)
+      .join(' · '),
+    ...r.propriedadesEmergentes.filter((x) => x.chave !== 'geracao').map((x) => x.rotulo),
+  ]
+    .filter(Boolean)
+    .map((t) => `<li>${esc(t)}</li>`)
+    .join('');
+
+  el('fusao-resultado').innerHTML = `${convergencia}${avisos}${erros}
+    ${r.valida ? comparacao : ''}
+    <div class="so-fundindo"><h4>Só fundindo</h4><ul>${selos}</ul></div>`;
+}
+
+// ------------------------------------------------- modificadores de skill
+
+/**
+ * Famílias dos modificadores. 23 numa lista chapada é ruído; em 6 grupos de
+ * 3–4 é um cardápio. Os grupos são os mesmos comentados em
+ * `registry/modificadores.ts`.
+ */
+const FAMILIAS_MODIFICADOR: { titulo: string; ids: ModificadorId[] }[] = [
+  { titulo: 'Amplificação', ids: ['sobrecarga_bruta', 'concentracao', 'ressonancia_ampliada'] },
+  { titulo: 'Forma', ids: ['projeteis_multiplos', 'penetracao_encadeada', 'expansao_concentrica', 'implosao_dirigida'] },
+  { titulo: 'Tempo', ids: ['gatilho_atrasado', 'repeticao_ecoada', 'aceleracao_forcada', 'prolongamento'] },
+  { titulo: 'Risco e economia', ids: ['canalizacao_arriscada', 'sangria_arcana', 'contencao_disciplinada'] },
+  { titulo: 'Escola', ids: ['legiao_menor', 'nucleo_reforcado', 'contagio_ampliado', 'graca_estendida', 'mira_absoluta', 'investida_encadeada'] },
+  { titulo: 'Elemental', ids: ['imbuicao_dupla', 'fratura_elemental', 'convergencia_de_receita'] },
+];
+
+/** Resumo de uma linha: o que o modificador faz, em números, sem prosa. */
+function efeitoResumido(id: ModificadorId): string {
+  const partes: string[] = [];
+  for (const ef of MODIFICADORES[id].efeitos) {
+    switch (ef.tipo) {
+      case 'poder_mais':
+      case 'poder_aumentado':
+        partes.push(`${ef.valor >= 0 ? '+' : ''}${Math.round(ef.valor * 100)}% poder`);
+        break;
+      case 'raio_bonus':
+        partes.push(`raio ${ef.valor >= 0 ? '+' : ''}${ef.valor}m`);
+        break;
+      case 'alvos_mult':
+        partes.push(`alvos ×${ef.valor}`);
+        break;
+      case 'tempo_fracao':
+        partes.push(`conjuração ${ef.valor >= 0 ? '+' : ''}${Math.round(ef.valor * 100)}%`);
+        break;
+      case 'duracao_mult':
+        partes.push(`duração ×${ef.valor}`);
+        break;
+      case 'invocacoes_mult':
+        partes.push(`criaturas ×${ef.valor}`);
+        break;
+      case 'propriedade':
+        partes.push(ef.rotulo.toLowerCase());
+        break;
+    }
+  }
+  return partes.join(' · ');
+}
+
+/** O produto de amplificação que um conjunto de modificadores produziria. */
+function produtoAmplificacao(ids: ModificadorId[]): number {
+  let mais = 1;
+  let aumentado = 0;
+  for (const id of ids) {
+    for (const ef of MODIFICADORES[id]?.efeitos ?? []) {
+      if (ef.tipo === 'poder_mais') mais *= 1 + ef.valor;
+      else if (ef.tipo === 'poder_aumentado') aumentado += ef.valor;
+    }
+  }
+  return mais * (1 + aumentado);
+}
+
+function renderModificadores(prog: Progressao): string {
+  const p = estado.personagem;
+  const cfg = estado.skill;
+  const ativos = (cfg.modificadores ?? []) as ModificadorId[];
+  const slots = slotsModificador(p);
+  const tags = tagsDaSkill(cfg);
+  const produtoAtual = produtoAmplificacao(ativos);
+
+  const chips = tags
+    .map((t) => `<span class="tag-skill">${esc(ROTULO_TAG[t])}</span>`)
+    .join('');
+
+  const cabem: string[] = [];
+  const naoCabem: string[] = [];
+  for (const familia of FAMILIAS_MODIFICADOR) {
+    const linhas: string[] = [];
+    for (const id of familia.ids) {
+      const def = MODIFICADORES[id];
+      const av = avaliarModificador(p, cfg, id, tags);
+      const marcado = ativos.includes(id);
+      if (!av.compativel) {
+        naoCabem.push(
+          `<li><span class="mod-nome">${esc(def.nome)}</span><span class="mod-motivo">${esc(av.motivo ?? '')}</span></li>`,
+        );
+        continue;
+      }
+      const semSlot = !marcado && ativos.length >= slots;
+      const estouraria = !marcado && produtoAmplificacao([...ativos, id]) > 2.2;
+      const selos = [
+        estouraria ? '<span class="mod-selo alerta">passa do teto</span>' : '',
+        semSlot ? '<span class="mod-selo">sem slot</span>' : '',
+      ].join('');
+      linhas.push(
+        `<li class="${marcado ? 'marcado' : ''}${semSlot ? ' bloqueado' : ''}">
+          <label><input type="checkbox" data-acao="mod-toggle" data-id="${id}"
+            ${marcado ? 'checked' : ''}${semSlot ? ' disabled' : ''}>
+            <span class="mod-nome">${esc(def.nome)}</span></label>
+          <span class="mod-custo num">×${def.multiplicadorCusto.toFixed(2)} custo</span>
+          <span class="mod-efeito">${esc(efeitoResumido(id))}</span>${selos}
+        </li>`,
+      );
+    }
+    if (linhas.length) {
+      cabem.push(`<div class="mod-familia"><h5>${esc(familia.titulo)}</h5><ul>${linhas.join('')}</ul></div>`);
+    }
+  }
+
+  const vazio = cabem.length
+    ? ''
+    : `<div class="req">Nenhum modificador cabe nesta configuração. Modificadores entram pela
+       forma da skill: mude a <strong>área</strong>, a <strong>entrega</strong> ou a
+       <strong>escola</strong> e a lista muda. Os ${naoCabem.length} incompatíveis estão
+       listados abaixo, com o motivo de cada um.</div>`;
+
+  const pct = Math.min(100, (produtoAtual / TETO_MULT_MODIFICADORES) * 100);
+  const barra = ativos.length
+    ? `<div class="mod-teto">
+        <div class="barra-teto"><span style="width:${pct.toFixed(1)}%"></span><i class="marca-teto"></i></div>
+        <span class="num">Amplificação ×${produtoAtual.toFixed(2)} de ×${TETO_MULT_MODIFICADORES}</span>
+      </div>`
+    : '';
+
+  return `<div class="bloco-modificadores">
+    <div class="mod-cabecalho">
+      <h4>Modificadores</h4>
+      <span class="num">${ativos.length} de ${slots} slots</span>
+      ${slots === SLOTS_MODIFICADOR_BASE ? '<span class="mod-dica">cada rank de Engenho de Skill abre mais um slot</span>' : ''}
+    </div>
+    <div class="mod-tags" title="Os modificadores entram pela forma da skill, não pela sua vontade. Mude escola, área ou entrega e a lista muda junto.">
+      Esta skill é: ${chips}
+    </div>
+    ${barra}
+    ${vazio}
+    <div class="mod-cabem">${cabem.join('')}</div>
+    ${naoCabem.length
+      ? `<details class="mod-nao-cabem"><summary>Não cabem nesta skill (${naoCabem.length})</summary><ul>${naoCabem.join('')}</ul></details>`
+      : ''}
+  </div>`;
+}
+
+/** A cascata de custo: mostra que 1.45 e 1.28 compõem para 1.86, não 1.73. */
+function renderCascataCusto(r: ResultadoSkill): string {
+  if (!r.modificadoresAplicados.length) return '';
+  let corrente = r.custoTotal;
+  for (const m of r.modificadoresAplicados) corrente /= m.multiplicadorCusto;
+  const linhas: string[] = [
+    `<tr><td>Custo base</td><td></td><td class="num">${corrente.toFixed(1)}</td></tr>`,
+  ];
+  for (const m of r.modificadoresAplicados) {
+    corrente *= m.multiplicadorCusto;
+    linhas.push(
+      `<tr><td>× ${esc(m.nome)}</td><td class="num">${m.multiplicadorCusto.toFixed(2)}</td><td class="num">→ ${corrente.toFixed(1)}</td></tr>`,
+    );
+  }
+  const produtoCusto = r.modificadoresAplicados.reduce((a, m) => a * m.multiplicadorCusto, 1);
+  return `<div class="cascata">
+    <table>${linhas.join('')}
+      <tr class="total"><td>Custo com modificadores</td><td class="num">×${produtoCusto.toFixed(2)}</td><td class="num">${r.custoTotal.toFixed(1)}</td></tr>
+    </table>
+    ${r.tetoModificadoresAtingido
+      ? `<p class="aviso-teto"><strong>Teto de amplificação atingido.</strong> O produto foi
+         grampeado em ×${TETO_MULT_MODIFICADORES} — os bônus acima disso não contam. Troque um
+         modificador caro por um mais barato, ou aceite o excedente perdido.</p>`
+      : ''}
+  </div>`;
+}
+
 function renderFormSkill(prog: Progressao): void {
   const s = estado.skill;
   const limites = calcularLimites(estado.personagem, s.escola, s.fontes);
@@ -1345,6 +1727,7 @@ function renderFormSkill(prog: Progressao): void {
     <div class="linha-campo"><label for="sk-duracao">Duração (s)</label>
       <input id="sk-duracao" type="range" min="1" max="20" step="1" value="${s.entrega.duracaoSegundos}">
       <span class="num">${s.entrega.duracaoSegundos}s</span></div>` : ''}
+    ${renderModificadores(prog)}
     <div class="linha-campo"><label for="sk-alvo">Alvo (afinidade)</label>
       <select id="sk-alvo">
         <option value="">— sem alvo —</option>
@@ -1874,19 +2257,41 @@ document.addEventListener('click', (ev) => {
   const p = estado.personagem;
   try {
     switch (acao) {
+      case 'mod-toggle': {
+        const mods = new Set<ModificadorId>((estado.skill.modificadores ?? []) as ModificadorId[]);
+        const mid = id as ModificadorId;
+        if (mods.has(mid)) mods.delete(mid);
+        else if (mods.size < slotsModificador(estado.personagem)) mods.add(mid);
+        estado.skill.modificadores = [...mods];
+        render();
+        return;
+      }
+      case 'fusao-toggle': {
+        const idx = Number(id);
+        const atual = new Set(estado.fusao);
+        if (atual.has(idx)) atual.delete(idx);
+        else if (atual.size < 4) atual.add(idx);
+        estado.fusao = [...atual].sort((a, b) => a - b);
+        render();
+        return;
+      }
       case 'ceu-prof':
+        ceuManual();
         ceu.profundidade = Number(id) as 2 | 3 | 4;
         render();
         return;
       case 'ceu-lente':
+        ceuManual();
         ceu.lente = id as EstadoCeu['lente'];
         render();
         return;
       case 'ceu-zoom':
+        ceuManual();
         ceu.zoom = Number(id) as 1 | 2 | 3;
         render();
         return;
       case 'ceu-foco':
+        ceuManual();
         ceu.foco = !ceu.foco;
         render();
         return;

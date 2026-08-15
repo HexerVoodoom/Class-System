@@ -402,6 +402,78 @@
   .ceu .densidade-alta .procedural:not(.e-desbloqueado) { opacity:.35; }
   .ceu .rotulo-deriv { paint-order:stroke; stroke:#171327; stroke-width:2.5; }
   .ceu .rotulo-deriv.procedural { fill:#8d84ad; font-style:italic; }
+
+  /* ---- modificadores de skill ---- */
+  .bloco-modificadores { border:1px solid #2f2a4a; border-radius:8px; padding:.7rem .8rem; margin:.8rem 0; }
+  .mod-cabecalho { display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; }
+  .mod-cabecalho h4 { margin:0; font-size:.9rem; }
+  .mod-dica { color:#6f649c; font-size:.7rem; }
+  .mod-tags { margin:.4rem 0 .5rem; font-size:.74rem; color:#8d84ad; }
+  .tag-skill { display:inline-block; background:#241f3a; border:1px solid #3a3358; color:#b7aed6;
+               border-radius:99px; padding:.05rem .45rem; margin-right:.25rem; font-size:.7rem; }
+  .mod-teto { display:flex; align-items:center; gap:.6rem; margin:.4rem 0 .6rem; font-size:.72rem; }
+  .barra-teto { position:relative; flex:1; height:8px; background:#1b1730; border-radius:4px; overflow:hidden; }
+  .barra-teto span { display:block; height:100%; background:linear-gradient(90deg,#6f649c,#c9a84c); }
+  .barra-teto .marca-teto { position:absolute; right:0; top:-2px; width:2px; height:12px; background:#e9c95e; }
+  .mod-familia h5 { margin:.5rem 0 .2rem; font-size:.72rem; text-transform:uppercase;
+                    letter-spacing:.07em; color:#6f649c; }
+  .mod-familia ul, .mod-nao-cabem ul { list-style:none; margin:0; padding:0; }
+  .mod-familia li { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
+                    padding:.16rem .3rem; border-radius:4px; font-size:.76rem; }
+  .mod-familia li.marcado { background:#2b2447; }
+  .mod-familia li.bloqueado { opacity:.45; }
+  .mod-familia label { display:flex; align-items:center; gap:.35rem; cursor:pointer; min-width:12rem; }
+  .mod-nome { color:#e6e0f5; }
+  .mod-custo { color:#c9a84c; }
+  .mod-efeito { color:#8d84ad; font-size:.72rem; }
+  .mod-selo { background:#3a2b2b; border:1px solid #6b4a4a; color:#e0a5a5;
+              border-radius:99px; padding:0 .4rem; font-size:.66rem; }
+  .mod-selo.alerta { background:#3d3320; border-color:#7a6330; color:#e9c95e; }
+  .mod-nao-cabem { margin-top:.5rem; font-size:.74rem; }
+  .mod-nao-cabem summary { cursor:pointer; color:#6f649c; }
+  .mod-nao-cabem li { display:flex; gap:.6rem; padding:.1rem 0; color:#8d84ad; }
+  .cascata table { width:100%; font-size:.76rem; border-collapse:collapse; margin:.5rem 0; }
+  .cascata td { padding:.12rem .3rem; border-bottom:1px solid #241f3a; }
+  .cascata tr.total td { font-weight:600; color:#e9c95e; border-top:1px solid #3a3358; border-bottom:none; }
+  .aviso-teto { font-size:.74rem; color:#e9c95e; margin:.3rem 0 0; }
+
+  /* ---- aba fusão ---- */
+  .fusao-cabecalho { display:flex; align-items:baseline; gap:.6rem; margin:.6rem 0 .3rem; }
+  .fusao-cabecalho h4 { margin:0; font-size:.9rem; }
+  .fusao-cartoes { display:flex; flex-wrap:wrap; gap:.5rem; }
+  .cartao-fusao { display:flex; align-items:center; gap:.4rem; border:1px solid #2f2a4a;
+                  border-radius:7px; padding:.35rem .55rem; cursor:pointer; font-size:.78rem; }
+  .cartao-fusao.marcado { border-color:#c9a84c; background:#2b2447; }
+  .cartao-fusao.bloqueado { opacity:.4; cursor:not-allowed; }
+  .cf-nome { color:#e6e0f5; }
+  .cf-meta { color:#8d84ad; font-size:.7rem; }
+  .convergencia { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap;
+                  background:#1b1730; border:1px solid #2f2a4a; border-radius:8px;
+                  padding:.7rem .9rem; margin:.9rem 0; }
+  .conv-item { display:flex; align-items:center; gap:.3rem; color:#b7aed6; font-size:.8rem; }
+  .conv-mais { color:#6f649c; }
+  .conv-seta { color:#c9a84c; font-size:1.2rem; }
+  .conv-alvo { display:flex; align-items:center; gap:.4rem; }
+  .conv-alvo strong { color:#e9c95e; font-size:1rem; }
+  .conv-alvo strong.riscado { text-decoration:line-through; color:#8d84ad; }
+  .conv-alvo em { color:#8d84ad; font-size:.72rem; font-style:normal; }
+  .convergencia.travada { border-color:#6b4a4a; }
+  .comparacao-fusao { width:100%; font-size:.78rem; border-collapse:collapse; margin:.6rem 0; }
+  .comparacao-fusao th { color:#6f649c; font-weight:500; text-align:left; font-size:.7rem; }
+  .comparacao-fusao td { padding:.2rem .3rem; }
+  .barra-comp { display:inline-block; width:9rem; height:8px; background:#1b1730;
+                border-radius:4px; overflow:hidden; margin-right:.4rem; vertical-align:middle; }
+  .barra-comp i { display:block; height:100%; }
+  .barra-comp.imp i { background:#c9a84c; }
+  .barra-comp.cus i { background:#6f649c; }
+  .corte-teto { display:inline-block; width:2px; height:12px; background:#e9c95e;
+                margin-left:.3rem; vertical-align:middle; }
+  .comparacao-fusao tr.veredito td { color:#e9c95e; border-top:1px solid #2f2a4a; padding-top:.4rem; }
+  .so-fundindo h4 { margin:.8rem 0 .3rem; font-size:.78rem; text-transform:uppercase;
+                    letter-spacing:.07em; color:#6f649c; }
+  .so-fundindo ul { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:.4rem; }
+  .so-fundindo li { background:#241f3a; border:1px solid #3a3358; color:#b7aed6;
+                    border-radius:99px; padding:.12rem .55rem; font-size:.74rem; }
   .ceu [data-acao='estrela-ceu'] { cursor: pointer; }
   .ceu [data-acao='estrela-ceu']:focus-visible .nucleo { stroke: #c9a84c; stroke-width: 2; }
   .ceu .halo { fill: #cfc8e6; opacity: 0.08; }
@@ -520,7 +592,7 @@
   </header>
 
   <div class="presets-barra">
-    <span class="presets-rotulo">Builds de exemplo:</span>
+    <span class="presets-rotulo">Comece por uma classe pronta — depois mude o que quiser:</span>
     <div id="presets" class="chips"></div>
   </div>
 
@@ -532,13 +604,14 @@
     <button type="button" data-acao="aba" data-id="bestiario">🐾 Bestiário</button>
     <button type="button" data-acao="aba" data-id="profissao">🔨 Profissão</button>
     <button type="button" data-acao="aba" data-id="skill">⚔ Criar Skill</button>
+    <button type="button" data-acao="aba" data-id="fusao">⚗ Fusão</button>
   </nav>
 
   <main>
     <section id="aba-elementos" class="aba">
       <section class="bloco">
         <h2>Céu dos Elementos <span class="conta" id="conta-elementos"></span></h2>
-        <p class="dica">Clique numa estrela para ver detalhes e investir pontos. Os 13 elementos base formam o anel externo;
+        <p class="dica">Clique numa estrela para ver detalhes e investir pontos. Os 17 elementos base formam o anel externo;
           as combinações orbitam mais perto do centro e acendem quando os componentes evoluem juntos. O Nulo espera no coração do céu.</p>
         <div id="ceu-controles" class="ceu-controles"></div>
         <div id="ceu-elementos" class="ceu"></div>
@@ -627,6 +700,12 @@
           <div id="resultado-craft"></div>
         </section>
       </div>
+    </section>
+
+    <section id="aba-fusao" class="aba">
+      <h2>Fusão de Skills <span class="conta">2ª e 3ª geração</span></h2>
+      <div id="fusao-componentes"></div>
+      <div id="fusao-resultado"></div>
     </section>
 
     <section id="aba-skill" class="aba">

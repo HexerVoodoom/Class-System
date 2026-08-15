@@ -195,3 +195,131 @@ e este diário.
 | Modificadores de skill | 0 | **23** |
 | Modos de fusão | 0 | **5** |
 | Testes | 112 | **162** |
+
+---
+
+# Segunda rodada — 40 loops
+
+## Loops 1–6 — O time completo e o briefing paralelo
+
+Sete agentes novos em `.claude/agents/`: `orquestrador`, `arquiteto-de-api-para-ia`,
+`designer-de-experiencia`, `pesquisa-de-usuario`, `qa-e-testes`,
+`revisor-de-codigo`, `redator-tecnico` — somando treze com os seis da primeira
+rodada.
+
+Quatro rodaram em paralelo enquanto o motor era construído: personas
+percorrendo o sistema, desenho da superfície para IA, UX do simulador e uma
+segunda rodada de benchmark. **Os quatro voltaram com bugs medidos, não com
+opinião** — e foi isso que definiu os loops 25 em diante.
+
+## Loops 7–14 — A camada para IA
+
+`src/api/consultas.ts` responde as perguntas que um agente de fato faz: o que
+esta ficha alcançou, o que está a um passo e por quanto, qual o caminho até um
+arquétipo, por que esta skill é inválida. Determinismo, orçamento de contexto e
+erro que ensina, nos três casos.
+
+`caminhoParaArquetipo` é **verificado ponta a ponta**: monta a ficha resultante,
+roda a progressão e confirma o destrave. `pontosDiretosPara` faz descida gulosa
+aproveitando o transbordo das sinergias e cai na solução ingênua se a descida
+não atender — nunca devolve um plano que não funciona.
+
+`verificarIntegridade()` varre o conteúdo procurando id órfão, requisito
+impossível e arquétipo inalcançável. `src/api/cli.ts` expõe tudo via `npm run cs`.
+`AGENTS.md` é o que um modelo lê antes de mexer: modelo mental em sete frases,
+tabela de invariantes, formatos com exemplos válidos **e inválidos**, e os sete
+erros que agentes cometem aqui.
+
+## Loops 15–24 — A interface das camadas 10 e 11
+
+O relatório de design apontou que os 23 modificadores e a fusão inteira **não
+tinham controle nenhum na tela**: os dados estavam no bundle e nada os
+alcançava.
+
+- **Modificadores** entraram dentro da aba Criar Skill, não numa aba própria —
+  um modificador fora de uma skill não tem compatibilidade nem custo. Agrupados
+  por família, com a linha "esta skill é: [tags]" que ensina a matriz de
+  compatibilidade, os incompatíveis colapsados **com o motivo**, a barra do teto
+  sempre visível e a cascata de custo que mostra 1.45 × 1.28 = **1.86, não 1.73**.
+- **Fusão** virou aba própria, consumindo skills salvas. A linha de convergência
+  mostra os sigilos dos componentes, a seta e o elemento que nasce — antes de
+  confirmar. A comparação contra lançar separado é duas barras e um veredito de
+  duas palavras, não um parágrafo.
+- **O céu deixou de ter default fixo.** Com ficha zerada e profundidade 3, quase
+  todo derivado caía em `e-distante` sem rótulo: a tela mais cara do simulador
+  abria mostrando 17 pontos nomeados e centenas de manchas anônimas. Agora o
+  default deriva da ficha e desliga assim que o usuário toca num controle.
+- Bug corrigido: a lista de abas válidas em `carregar()` era um array literal
+  que esquecia `bestiario` e `profissao` — as duas perdiam contexto no reload.
+
+## Loops 25–28 — A fusão perdia aridade em silêncio
+
+Achado do benchmark, confirmado por medição:
+
+```
+Lava (fogo+terra) + Gelo (água+ar)  →  "Vapor"   ← o par fogo+água
+```
+
+`basesEnvolvidas` colapsava cada componente no seu **base dominante**. A
+promessa "fundir skills funde os elementos delas" só valia quando os
+componentes eram elementos base. Agora a união percorre a receita inteira de
+cada componente, respeita `ARIDADE_MAXIMA` e avisa o que ficou de fora quando
+passa de 4.
+
+## Loops 29–33 — O combo degenerado
+
+Achado da persona otimizadora, reproduzido:
+
+```
+Repetição Ecoada + Canalização Arriscada + Sangria Arcana + Contenção Disciplinada
+  → 2.26× a eficiência da skill nua, e o teto NÃO disparava
+```
+
+Duas frestas no teto absoluto de ×2.2:
+
+1. `tempo_fracao` alimenta √tempo no orçamento e ficava **fora** do produto
+   grampeado — alongar a conjuração comprava poder de graça;
+2. um modificador de poder **negativo** (Contenção Disciplinada) abaixava o
+   produto grampeado e liberava espaço sob o teto para os positivos.
+
+A correção é a mesma que já tinha resolvido a fusão: **teto de eficiência
+relativa** (1.40×), que captura tempo, custo e poder juntos.
+
+| | antes | depois |
+|---|---|---|
+| combo degenerado | 2.26× | **1.40×** (no teto) |
+| Contenção Disciplinada sozinha | 1.29× | 1.29× (preservada) |
+| Sobrecarga Bruta sozinha | 0.92× | 0.92× (inalterada) |
+
+E **16 arquétipos declaravam um limiar abaixo do piso real da combinação** —
+`vulcao: 14` quando Vulcão nunca existe abaixo de 17, porque o nível de um
+derivado é o menor dos componentes. Quem lia a condição e investia exatamente o
+pedido não desbloqueava nada. Corrigidos os 16, com teste que reprova o padrão.
+
+## Loops 34–38 — Portas de entrada e regressões
+
+- **23 dos 65 talentos eram invisíveis no simulador**: a árvore renderiza de uma
+  lista manual que parou em 42. Agrupados os 23, e uma rede de segurança joga
+  qualquer talento não agrupado num grupo "Outros" em vez de sumir.
+- `src/index.ts` não exportava `combinacoes`, `modificadores`, `fusao` nem a
+  API: quem importava o pacote não alcançava as Camadas 10 e 11.
+- `tests/regressoes.test.ts`: um teste por bug, escrito a partir do cenário que
+  o revelou.
+
+## Loops 39–40 — Documentação e fechamento
+
+README com os números medidos (30→65 talentos, 29→79 arquétipos, 6→11
+profissões) e a seção "Para programas e agentes". Simulador regenerado.
+
+---
+
+## Números da segunda rodada
+
+| | antes | depois |
+|---|---|---|
+| Agentes especializados | 6 | **13** |
+| Consultas de API | 0 | **20** |
+| Comandos de CLI | 0 | **13** |
+| Testes | 162 | **201** |
+| Bugs de correção encontrados e corrigidos | — | **6** |
+| Talentos alcançáveis pela interface | 42 | **65** |
