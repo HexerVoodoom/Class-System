@@ -22,7 +22,12 @@ export type ProfissaoId =
   | 'artesao'
   | 'joalheiro'
   | 'alquimista'
-  | 'curtidor';
+  | 'curtidor'
+  | 'encantador'
+  | 'escriba'
+  | 'cozinheiro'
+  | 'luthier'
+  | 'cartografo';
 
 export type CategoriaItem = 'arma' | 'armadura' | 'acessorio' | 'consumivel';
 
@@ -105,6 +110,42 @@ export const PROFISSOES: Record<ProfissaoId, ProfissaoDef> = {
     fatoresElementos: { vida: 0.5, vigor: 0.4, sombra: 0.4, terra: 0.3 },
     fatoresEscolas: { evocacao: 0.2 },
   },
+  encantador: {
+    id: 'encantador',
+    nome: 'Encantador',
+    descricao:
+      'Grava elementos em objetos já prontos. É a profissão que mais depende de combinações: quanto mais derivados você domina, mais fundo o encantamento vai.',
+    fatoresElementos: { arcano: 0.6, luz: 0.35, sombra: 0.35, espaco: 0.3 },
+    fatoresEscolas: { benca: 0.3, conjuracao: 0.2 },
+  },
+  escriba: {
+    id: 'escriba',
+    nome: 'Escriba',
+    descricao: 'Redige pergaminhos, glifos e contratos vinculantes. Escala com arcano, tempo, luz e vileza.',
+    fatoresElementos: { arcano: 0.5, tempo: 0.45, luz: 0.35, vileza: 0.3 },
+    fatoresEscolas: { maldicao: 0.25, benca: 0.25 },
+  },
+  cozinheiro: {
+    id: 'cozinheiro',
+    nome: 'Cozinheiro',
+    descricao: 'Prepara banquetes e rações que sustentam o grupo. Escala com vida, fogo, água e vigor.',
+    fatoresElementos: { vida: 0.55, fogo: 0.4, agua: 0.35, vigor: 0.3 },
+    fatoresEscolas: { benca: 0.35 },
+  },
+  luthier: {
+    id: 'luthier',
+    nome: 'Luthier',
+    descricao: 'Constrói instrumentos que conduzem canções de guerra. Escala com som, ar, vida e marcial.',
+    fatoresElementos: { som: 0.65, ar: 0.35, vida: 0.3, marcial: 0.25 },
+    fatoresEscolas: { benca: 0.3 },
+  },
+  cartografo: {
+    id: 'cartografo',
+    nome: 'Cartógrafo',
+    descricao: 'Desenha cartas do espaço, do tempo e do que há entre eles. Escala com espaço, tempo, gravidade e luz.',
+    fatoresElementos: { espaco: 0.6, tempo: 0.45, gravidade: 0.35, luz: 0.25 },
+    fatoresEscolas: { conjuracao: 0.25 },
+  },
 };
 
 const item = (
@@ -150,6 +191,31 @@ export const ITENS_BASE: Record<string, ItemBaseDef> = Object.fromEntries(
     item('botas', 'Botas', 'curtidor', 'armadura', 'Calçado resistente de couro.'),
     item('capa_pele', 'Capa de Pele', 'curtidor', 'armadura', 'Manto quente de pele de fera.'),
     item('aljava', 'Aljava', 'curtidor', 'acessorio', 'Porta-flechas que agiliza os tiros.'),
+    // encantador
+    item('selo', 'Selo Elemental', 'encantador', 'acessorio', 'Marca gravada que carrega um elemento inteiro.'),
+    item('orbe', 'Orbe de Foco', 'encantador', 'acessorio', 'Esfera que concentra e devolve a magia canalizada.'),
+    item('inscricao_arma', 'Inscrição de Arma', 'encantador', 'arma', 'Gravação que transforma a arma sem refazê-la.'),
+    item('velamento', 'Velamento', 'encantador', 'armadura', 'Camada invisível de proteção tecida sobre a peça.'),
+    // escriba
+    item('pergaminho', 'Pergaminho', 'escriba', 'consumivel', 'Uma conjuração inteira guardada em papel.'),
+    item('glifo', 'Glifo', 'escriba', 'acessorio', 'Símbolo persistente que dispara ao ser pisado.'),
+    item('grimorio', 'Grimório', 'escriba', 'acessorio', 'Volume que amplia tudo que você conjura.'),
+    item('contrato', 'Contrato', 'escriba', 'consumivel', 'Acordo vinculante: cobra um preço, entrega um poder.'),
+    // cozinheiro
+    item('banquete', 'Banquete', 'cozinheiro', 'consumivel', 'Mesa que fortalece o grupo inteiro por horas.'),
+    item('racao', 'Ração de Marcha', 'cozinheiro', 'consumivel', 'Comida densa que sustenta longas jornadas.'),
+    item('caldo', 'Caldo Restaurador', 'cozinheiro', 'consumivel', 'Sopa quente que devolve o fôlego e a vontade.'),
+    item('conserva', 'Conserva', 'cozinheiro', 'consumivel', 'Preparo que guarda um efeito por muito tempo.'),
+    // luthier
+    item('alaude', 'Alaúde', 'luthier', 'arma', 'Instrumento de corda que dispara acordes cortantes.'),
+    item('tambor', 'Tambor de Guerra', 'luthier', 'acessorio', 'Batida que marca o ritmo da linha de frente.'),
+    item('corno', 'Corno de Batalha', 'luthier', 'acessorio', 'Sopro que se ouve do outro lado do campo.'),
+    item('diapasao', 'Diapasão', 'luthier', 'acessorio', 'Referência perfeita: afina magias como afina cordas.'),
+    // cartógrafo
+    item('carta_estelar', 'Carta Estelar', 'cartografo', 'acessorio', 'Mapa do céu que aponta onde o poder está agora.'),
+    item('bussola', 'Bússola Dimensional', 'cartografo', 'acessorio', 'Agulha que aponta para lugares que não existem aqui.'),
+    item('atlas', 'Atlas', 'cartografo', 'acessorio', 'Compêndio de rotas entre lugares e épocas.'),
+    item('marco', 'Marco de Retorno', 'cartografo', 'consumivel', 'Âncora fincada: você sempre pode voltar a este ponto.'),
   ].map((d) => [d.id, d]),
 );
 
@@ -204,6 +270,40 @@ export const PROPRIEDADES_ITEM: Record<string, PropriedadeItemDef> = Object.from
       ['arma', 'acessorio'], { requerAlgum: ['som', 'trovao', 'brado'] }, 6),
     prop('obra_prima', 'Obra-Prima', 'Trabalho de mestre: qualidade excepcional em tudo.',
       ['arma', 'armadura', 'acessorio', 'consumivel'], { requerProfissaoNivel: 12 }, 12),
+
+    // ---- propriedades que só emergem de COMBINAÇÕES de aridade alta ----
+    prop('tempestuosa', 'Tempestuosa', 'Vento, água e raio no mesmo objeto: cada golpe chama o céu.',
+      ['arma', 'acessorio'], { requerTodos: ['agua', 'ar', 'eletricidade'] }, 13),
+    prop('cataclismica', 'Cataclísmica', 'Peso de mundo: o impacto abre cratera onde acerta.',
+      ['arma'], { requerTodos: ['terra', 'gravidade', 'fogo'] }, 15),
+    prop('sepulcral', 'Sepulcral', 'Morte, sombra e vileza costuradas: a peça se alimenta de quem cai perto.',
+      ['arma', 'armadura'], { requerTodos: ['morte', 'sombra', 'vileza'] }, 14),
+    prop('consagrada', 'Consagrada', 'Luz, vida e vigor consagrados juntos: protege e ergue quem porta.',
+      ['armadura', 'acessorio'], { requerTodos: ['luz', 'vida', 'vigor'] }, 14),
+    prop('paradoxal', 'Paradoxal', 'Tempo e espaço trançados no material: o objeto está sempre um instante à frente.',
+      ['arma', 'acessorio'], { requerTodos: ['tempo', 'espaco'] }, 12),
+    prop('primordial_item', 'Primordial', 'Os cinco primais assentados numa peça só: ela responde ao terreno.',
+      ['arma', 'armadura', 'acessorio'],
+      { requerTodos: ['fogo', 'agua', 'terra', 'ar', 'eletricidade'], requerProfissaoNivel: 15 }, 20),
+
+    // ---- propriedades das profissões novas ----
+    prop('harmonica', 'Harmônica', 'Afinada com precisão: as canções que saem daqui alcançam mais longe.',
+      ['arma', 'acessorio'], { requerAlgum: ['som', 'harmonia', 'cantico', 'melodia'] }, 8),
+    prop('dissonante', 'Dissonante', 'Propositalmente desafinada: quem escuta perde o compasso.',
+      ['arma', 'acessorio'], { requerAlgum: ['dissonancia', 'sussurro', 'requiem'] }, 8),
+    prop('nutritiva', 'Nutritiva', 'Sustento de verdade: o efeito dura muito além da refeição.',
+      ['consumivel'], { requerAlgum: ['vida', 'vitalidade', 'nascente', 'flora'] }, 7),
+    prop('inebriante', 'Inebriante', 'Sobe à cabeça: coragem emprestada, juízo suspenso.',
+      ['consumivel'], { requerAlgum: ['vileza', 'fervor', 'carnificina'] }, 7),
+    prop('vinculante', 'Vinculante', 'O que está escrito passa a valer: o efeito não pode ser dissipado.',
+      ['consumivel', 'acessorio'], { requerAlgum: ['pacto', 'runa', 'arcano'] }, 9),
+    prop('profetica', 'Profética', 'Registra o que ainda não aconteceu: revela a próxima ação do inimigo.',
+      ['acessorio'], { requerAlgum: ['tempo', 'cronomancia', 'presagio', 'continuum'] }, 11),
+    prop('cartografada', 'Cartografada', 'O espaço já foi medido: teleporte preciso em vez de aproximado.',
+      ['acessorio'], { requerAlgum: ['espaco', 'portal', 'dobra', 'constelacao'] }, 10),
+    prop('gravada_fundo', 'Gravada Fundo', 'Encantamento assentado na estrutura, não na superfície: não se apaga.',
+      ['arma', 'armadura', 'acessorio'],
+      { requerAlgum: ['arcano', 'cristal', 'runa'], requerProfissaoNivel: 10 }, 11),
   ].map((d) => [d.id, d]),
 );
 

@@ -2,11 +2,12 @@
  * Registro de elementos.
  *
  * Categorias:
- *  - "base": recebem pontos diretamente do jogador (12 elementos).
+ *  - "base": recebem pontos diretamente do jogador (17 elementos).
  *  - "derivado": não recebem pontos diretos; o nível é o MENOR nível efetivo
  *    entre os componentes da receita (evolução conjunta), desde que todos
- *    atinjam o mínimo. TODAS as 66 combinações de pares existem, mais
- *    triplas e combinações maiores selecionadas.
+ *    atinjam o mínimo. TODOS os 136 pares existem aqui, nomeados à mão.
+ *    Triplas e quádruplas moram em `combinacoes.ts`: as de identidade forte
+ *    são curadas, as outras 3.000 são geradas sob demanda.
  *  - "especial": derivados com receita ampla (primordial, ciclo, nulo).
  *
  * Cada elemento tem um PERFIL (pesos de dano/controle/cura/defesa/suporte)
@@ -250,8 +251,8 @@ function derivado(
 }
 
 /**
- * A matriz completa: TODOS os 66 pares dos 12 elementos base, seguidos das
- * combinações de 3+, das amplas (primordial, ciclo) e do nulo.
+ * A matriz completa: TODOS os 136 pares dos 17 elementos base, seguidos das
+ * triplas curadas historicamente, das amplas (primordial, ciclo) e do nulo.
  */
 const DERIVADOS_LISTA: ElementoDef[] = [
   // ---- fogo + X ----
