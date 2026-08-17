@@ -68,6 +68,7 @@ import {
 } from '../registry/profissoes';
 import { craftar, elementosDominados, type ConfigCraft } from '../engine/profissoes';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
+import { CUSTO_PONTO_ALOCACAO, DIVISOR_CASCATA, LIMIAR_DESTRAVAMENTO } from '../registry/geracoes';
 import { CRIATURAS, FAMILIAS, criaturas, type CriaturaDef } from '../registry/criaturas';
 import { efetividade } from '../registry/afinidades';
 import {
@@ -1004,14 +1005,47 @@ function renderDetalheElemento(prog: Progressao): void {
     })
     .join('');
   const sigDeriv = def.receita!.map((c) => sig(c.elemento, 'sig-mini')).join('');
+
+  // Ledger da ALOCAÇÃO GERACIONAL — a UI LÊ a cascata, nunca a recalcula
+  // (reimplementar o destrave aqui é o footgun de regra copiada).
+  const cascata = prog.cascata;
+  const passivos = cascata.passivos.get(def.id) ?? 0;
+  const diretos = estado.personagem.elementos[def.id] ?? 0;
+  const destravado = cascata.destravados.has(def.id);
+  const progresso = cascata.progressoDestravamento.get(def.id);
+  const aridade = Math.min(4, def.receita!.length) as 1 | 2 | 3 | 4;
+  const custoPonto = CUSTO_PONTO_ALOCACAO[aridade];
+  const nuncaDestrava = def.cascata?.destravavel === false;
+
+  let ledger: string;
+  if (nuncaDestrava) {
+    ledger = `<div class="desc">Receita ampla: nunca aceita pontos diretos — evolui só pela cascata dos componentes.</div>`;
+  } else if (destravado) {
+    ledger = `<div>Cascata <strong class="num">${passivos}</strong> passivos + <strong class="num">${diretos}</strong> diretos
+      <span class="conta">· ponto direto custa ${custoPonto} de orçamento</span></div>
+      <div class="controles">
+        <button type="button" data-acao="dec-elemento" data-id="${def.id}" aria-label="Remover ponto">−</button>
+        <span class="valor num">${diretos}</span>
+        <button type="button" data-acao="inc-elemento" data-id="${def.id}" aria-label="Adicionar ponto">+</button>
+        <button type="button" data-acao="inc-elemento" data-id="${def.id}" data-passo="10" aria-label="Adicionar dez pontos">+10</button>
+      </div>`;
+  } else {
+    const limiar = progresso?.limiar ?? LIMIAR_DESTRAVAMENTO[aridade];
+    const fracao = Math.min(1, passivos / limiar);
+    ledger = `<div class="perfil-linha"><span>Destrave da alocação direta</span>
+      <div class="barra ${passivos >= limiar ? 'cheia' : ''}"><i style="width:${pct(fracao)}"></i></div>
+      <span class="num">${passivos}/${limiar}</span></div>
+      <div class="desc">A cada ${DIVISOR_CASCATA[aridade]} pontos em CADA componente, +1 ponto passivo aqui. Com ${limiar} passivos, este elemento passa a aceitar pontos diretos.</div>`;
+  }
+
   alvo.innerHTML = `<div class="talento-detalhe detalhe-com-sig">
     <div class="sig-combo">${sigDeriv}</div>
     <div class="detalhe-corpo">
     <div class="nome">${esc(def.nome)} <span class="conta">${def.tipo} · potência ×${def.fatorPotencia}</span></div>
     <div class="desc">${esc(def.descricao)}</div>
-    <div>${nivel > 0 ? `Nível <strong class="num">${nivel}</strong> — igual ao menor componente.` : 'Ainda não liberado — todos os componentes precisam atingir o mínimo.'}</div>
+    <div>${nivel > 0 ? `Nível <strong class="num">${nivel}</strong> — menor componente${diretos > 0 ? ' + pontos diretos' : ''}.` : 'Ainda não liberado — todos os componentes precisam atingir o mínimo.'}</div>
     ${receita}
-    <div class="desc">Elementos combinados não aceitam pontos diretos: evoluem quando os componentes sobem juntos.</div>
+    ${ledger}
   </div></div>`;
 }
 
@@ -2307,7 +2341,7 @@ document.addEventListener('click', (ev) => {
         renderDetalheElemento(prog);
         return;
       }
-      case 'inc-elemento': investirElemento(p, id, 1); break;
+      case 'inc-elemento': investirElemento(p, id, Number(alvo.dataset.passo ?? 1)); break;
       case 'dec-elemento': decrementar(p.elementos, id); break;
       case 'inc-escola': investirEscola(p, id as EscolaId, 1); break;
       case 'dec-escola': decrementar(p.escolas, id); break;

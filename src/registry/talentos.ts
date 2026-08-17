@@ -118,6 +118,12 @@ export type EfeitoTalento =
   /** Soma ao nível efetivo de todo elemento derivado já desbloqueado. */
   | { tipo: 'nivel_derivado_bonus'; valorPorRank: number }
   /**
+   * Reduz o divisor da CASCATA geracional (5→4 etc.): os pais rendem pontos
+   * passivos mais cedo. Gancho declarativo — nenhum talento usa ainda;
+   * conteúdo futuro mexe neste dial sem tocar no motor.
+   */
+  | { tipo: 'cascata_divisor_reducao'; valorPorRank: number }
+  /**
    * Propriedade qualitativa que aparece na skill calculada (o runtime do
    * jogo aplica o efeito; a calculadora exibe chave + magnitude).
    */

@@ -323,3 +323,44 @@ profissões) e a seção "Para programas e agentes". Simulador regenerado.
 | Testes | 162 | **201** |
 | Bugs de correção encontrados e corrigidos | — | **6** |
 | Talentos alcançáveis pela interface | 42 | **65** |
+
+---
+
+## Rodada 3 — Alocação geracional (ago/2026)
+
+Pedido do dono: ponto direto nasce restrito aos 17 elementos base; investir nos
+dois pais de um par rende pontos PASSIVOS no par (5 fogo + 5 água → 1 vapor);
+um derivado com 10 passivos DESTRAVA a alocação direta; triplas e quádruplas
+seguem a mesma escada com os pais de aridade N−1; gerações altas pesam mais.
+
+Decisões de arquitetura (plano do arquiteto-de-sistema, implementado na íntegra):
+
+- **Duas contabilidades, não uma.** `niveisEfetivos` continua medindo o que a
+  ficha expressa (skills/arquétipos/evocação intocados); a CASCATA
+  (`engine/cascata.ts`) mede o que virou parte da ficha — e é ela que decide
+  destrave e alimento da geração seguinte. Substituir uma pela outra derrubava
+  Lava de nível 12 para 2 e recalibrava o sistema inteiro.
+- **Peso de geração é CUSTO, não multiplicador.** A potência por aridade já
+  existia (`fatorPotencia` + compensação de aridade nas skills);
+  `CUSTO_PONTO_ALOCACAO` {1,3,10,30} redistribui o orçamento em vez de
+  multiplicá-lo. `pesoDiretoNaCascata = custo/custoCascataEquivalente` fecha a
+  arbitragem de "destravar e despejar" por construção — 1 ponto de orçamento
+  compra o MESMO progresso de cascata onde for gasto (teste de não-arbitragem).
+- **Exceção no registro, não no motor**: os especiais (primordial/ciclo/nulo)
+  declaram `cascata: { pais, divisor: 20, destravavel: false }` no próprio
+  `ElementoDef`.
+- Ponto direto em derivado só EXPRESSA com a receita atendida (impossível na
+  prática — o destrave exige 5× o mínimo — mas o invariante "derivado nunca
+  existe abaixo do piso" continua verdadeiro e testado).
+- Constantes em `registry/geracoes.ts`; parentesco (`paisDeCascata`, DAG
+  estrito por aridade) em `combinacoes.ts`; gancho de talento
+  `cascata_divisor_reducao` declarado (nenhum talento usa ainda).
+- UI: o detalhe do elemento derivado ganhou o ledger (passivos + diretos,
+  barra de destrave, custo por ponto) e controles que só aparecem destravados.
+  A UI LÊ `prog.cascata`/`prog.alocaveis` — nunca recalcula a regra.
+
+Marcos de custo (travados em `tests/cascata.test.ts`): 1 ponto gen-2 por
+cascata = 10 de orçamento · destravar gen-2 = 100 · gen-3 = 60/360 · gen-4 =
+240/960 · com 1200 pontos não existem duas quádruplas destravadas disjuntas.
+
+Testes: 204 → 225 (21 novos de cascata; 1 antigo atualizado para a regra nova).

@@ -65,9 +65,12 @@ describe('elementos derivados', () => {
     expect(calcularProgressao(p).niveisEfetivos.nulo).toBeGreaterThanOrEqual(8);
   });
 
-  it('derivados não aceitam pontos diretos', () => {
+  it('derivados não aceitam pontos diretos antes do DESTRAVE da cascata', () => {
+    // A regra evoluiu com a alocação geracional (engine/cascata.ts): o
+    // derivado continua recusando ponto direto numa ficha nova, mas passa a
+    // aceitar depois de acumular passivos suficientes pela cascata.
     const p = criarPersonagem('t');
-    expect(() => investirElemento(p, 'lava', 1)).toThrow(/derivado/);
+    expect(() => investirElemento(p, 'lava', 1)).toThrow(/destravado/);
   });
 });
 
