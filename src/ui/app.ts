@@ -102,7 +102,30 @@ import {
   type EstadoRecurso,
 } from '../engine/recursos';
 import { calcularFusao, previewFusao } from '../engine/fusao';
+import {
+  PRESETS,
+  ROTULO_PAPEL,
+  type Complexidade,
+  type PapelPreset,
+  type PresetDef,
+} from '../registry/presets';
+import {
+  custoDe,
+  elementosNotaveis,
+  materializarPreset,
+} from '../engine/presets';
 import { sigilo } from './sigilos';
+
+/**
+ * Nome de um elemento QUALQUER — inclusive as combinações procedurais, que não
+ * moram em `ELEMENTOS` e só existem via `elementoDef`. Toda lista alimentada
+ * por `prog.elementosDisponiveis` precisa passar por aqui: assim que uma ficha
+ * libera uma tripla ou quádrupla gerada, `ELEMENTOS[id]` é `undefined` e a tela
+ * inteira morre com "Cannot read properties of undefined".
+ */
+function nomeElemento(id: string): string {
+  return elementoDef(id)?.nome ?? id;
+}
 
 /** <img> do sigilo, ou string vazia se não houver arte para o id. */
 function sig(id: string, classe = 'sig'): string {
@@ -302,241 +325,281 @@ function pontosTalentosGastos(): number {
 }
 
 // ---------------------------------------------------------------- presets
+//
+// O CONTEÚDO das classes prontas mora em `registry/presets.ts` e a montagem
+// da ficha em `engine/presets.ts`. Aqui só existe a galeria: filtrar, mostrar
+// e aplicar. A UI não sabe mais quais elementos o Necromante investe.
 
-interface Preset {
-  id: string;
-  nome: string;
-  descricao: string;
-  montar(): { p: Personagem; skill: SkillConfig };
-}
-
-function sk(
-  extra: Partial<SkillConfig> & Pick<SkillConfig, 'nome' | 'elemento' | 'escola' | 'fontes'>,
-): SkillConfig {
-  return {
-    energia: 20,
-    tempoConjuracaoSegundos: 1.5,
-    alcanceMetros: 10,
-    area: { tipo: 'unico' },
-    entrega: { tipo: 'instantaneo' },
-    ...extra,
-  };
-}
-
-const fonte = (recurso: RecursoId, proporcao = 100): FonteEnergia => ({ recurso, proporcao });
-
-const PRESETS: Preset[] = [
-  {
-    id: 'necromante',
-    nome: 'Necromante',
-    descricao: 'Morte + Evocação, enxame de mortos-vivos.',
-    montar() {
-      const p = criarPersonagem('Vesper, a Necromante');
-      investirElemento(p, 'morte', 18);
-      investirElemento(p, 'sombra', 6);
-      investirEscola(p, 'evocacao', 14);
-      investirEscola(p, 'maldicao', 6);
-      investirRecurso(p, 'mana', 10);
-      investirTalento(p, 'enxame', 3);
-      return { p, skill: sk({ nome: 'Legião de Ossos', elemento: 'morte', escola: 'evocacao', fontes: [fonte('mana')], energia: 30, tempoConjuracaoSegundos: 3, capacidadeExigida: 'evocar_mortos_vivos' }) };
-    },
-  },
-  {
-    id: 'lavamante',
-    nome: 'Lavamante',
-    descricao: 'Fogo + Terra em erupções de área.',
-    montar() {
-      const p = criarPersonagem('Brasa, o Lavamante');
-      investirElemento(p, 'fogo', 14);
-      investirElemento(p, 'terra', 14);
-      investirEscola(p, 'conjuracao', 14);
-      investirRecurso(p, 'mana', 10);
-      investirTalento(p, 'area_ampliada', 3);
-      investirTalento(p, 'impacto_imediato', 2);
-      return { p, skill: sk({ nome: 'Erupção', elemento: 'lava', escola: 'conjuracao', fontes: [fonte('mana')], energia: 28, tempoConjuracaoSegundos: 2.5, area: { tipo: 'circulo', raioMetros: 6 } }) };
-    },
-  },
-  {
-    id: 'paladino',
-    nome: 'Paladino',
-    descricao: 'Bravura + Fé: o muro sagrado.',
-    montar() {
-      const p = criarPersonagem('Aurelia, a Paladina');
-      investirElemento(p, 'luz', 12);
-      investirElemento(p, 'vigor', 12);
-      investirEscola(p, 'combate_fisico', 12);
-      investirEscola(p, 'benca', 8);
-      investirRecurso(p, 'fe', 10);
-      investirTalento(p, 'egide', 2);
-      investirTalento(p, 'postura_inabalavel', 2);
-      return { p, skill: sk({ nome: 'Aura da Bravura', elemento: 'bravura', escola: 'benca', fontes: [fonte('fe')], tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 4 }, entrega: { tipo: 'continuo', duracaoSegundos: 10 } }) };
-    },
-  },
-  {
-    id: 'berserker',
-    nome: 'Berserker',
-    descricao: 'Fervor + Fúria: sangue fervente.',
-    montar() {
-      const p = criarPersonagem('Korg, o Berserker');
-      investirElemento(p, 'vigor', 14);
-      investirElemento(p, 'fogo', 10);
-      investirEscola(p, 'combate_fisico', 14);
-      investirRecurso(p, 'furia', 10);
-      investirTalento(p, 'golpe_devastador', 2);
-      investirTalento(p, 'sede_de_batalha', 2);
-      return { p, skill: sk({ nome: 'Golpe Fervente', elemento: 'fervor', escola: 'combate_fisico', fontes: [fonte('furia')], energia: 25, tempoConjuracaoSegundos: 1, alcanceMetros: 0 }) };
-    },
-  },
-  {
-    id: 'tempestario',
-    nome: 'Tempestário',
-    descricao: 'Ar + Eletricidade: o céu em fúria.',
-    montar() {
-      const p = criarPersonagem('Zael, o Tempestário');
-      investirElemento(p, 'ar', 13);
-      investirElemento(p, 'eletricidade', 13);
-      investirEscola(p, 'conjuracao', 12);
-      investirRecurso(p, 'mana', 8);
-      investirTalento(p, 'area_ampliada', 2);
-      return { p, skill: sk({ nome: 'Céu Partido', elemento: 'tempestade', escola: 'conjuracao', fontes: [fonte('mana')], energia: 26, tempoConjuracaoSegundos: 2.5, area: { tipo: 'circulo', raioMetros: 8 } }) };
-    },
-  },
-  {
-    id: 'santo',
-    nome: 'Santo Guardião',
-    descricao: 'Santidade: a cura mais pura.',
-    montar() {
-      const p = criarPersonagem('Ilya, a Santa Guardiã');
-      investirElemento(p, 'luz', 14);
-      investirElemento(p, 'vida', 14);
-      investirEscola(p, 'benca', 14);
-      investirRecurso(p, 'fe', 10);
-      investirTalento(p, 'vinculo_de_grupo', 2);
-      investirTalento(p, 'egide', 2);
-      return { p, skill: sk({ nome: 'Graça Plena', elemento: 'santidade', escola: 'benca', fontes: [fonte('fe')], energia: 24, tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 4 }, entrega: { tipo: 'continuo', duracaoSegundos: 10 } }) };
-    },
-  },
-  {
-    id: 'arsenal',
-    nome: 'Arsenal Espectral',
-    descricao: 'Armas evocadas que lutam sozinhas.',
-    montar() {
-      const p = criarPersonagem('Kael, Arsenal Espectral');
-      investirElemento(p, 'vigor', 12);
-      investirElemento(p, 'arcano', 8);
-      investirEscola(p, 'evocacao', 13);
-      investirEscola(p, 'combate_fisico', 13);
-      investirRecurso(p, 'furia', 9);
-      investirTalento(p, 'colosso', 2);
-      investirTalento(p, 'vinculo_marcial', 2);
-      return { p, skill: sk({ nome: 'Armas Dançantes', elemento: 'vigor', escola: 'evocacao', fontes: [fonte('furia')], energia: 35, tempoConjuracaoSegundos: 2, alcanceMetros: 0, capacidadeExigida: 'evocar_armas_autonomas' }) };
-    },
-  },
-  {
-    id: 'mestre_de_armas',
-    nome: 'Mestre de Armas',
-    descricao: 'Marcial + Soullink/Fúria: paga com a vida por golpes perfeitos.',
-    montar() {
-      const p = criarPersonagem('Cem-Lâminas');
-      investirElemento(p, 'marcial', 14);
-      investirElemento(p, 'vigor', 10);
-      investirEscola(p, 'combate_fisico', 12);
-      investirRecurso(p, 'soullink', 8);
-      investirRecurso(p, 'furia', 6);
-      investirTalento(p, 'sequencia_marcial', 2);
-      investirTalento(p, 'elo_profundo', 2);
-      return { p, skill: sk({ nome: 'Dança de Mil Cortes', elemento: 'maestria', escola: 'combate_fisico', fontes: [fonte('soullink', 60), fonte('furia', 40)], energia: 25, tempoConjuracaoSegundos: 1.5, alcanceMetros: 0 }) };
-    },
-  },
-  {
-    id: 'cronomante',
-    nome: 'Cronomante',
-    descricao: 'Tempo + Arcano: pressa, lentidão e paradas temporais.',
-    montar() {
-      const p = criarPersonagem('Aeon, o Cronomante');
-      investirElemento(p, 'tempo', 16);
-      investirElemento(p, 'arcano', 10);
-      investirEscola(p, 'conjuracao', 12);
-      investirEscola(p, 'benca', 8);
-      investirEscola(p, 'maldicao', 8);
-      investirRecurso(p, 'mana', 10);
-      investirTalento(p, 'area_ampliada', 2);
-      return { p, skill: sk({ nome: 'Parada Temporal', elemento: 'cronomancia', escola: 'conjuracao', fontes: [fonte('mana')], energia: 26, tempoConjuracaoSegundos: 2, area: { tipo: 'circulo', raioMetros: 5 } }) };
-    },
-  },
-  {
-    id: 'cavaleiro_dragao',
-    nome: 'Cavaleiro Dragão',
-    descricao: 'Esgrima + Combate + Salto, montado num wyvern.',
-    montar() {
-      const p = criarPersonagem('Kain, o Cavaleiro Dragão');
-      investirElemento(p, 'marcial', 14);
-      investirElemento(p, 'ar', 14);
-      investirElemento(p, 'fogo', 10);
-      investirEscola(p, 'combate_fisico', 14);
-      investirEscola(p, 'evocacao', 10);
-      investirRecurso(p, 'furia', 8);
-      investirTalento(p, 'salto', 3);
-      investirTalento(p, 'instinto_de_caca', 2);
-      investirTalento(p, 'vinculo_primal', 1);
-      investirTalento(p, 'montaria', 1);
-      // captura e doma um wyvern para servir de montaria
-      const prog = calcularProgressao(p);
-      capturarCriatura(p, prog, 'wyvern');
-      domarCriatura(p, 'wyvern');
-      const skill = sk({ nome: 'Salto Dracônico', elemento: 'esgrima', escola: 'combate_fisico', fontes: [fonte('furia')], energia: 28, tempoConjuracaoSegundos: 1.5, alcanceMetros: 0, montariaId: 'wyvern' });
-      return { p, skill };
-    },
-  },
-  {
-    id: 'nulo',
-    nome: 'Portador do Nulo',
-    descricao: 'Nível 8 em tudo: o elemento que nega.',
-    montar() {
-      const p = criarPersonagem('O Sem-Nome');
-      for (const def of elementosBase()) investirElemento(p, def.id, 8);
-      investirEscola(p, 'conjuracao', 10);
-      investirRecurso(p, 'mana', 10);
-      return { p, skill: sk({ nome: 'Anulação', elemento: 'nulo', escola: 'conjuracao', fontes: [fonte('mana')], energia: 30, tempoConjuracaoSegundos: 2 }) };
-    },
-  },
+const PAPEIS_ORDEM: PapelPreset[] = [
+  'area', 'foco', 'linha_de_frente', 'suporte', 'controle', 'invocador', 'oficio',
 ];
 
-function aplicarPreset(id: string): void {
-  const preset = PRESETS.find((x) => x.id === id);
-  if (!preset) return;
-  try {
-    const { p, skill } = preset.montar();
-    estado.personagem = p;
-    estado.skill = skill;
-    estado.skillsSalvas = [];
-    const gastoA = pontosAtributosGastos();
-    const gastoT = pontosTalentosGastos();
-    estado.orcamentoAtributos = Math.max(estado.orcamentoAtributos, Math.ceil(gastoA / 10) * 10);
-    estado.orcamentoTalentos = Math.max(estado.orcamentoTalentos, gastoT);
-    (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);
-    (el('orc-talentos') as HTMLInputElement).value = String(estado.orcamentoTalentos);
-    render();
-    toast(`Preset "${preset.nome}" aplicado.`);
-  } catch (e) {
-    toast(`Preset falhou: ${(e as Error).message}`);
-  }
+/** Pergunta em linguagem de jogador; o rótulo do sistema aparece só no card. */
+const PERGUNTA_PAPEL: Record<PapelPreset, string> = {
+  area: 'Atingir vários',
+  foco: 'Focar um alvo',
+  linha_de_frente: 'Aguentar dano',
+  suporte: 'Curar e reforçar',
+  controle: 'Prender e atrasar',
+  invocador: 'Invocar aliados',
+  oficio: 'Fabricar coisas',
+};
+
+let galPapel: PapelPreset | 'todos' = 'todos';
+let galComplexidade: Complexidade | 'todas' = 'todas';
+let galBusca = '';
+let galSelecionado: string | null = null;
+/** Ficha de antes do último preset aplicado — o desfazer que sobrevive ao toast. */
+let estadoAnterior: Estado | null = null;
+
+function presetsFiltrados(): PresetDef[] {
+  const q = norm(galBusca);
+  return PRESETS.filter((pr) => {
+    if (galPapel !== 'todos' && pr.papel !== galPapel) return false;
+    if (galComplexidade !== 'todas' && pr.complexidade !== galComplexidade) return false;
+    if (!q) return true;
+    const recursos = Object.keys(pr.recursos).join(' ');
+    const elementos = Object.keys(pr.elementos).join(' ');
+    return norm(
+      `${pr.nome} ${pr.personagem} ${pr.descricao} ${pr.referencia ?? ''} ${recursos} ${elementos}`,
+    ).includes(q);
+  });
 }
 
-// ---------------------------------------------------------------- render
+function renderGaleria(): void {
+  const grade = document.getElementById('gal-grade');
+  const conta = document.getElementById('gal-conta');
+  if (!grade) return;
 
-function renderPresets(): void {
-  const alvo = document.getElementById('presets');
+  const chips = (
+    alvo: string,
+    itens: { id: string; rotulo: string }[],
+    ativo: string,
+    acao: string,
+  ): void => {
+    const box = document.getElementById(alvo);
+    if (!box) return;
+    box.innerHTML = itens
+      .map(
+        (i) =>
+          `<button type="button" data-acao="${acao}" data-id="${i.id}" aria-pressed="${i.id === ativo}">${esc(i.rotulo)}</button>`,
+      )
+      .join('');
+  };
+  chips(
+    'gal-papeis',
+    [
+      { id: 'todos', rotulo: 'Tanto faz' },
+      ...PAPEIS_ORDEM.map((pp) => ({ id: pp, rotulo: PERGUNTA_PAPEL[pp] })),
+    ],
+    galPapel,
+    'gal-papel',
+  );
+  chips(
+    'gal-complexidades',
+    [
+      { id: 'todas', rotulo: 'Tanto faz' },
+      { id: '1', rotulo: 'Simples · 2 elementos' },
+      { id: '2', rotulo: 'Intermediário · 3 elementos' },
+      { id: '3', rotulo: 'Avançado · 4 elementos, fusão, modificadores' },
+    ],
+    String(galComplexidade),
+    'gal-cplx',
+  );
+
+  const lista = presetsFiltrados();
+  if (conta) {
+    conta.textContent =
+      lista.length === PRESETS.length
+        ? `${PRESETS.length} classes`
+        : `${lista.length} de ${PRESETS.length} classes`;
+  }
+
+  if (!lista.length) {
+    grade.innerHTML = `<p class="vazio">Nenhuma classe combina esses filtros.
+      <button type="button" data-acao="gal-limpar">Limpar filtros</button></p>`;
+    renderGaleriaDetalhe();
+    return;
+  }
+
+  // agrupado por papel, e dentro do papel do simples para o avançado
+  const porPapel = PAPEIS_ORDEM.filter((pp) => lista.some((x) => x.papel === pp));
+  grade.innerHTML = porPapel
+    .map((pp) => {
+      const doPapel = [...lista.filter((x) => x.papel === pp)].sort(
+        (a, b) => a.complexidade - b.complexidade || a.nome.localeCompare(b.nome),
+      );
+      const cards = doPapel.map((pr) => cardPreset(pr)).join('');
+      return `<h4 class="gd-secao" style="grid-column:1/-1">${esc(ROTULO_PAPEL[pp])}</h4>${cards}`;
+    })
+    .join('');
+  renderGaleriaDetalhe();
+}
+
+function cardPreset(pr: PresetDef): string {
+  const recursos = Object.keys(pr.recursos)
+    .map((r) => RECURSOS[r as RecursoId]?.nome ?? r)
+    .join(' · ');
+  const cplx =
+    pr.complexidade === 1
+      ? 'Simples'
+      : pr.complexidade === 2
+        ? 'Intermediário'
+        : 'Avançado';
+  return `<button type="button" class="preset-card" data-acao="gal-sel" data-id="${pr.id}"
+      aria-current="${galSelecionado === pr.id}">
+    <h3>${esc(pr.nome)}</h3>
+    <p class="pc-promessa">${esc(pr.descricao)}</p>
+    <p class="pc-skill">Já vem com: <em>“${esc(pr.skill.nome)}”</em></p>
+    <p class="pc-etiquetas">
+      <span class="etq">${esc(ROTULO_PAPEL[pr.papel])}</span>
+      <span class="etq${pr.complexidade === 3 ? ' etq-c3' : ''}">${cplx}</span>
+      <span class="etq">${esc(recursos)}</span>
+    </p>
+  </button>`;
+}
+
+function renderGaleriaDetalhe(): void {
+  const alvo = document.getElementById('gal-detalhe');
   if (!alvo) return;
-  alvo.innerHTML = PRESETS.map(
-    (pr) => `<button type="button" data-acao="preset" data-id="${pr.id}" title="${esc(pr.descricao)}">${esc(pr.nome)}</button>`,
-  ).join('');
+  const pr = galSelecionado ? PRESETS.find((x) => x.id === galSelecionado) : undefined;
+  if (!pr) {
+    alvo.innerHTML = `<p class="vazio">Escolha uma classe à esquerda para ver o que ela investe
+      e o que ela ensina.</p>`;
+    return;
+  }
+  const m = materializarPreset(pr);
+  const linha = (titulo: string, obj: Partial<Record<string, number>>, nomes: (k: string) => string) => {
+    const itens = Object.entries(obj).filter(([, n]) => (n ?? 0) > 0);
+    if (!itens.length) return '';
+    return `<p class="gd-secao">${titulo}</p><p class="gd-lista">${itens
+      .map(([k, n]) => `${esc(nomes(k))} ${n}`)
+      .join(' · ')}</p>`;
+  };
+  const gastos = pontosAtributosGastos();
+  const consequencia =
+    gastos > 0 || estado.skillsSalvas.length
+      ? `<p class="gd-consequencia">Sua ficha atual — ${gastos} pontos investidos e
+         ${estado.skillsSalvas.length} skill(s) salva(s) — será descartada. Dá pra desfazer.</p>`
+      : '';
+  const notaveis = elementosNotaveis(m, 6)
+    .map((id) => elementoDef(id)?.nome ?? id)
+    .join(' · ');
+
+  alvo.innerHTML = `
+    <h3 class="gd-nome">${esc(pr.nome)}</h3>
+    <p class="gd-personagem">${esc(pr.personagem)}${pr.referencia ? ` — inspirado em ${esc(pr.referencia)}` : ''}</p>
+    <p class="gd-secao">Este preset mostra</p>
+    <p class="gd-ensina">${esc(pr.ensina)}</p>
+    ${linha('Elementos', pr.elementos, (k) => ELEMENTOS[k as ElementoId]?.nome ?? k)}
+    ${linha('Escolas', pr.escolas, (k) => ESCOLAS[k as EscolaId]?.nome ?? k)}
+    ${linha('Recursos', pr.recursos, (k) => RECURSOS[k as RecursoId]?.nome ?? k)}
+    ${linha('Talentos', pr.talentos ?? {}, (k) => TALENTOS[k as TalentoId]?.nome ?? k)}
+    ${linha('Profissões', pr.profissoes ?? {}, (k) => PROFISSOES[k as ProfissaoId]?.nome ?? k)}
+    ${notaveis ? `<p class="gd-secao">Elementos que isso abre</p><p class="gd-lista">${esc(notaveis)}</p>` : ''}
+    <p class="gd-secao">Custo</p>
+    <p class="gd-lista">${m.custo.atributos} pontos de atributo · ${m.custo.talentos} de talento${
+      m.custo.profissoes ? ` · ${m.custo.profissoes} de profissão` : ''
+    }</p>
+    <button type="button" class="gd-aplicar" data-acao="gal-aplicar" data-id="${pr.id}">
+      ${gastos > 0 ? 'Substituir minha ficha por esta' : 'Usar esta classe'}
+    </button>
+    ${consequencia}`;
+}
+
+/**
+ * Aplica um preset. Parte de `estadoPadrao()` e sobrescreve — sobrou bug antes
+ * por zerar `skillsSalvas` e deixar `estado.fusao` com índices pendurados.
+ * Preserva o que é preferência da pessoa, não da build: vista de talentos.
+ */
+function aplicarPreset(id: string): void {
+  const pr = PRESETS.find((x) => x.id === id);
+  if (!pr) return;
+  const m = materializarPreset(pr);
+  const grave = m.problemas.filter((x) => x.severidade === 'erro');
+  if (grave.length) {
+    toast(`Preset "${pr.nome}" com problema: ${grave[0].mensagem}`);
+    return;
+  }
+  estadoAnterior = estado;
+  const vistaTalentos = estado.vistaTalentos;
+  const snapshots = estado.snapshots;
+
+  estado = estadoPadrao();
+  estado.personagem = m.personagem;
+  estado.skill = m.skill;
+  estado.vistaTalentos = vistaTalentos;
+  estado.snapshots = snapshots;
+  // o orçamento passa a ser EXATAMENTE o que o preset gasta, nunca o máximo
+  // acumulado — antes, clicar no Nulo (156 pts) deixava o teto em 160 para
+  // sempre e todos os outros presets pareciam sobrar espaço.
+  estado.orcamentoAtributos = Math.max(20, Math.ceil(m.custo.atributos / 10) * 10);
+  estado.orcamentoTalentos = Math.max(5, m.custo.talentos);
+  if (m.fusao) {
+    estado.skillsSalvas = [...m.fusao.componentes];
+    estado.fusao = m.fusao.componentes.map((_, i) => i);
+    estado.abaAtiva = 'fusao';
+  } else if (pr.complexidade === 3 && (m.skill.modificadores?.length ?? 0) > 0) {
+    estado.abaAtiva = 'skill';
+  }
+  presetAtual = pr;
+  licaoPendente = pr.ensina;
+
+  (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);
+  (el('orc-talentos') as HTMLInputElement).value = String(estado.orcamentoTalentos);
+  fecharGaleria();
+  render();
+  toast(`${pr.nome} aplicado. Use "Voltar para a ficha anterior" se quiser desfazer.`);
+}
+
+let presetAtual: PresetDef | null = null;
+let licaoPendente: string | null = null;
+
+function desfazerPreset(): void {
+  if (!estadoAnterior) return;
+  estado = estadoAnterior;
+  estadoAnterior = null;
+  presetAtual = null;
+  licaoPendente = null;
+  (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);
+  (el('orc-talentos') as HTMLInputElement).value = String(estado.orcamentoTalentos);
+  render();
+  toast('Ficha anterior restaurada.');
+}
+
+function abrirGaleria(): void {
+  const d = document.getElementById('galeria') as HTMLDialogElement | null;
+  if (!d) return;
+  renderGaleria();
+  d.showModal();
+  if (window.innerWidth > 900) (document.getElementById('gal-busca') as HTMLInputElement)?.focus();
+}
+
+function fecharGaleria(): void {
+  (document.getElementById('galeria') as HTMLDialogElement | null)?.close();
+}
+
+/** A tira: quantas classes existem, qual está carregada, e o desfazer. */
+function renderBarraPresets(): void {
+  const conta = document.getElementById('pa-conta');
+  if (conta) conta.textContent = `${PRESETS.length} disponíveis`;
+  const atual = document.getElementById('presets-atual');
+  if (atual) {
+    if (!presetAtual) {
+      atual.textContent = pontosAtributosGastos() > 0 ? 'Ficha própria' : 'Ficha em branco';
+    } else {
+      const mexeu = pontosAtributosGastos() !== custoDe(presetAtual).atributos;
+      atual.textContent = `Agora: ${presetAtual.nome}${mexeu ? ', com suas mudanças' : ''}`;
+    }
+  }
+  const btn = document.getElementById('btn-desfazer-preset');
+  if (btn) btn.toggleAttribute('hidden', !estadoAnterior);
 }
 
 function render(): void {
   const prog = calcularProgressao(estado.personagem);
   renderCabecalho();
-  renderPresets();
+  renderBarraPresets();
   renderAbas();
   renderCeuElementos(prog);
   renderPainelInvestir(prog);
@@ -579,6 +642,28 @@ function renderAbas(): void {
   document.querySelectorAll<HTMLElement>('.aba').forEach((s) => {
     s.classList.toggle('ativa', s.id === `aba-${estado.abaAtiva}`);
   });
+  renderLicao();
+}
+
+/**
+ * A faixa-lição: depois de aplicar um preset, ela diz POR QUE aquele preset
+ * existe, no topo da aba para onde o preset levou. É um bloco no fluxo, não um
+ * popover nem um tour de vários passos — dá para reler, e some quando cumpriu
+ * a função.
+ */
+function renderLicao(): void {
+  document.getElementById('licao-faixa')?.remove();
+  if (!licaoPendente || !presetAtual) return;
+  const secao = document.getElementById(`aba-${estado.abaAtiva}`);
+  if (!secao) return;
+  const faixa = document.createElement('div');
+  faixa.id = 'licao-faixa';
+  faixa.className = 'licao';
+  faixa.setAttribute('role', 'status');
+  faixa.innerHTML = `<span class="licao-tag">Por que este preset existe</span>
+    <p><strong>${esc(presetAtual.nome)}.</strong> ${esc(licaoPendente)}</p>
+    <button type="button" data-acao="licao-ok">Entendi</button>`;
+  secao.prepend(faixa);
 }
 
 // ------------------------------------------------- céu dos elementos
@@ -1661,7 +1746,7 @@ function renderFormSkill(prog: Progressao): void {
   const limites = calcularLimites(estado.personagem, s.escola, s.fontes);
   const disponiveis = prog.elementosDisponiveis;
   const opcoesElemento = (disponiveis.length ? disponiveis : ['fogo'])
-    .map((id) => `<option value="${id}" ${id === s.elemento ? 'selected' : ''}>${esc(ELEMENTOS[id].nome)} (nv ${prog.niveisEfetivos[id] ?? 0})</option>`)
+    .map((id) => `<option value="${id}" ${id === s.elemento ? 'selected' : ''}>${esc(nomeElemento(id))} (nv ${prog.niveisEfetivos[id] ?? 0})</option>`)
     .join('');
   const opcoesEscola = Object.values(ESCOLAS)
     .map((d) => `<option value="${d.id}" ${d.id === s.escola ? 'selected' : ''}>${esc(d.nome)} (${estado.personagem.escolas[d.id] ?? 0} pts)</option>`)
@@ -1726,12 +1811,12 @@ function renderFormSkill(prog: Progressao): void {
           .join('');
         const imbui = (prog.niveisEfetivos[s.elemento] ?? 0) >= MAESTRIA_LIMIAR;
         extra = `<select id="sk-evo-criatura" style="margin-top:6px">${opc}</select>
-          <div class="limite-hint">${imbui ? `imbuída de ${esc(ELEMENTOS[s.elemento].nome)} (maestria ✓)` : `sem maestria em ${esc(ELEMENTOS[s.elemento].nome)} — não imbui (suba para nível ${MAESTRIA_LIMIAR})`}</div>`;
+          <div class="limite-hint">${imbui ? `imbuída de ${esc(nomeElemento(s.elemento))} (maestria ✓)` : `sem maestria em ${esc(nomeElemento(s.elemento))} — não imbui (suba para nível ${MAESTRIA_LIMIAR})`}</div>`;
       }
     } else if (modo === 'aleatoria') {
       extra = `<div class="limite-hint">criatura qualquer; mais forte quanto mais Evocação.</div>`;
     } else {
-      extra = `<div class="limite-hint">um elemental de ${esc(ELEMENTOS[s.elemento]?.nome ?? s.elemento)}.</div>`;
+      extra = `<div class="limite-hint">um elemental de ${esc(nomeElemento(s.elemento))}.</div>`;
     }
     evocacaoHtml = `<div class="linha-campo"><label>Fonte da evocação</label><div><div class="radios">${botoes}</div>${extra}</div><span></span></div>`;
   }
@@ -1895,7 +1980,7 @@ function renderSkillsSalvas(): void {
           .map((f) => `${Math.round(f.proporcao * 100)}% ${RECURSOS[f.recurso].nome}`)
           .join(' + ');
         return `<div class="item-skill">
-          <span><strong>${esc(s.nome)}</strong> · ${esc(ELEMENTOS[s.elemento]?.nome ?? s.elemento)} + ${esc(ESCOLAS[s.escola].nome)} @ ${esc(fontesTxt)}</span>
+          <span><strong>${esc(s.nome)}</strong> · ${esc(nomeElemento(s.elemento))} + ${esc(ESCOLAS[s.escola].nome)} @ ${esc(fontesTxt)}</span>
           <span><button type="button" data-acao="carregar-skill" data-idx="${i}">editar</button>
           <button type="button" data-acao="remover-skill" data-idx="${i}">remover</button></span>
         </div>`;
@@ -1999,7 +2084,7 @@ function renderFormEvocar(prog: Progressao): void {
   if (ev.modo === 'elemental') {
     const disp = prog.elementosDisponiveis;
     const opc = (disp.length ? disp : ['fogo'])
-      .map((id) => `<option value="${id}" ${id === ev.elemento ? 'selected' : ''}>${esc(ELEMENTOS[id].nome)} (nv ${prog.niveisEfetivos[id] ?? 0})</option>`)
+      .map((id) => `<option value="${id}" ${id === ev.elemento ? 'selected' : ''}>${esc(nomeElemento(id))} (nv ${prog.niveisEfetivos[id] ?? 0})</option>`)
       .join('');
     campos = `<div class="linha-campo"><label for="evo-elemento">Elemento</label><select id="evo-elemento">${opc}</select><span></span></div>`;
   } else if (ev.modo === 'capturada') {
@@ -2017,7 +2102,7 @@ function renderFormEvocar(prog: Progressao): void {
       const opcImb =
         `<option value="">— sem imbuir —</option>` +
         maestria
-          .map((id) => `<option value="${id}" ${id === ev.elementoImbuido ? 'selected' : ''}>${esc(ELEMENTOS[id].nome)} (nv ${prog.niveisEfetivos[id] ?? 0})</option>`)
+          .map((id) => `<option value="${id}" ${id === ev.elementoImbuido ? 'selected' : ''}>${esc(nomeElemento(id))} (nv ${prog.niveisEfetivos[id] ?? 0})</option>`)
           .join('');
       const semMaestria = maestria.length === 0
         ? `<div class="limite-hint">Nenhum elemento com maestria (nível ${MAESTRIA_LIMIAR}+) para imbuir ainda.</div>`
@@ -2056,7 +2141,7 @@ function renderResultadoEvocar(prog: Progressao): void {
       <div class="metrica"><div class="rotulo">Poder</div><div class="valor num">${f1(r.poder)}</div></div>
       ${famNome ? `<div class="metrica"><div class="rotulo">Família</div><div class="valor" style="font-size:14px">${esc(famNome)}</div></div>` : ''}
       ${r.vinculada ? `<div class="metrica"><div class="rotulo">Vínculo</div><div class="valor">domada ♥</div></div>` : ''}
-      ${r.imbuido ? `<div class="metrica"><div class="rotulo">Imbuída</div><div class="valor" style="font-size:14px">${esc(ELEMENTOS[r.imbuido].nome)}</div></div>` : ''}
+      ${r.imbuido ? `<div class="metrica"><div class="rotulo">Imbuída</div><div class="valor" style="font-size:14px">${esc(nomeElemento(r.imbuido))}</div></div>` : ''}
     </div>
   </div>`;
 }
@@ -2166,7 +2251,7 @@ function renderFormCraft(prog: Progressao): void {
     ? `<div class="imbuir-lista">${dominados
         .map(
           (e) =>
-            `<label><input type="checkbox" data-acao="craft-imbuir" data-id="${e}" ${c.elementosImbuidos.includes(e) ? 'checked' : ''}>${esc(ELEMENTOS[e].nome)}</label>`,
+            `<label><input type="checkbox" data-acao="craft-imbuir" data-id="${e}" ${c.elementosImbuidos.includes(e) ? 'checked' : ''}>${esc(nomeElemento(e))}</label>`,
         )
         .join('')}</div>`
     : `<div class="imbuir-vazio">Nenhum elemento com maestria (nível ${MAESTRIA_LIMIAR}+) ainda — suba elementos na aba Elementos.</div>`;
@@ -2399,9 +2484,41 @@ document.addEventListener('click', (ev) => {
       case 'remover-skill':
         estado.skillsSalvas.splice(Number(alvo.dataset.idx), 1);
         break;
-      case 'preset':
+      case 'abrir-galeria':
+        abrirGaleria();
+        return;
+      case 'fechar-galeria':
+        fecharGaleria();
+        return;
+      case 'gal-papel':
+        galPapel = id as PapelPreset | 'todos';
+        renderGaleria();
+        return;
+      case 'gal-cplx':
+        galComplexidade = id === 'todas' ? 'todas' : (Number(id) as Complexidade);
+        renderGaleria();
+        return;
+      case 'gal-limpar':
+        galPapel = 'todos';
+        galComplexidade = 'todas';
+        galBusca = '';
+        (document.getElementById('gal-busca') as HTMLInputElement).value = '';
+        renderGaleria();
+        return;
+      case 'gal-sel':
+        galSelecionado = galSelecionado === id ? null : id;
+        renderGaleria();
+        return;
+      case 'gal-aplicar':
         aplicarPreset(id);
         return; // aplicarPreset já renderiza
+      case 'desfazer-preset':
+        desfazerPreset();
+        return;
+      case 'licao-ok':
+        licaoPendente = null;
+        render();
+        return;
       case 'banc-usar': {
         const b = garantirBancada();
         const custos = custosDaSkillAtual();
@@ -2505,6 +2622,10 @@ document.addEventListener('click', (ev) => {
     }
     render();
   } catch (e) {
+    // o toast mostra a mensagem; o console guarda a pilha. Sem isto, um erro
+    // de render vira uma frase solta sem origem — e caçá-lo custa três
+    // rodadas de instrumentação no navegador.
+    console.error('Falha ao processar ação da interface:', e);
     toast((e as Error).message);
   }
 });
@@ -2512,6 +2633,14 @@ document.addEventListener('click', (ev) => {
 document.addEventListener('input', (ev) => {
   const t = ev.target as HTMLInputElement;
   const s = estado.skill;
+
+  if (t.id === 'gal-busca') {
+    galBusca = t.value;
+    // só a grade e o detalhe são redesenhados; o próprio campo não é tocado,
+    // senão o cursor voltaria ao início a cada tecla
+    renderGaleria();
+    return;
+  }
 
   if (t.id === 'filtro-investir') {
     estado.filtroInvestir = t.value;

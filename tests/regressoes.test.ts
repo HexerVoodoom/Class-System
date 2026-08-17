@@ -184,6 +184,51 @@ describe('a interface precisa alcançar todo o conteúdo', () => {
   });
 });
 
+describe('largura não pode comprar altura', () => {
+  it('a compensação de aridade satura na aridade máxima construível', () => {
+    // O Nulo tem 17 componentes. Sem o teto, o bônus por nível ia a 0.232 e
+    // ele entregava ~2× a eficiência de qualquer preset de mesmo tempo de
+    // conjuração — com o MENOR nível efetivo da lista.
+    const p = criarPersonagem('t');
+    for (const def of Object.values(ELEMENTOS)) {
+      if (def.tipo === 'base') investirElemento(p, def.id as ElementoBaseId, 8);
+    }
+    investirEscola(p, 'conjuracao', 10);
+    investirRecurso(p, 'mana', 10);
+    const prog = calcularProgressao(p);
+    const nulo = calcularSkill(p, prog, skill('nulo', { energia: 30, tempoConjuracaoSegundos: 2 }));
+
+    // um especialista de par, mesmo tempo de conjuração, para comparar
+    const q = ficha([['fogo', 14], ['terra', 14]], 14);
+    const progQ = calcularProgressao(q);
+    const lava = calcularSkill(q, progQ, skill('lava', { energia: 28, tempoConjuracaoSegundos: 2 }));
+
+    expect(nulo.valida).toBe(true);
+    expect(nulo.eficiencia / lava.eficiencia).toBeLessThan(1.3);
+  });
+
+  it('a meia-identidade não é concedida por receitas acima da aridade máxima', () => {
+    // a receita do Nulo contém, por construção, a exigência elemental de quase
+    // todo arquétipo do registro: 53 arquétipos e 76 capacidades diluídas de
+    // uma vez, 61% do catálogo, sem ter combinado nada
+    const p = criarPersonagem('t');
+    for (const def of Object.values(ELEMENTOS)) {
+      if (def.tipo === 'base') investirElemento(p, def.id as ElementoBaseId, 8);
+    }
+    const prog = calcularProgressao(p);
+    expect(prog.niveisEfetivos.nulo).toBeGreaterThan(0);
+    expect(prog.arquetiposDiluidos).toEqual([]);
+    expect(prog.capacidadesDiluidas.size).toBe(0);
+  });
+
+  it('mas a meia-identidade continua valendo para triplas e quádruplas', () => {
+    const p = ficha([['fogo', 18], ['terra', 18], ['ar', 18]], 14);
+    const prog = calcularProgressao(p);
+    expect(prog.combinacoesLiberadas.length).toBeGreaterThan(0);
+    expect(prog.arquetiposDiluidos.length).toBeGreaterThan(0);
+  });
+});
+
 describe('o Nulo continua exigindo TODOS os elementos base', () => {
   it('a receita do Nulo cobre os 17 elementos base', () => {
     const bases = Object.values(ELEMENTOS)

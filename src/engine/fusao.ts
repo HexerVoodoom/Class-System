@@ -42,6 +42,7 @@ import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import type { ModificadorId } from '../registry/modificadores';
 import type { RecursoId } from '../registry/recursos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
+import type { FusaoConfig } from '../registry/formatos';
 import type { Personagem } from './personagem';
 import type { Progressao } from './progressao';
 import {
@@ -141,16 +142,7 @@ export const MODOS_FUSAO: Record<ModoFusao, ModoFusaoDef> = {
 // Configuração e resultado
 // ---------------------------------------------------------------------------
 
-export interface FusaoConfig {
-  nome: string;
-  /** 2 a 4 skills componentes. */
-  componentes: SkillConfig[];
-  /** Escola resultante; padrão: a do primeiro componente. */
-  escolaDominante?: EscolaId;
-  /** Modificadores aplicados sobre a skill FUNDIDA (não sobre os componentes). */
-  modificadores?: ModificadorId[];
-  alvoElemento?: ElementoBaseId;
-}
+export type { FusaoConfig } from '../registry/formatos';
 
 export interface ResultadoFusao {
   valida: boolean;

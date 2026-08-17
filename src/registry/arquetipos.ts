@@ -273,6 +273,20 @@ export const ARQUETIPOS: Record<string, ArquetipoDef> = Object.fromEntries(
       { elementos: { sinfonia_do_caos: 19 }, escolas: { maldicao: 15 } },
       ['reger_o_caos', 'desafinar_realidade']),
 
+    // ---------- lacunas canônicas: as fantasias que o público espera ----------
+    a('monge', 'Monge', 'Maestria (marcial+vigor) + Ressonância: o corpo como única arma, e o ritmo como recurso.',
+      { elementos: { maestria: 12 }, escolas: { combate_fisico: 12 }, recursos: { ressonancia: 8 } },
+      ['punho_interior', 'sequencia_de_golpes']),
+    a('guardiao_de_aco', 'Guardião de Aço', 'Titã (terra+vigor) + Combate Físico: o muro que não pede bênção a ninguém.',
+      { elementos: { tita: 12 }, escolas: { combate_fisico: 12 } },
+      ['muralha_viva', 'provocar']),
+    a('patrulheiro', 'Patrulheiro', 'Longo Alcance + Evocação: o arco e o animal que caça junto.',
+      { elementos: { vigor: 10, vida: 10 }, escolas: { longo_alcance: 12, evocacao: 8 } },
+      ['tiro_certeiro', 'companheiro_de_caca']),
+    a('criomante', 'Criomante', 'Gelo (água+ar) + Conjuração: prende antes de matar.',
+      { elementos: { gelo: 12 }, escolas: { conjuracao: 12 } },
+      ['prisao_de_gelo', 'lanca_de_gelo']),
+
     // ---------- arquétipos de ofício ----------
     a('mestre_encantador', 'Mestre Encantador', 'Encantador com arcano profundo: grava elementos inteiros em objetos prontos.',
       { elementos: { arcano: 15 }, escolas: { benca: 10 } },

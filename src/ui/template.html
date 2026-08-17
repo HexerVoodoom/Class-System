@@ -211,6 +211,116 @@
   }
   .chips button:hover { border-color: var(--acento); }
 
+  .presets-abrir {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface-2); border: 1px solid var(--acento); color: var(--ink);
+    border-radius: 8px; padding: 8px 14px; font-size: 13.5px; font-weight: 600;
+  }
+  .presets-abrir:hover { background: var(--surface); }
+  .pa-conta { color: var(--ink-2); font-weight: 400; font-size: 12px; }
+  .presets-atual { font-size: 12.5px; color: var(--ink-2); }
+  .presets-desfazer {
+    background: transparent; border: 1px solid var(--linha); color: var(--ink-2);
+    border-radius: 8px; padding: 6px 10px; font-size: 12.5px;
+  }
+  .presets-desfazer:hover { border-color: var(--acento); color: var(--ink); }
+
+  .galeria {
+    width: min(1100px, 94vw); max-width: none; height: min(88vh, 900px);
+    padding: 0; border: 1px solid var(--linha); border-radius: 12px;
+    background: var(--bg); color: var(--ink); overflow: hidden;
+  }
+  .galeria::backdrop { background: rgba(0, 0, 0, 0.55); }
+  .galeria[open] { display: flex; flex-direction: column; }
+  .gal-topo {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--linha); flex: 0 0 auto;
+  }
+  .gal-topo h2 { margin: 0; font-size: 16px; }
+  .gal-fechar {
+    background: transparent; border: 1px solid var(--linha); color: var(--ink);
+    border-radius: 6px; width: 32px; height: 32px; font-size: 14px;
+  }
+  .gal-filtros { padding: 10px 16px; border-bottom: 1px solid var(--linha); flex: 0 0 auto; }
+  .gal-filtros .filtro { width: 100%; font-size: 16px; }
+  .filtro-pergunta {
+    margin: 10px 0 6px; font-size: 12px; color: var(--ink-2);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .filtro-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filtro-chips button {
+    background: var(--surface); border: 1px solid var(--linha); color: var(--ink-2);
+    border-radius: 14px; padding: 5px 12px; font-size: 12.5px;
+  }
+  .filtro-chips button[aria-pressed="true"] {
+    border-color: var(--acento); color: var(--ink); background: var(--surface-2);
+  }
+  .filtros-extras summary { font-size: 12.5px; color: var(--ink-2); cursor: pointer; margin-top: 10px; }
+  .gal-conta { margin: 10px 0 0; font-size: 12px; color: var(--ink-2); }
+
+  .gal-corpo { display: grid; grid-template-columns: minmax(0, 1fr) 320px; flex: 1 1 auto; min-height: 0; }
+  .gal-grade {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 10px; padding: 14px 16px; overflow-y: auto; align-content: start;
+  }
+  .gal-detalhe {
+    border-left: 1px solid var(--linha); padding: 14px 16px; overflow-y: auto;
+    background: var(--surface); font-size: 13px;
+  }
+  .preset-card {
+    display: block; width: 100%; text-align: left;
+    background: var(--surface); border: 1px solid var(--linha); color: var(--ink);
+    border-radius: 10px; padding: 10px 12px;
+  }
+  .preset-card:hover { border-color: var(--acento); }
+  .preset-card[aria-current="true"] { border-color: var(--acento); background: var(--surface-2); }
+  .preset-card h3 { margin: 0 0 4px; font-size: 14px; }
+  .pc-promessa { margin: 0 0 8px; font-size: 12.5px; color: var(--ink-2); line-height: 1.35; }
+  .pc-skill { margin: 0 0 8px; font-size: 12px; color: var(--ink-2); }
+  .pc-skill em { color: var(--ink); font-style: normal; }
+  .pc-etiquetas { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; }
+  .etq {
+    font-size: 11px; padding: 2px 7px; border-radius: 10px;
+    background: var(--barra-fundo); color: var(--ink-2); border: 1px solid var(--linha);
+  }
+  .etq-c3 { border-color: var(--alerta); color: var(--alerta); }
+  .gd-nome { margin: 0 0 2px; font-size: 15px; }
+  .gd-personagem { margin: 0 0 10px; font-size: 12px; color: var(--ink-2); font-style: italic; }
+  .gd-secao { margin: 12px 0 4px; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-2); }
+  .gd-lista { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--ink); }
+  .gd-ensina {
+    background: var(--barra-fundo); border-left: 2px solid var(--arcano);
+    padding: 8px 10px; border-radius: 0 6px 6px 0; font-size: 12.5px; line-height: 1.4;
+  }
+  .gd-aplicar {
+    width: 100%; margin-top: 14px; background: var(--acento); color: var(--bg);
+    border: none; border-radius: 8px; padding: 10px; font-size: 13.5px; font-weight: 600;
+  }
+  .gd-consequencia { margin: 8px 0 0; font-size: 12px; color: var(--alerta); line-height: 1.4; }
+
+  .licao {
+    display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;
+    background: var(--barra-fundo); border: 1px solid var(--arcano);
+    border-radius: 8px; padding: 10px 12px;
+  }
+  .licao p { margin: 0; font-size: 12.5px; line-height: 1.45; }
+  .licao-tag {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--arcano); white-space: nowrap; padding-top: 2px;
+  }
+  .licao button {
+    margin-left: auto; background: transparent; border: 1px solid var(--linha);
+    color: var(--ink-2); border-radius: 6px; padding: 4px 10px; font-size: 12px;
+  }
+
+  @media (max-width: 900px) {
+    .galeria { width: 100vw; height: 100dvh; border-radius: 0; border: none; }
+    .gal-corpo { grid-template-columns: 1fr; }
+    .gal-detalhe { border-left: none; border-top: 1px solid var(--linha); }
+    .presets-abrir { width: 100%; justify-content: center; }
+  }
+
   .resultado-corpo { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
   .resultado-corpo .coluna-metricas { flex: 1 1 220px; min-width: 0; }
   .radar { flex: 0 0 auto; }
@@ -636,9 +746,37 @@
   </header>
 
   <div class="presets-barra">
-    <span class="presets-rotulo">Comece por uma classe pronta — depois mude o que quiser:</span>
-    <div id="presets" class="chips"></div>
+    <button type="button" id="btn-galeria" class="presets-abrir" data-acao="abrir-galeria" aria-haspopup="dialog">
+      <span aria-hidden="true">✦</span> Começar de uma classe pronta
+      <span class="pa-conta" id="pa-conta"></span>
+    </button>
+    <span class="presets-atual" id="presets-atual"></span>
+    <button type="button" id="btn-desfazer-preset" class="presets-desfazer" data-acao="desfazer-preset" hidden>
+      ↩ Voltar para a ficha anterior
+    </button>
   </div>
+
+  <dialog id="galeria" class="galeria" aria-labelledby="galeria-titulo">
+    <div class="gal-topo">
+      <h2 id="galeria-titulo">Classes prontas</h2>
+      <button type="button" class="gal-fechar" data-acao="fechar-galeria" aria-label="Fechar">✕</button>
+    </div>
+    <div class="gal-filtros">
+      <input id="gal-busca" class="filtro" type="search" placeholder="Buscar por nome, elemento ou recurso…" autocomplete="off">
+      <p class="filtro-pergunta" id="lbl-papel">O que você quer fazer em combate?</p>
+      <div class="filtro-chips" id="gal-papeis" role="group" aria-labelledby="lbl-papel"></div>
+      <details class="filtros-extras">
+        <summary>Mais filtros</summary>
+        <p class="filtro-pergunta" id="lbl-cplx">Quanta coisa você quer administrar?</p>
+        <div class="filtro-chips" id="gal-complexidades" role="group" aria-labelledby="lbl-cplx"></div>
+      </details>
+      <p class="gal-conta" id="gal-conta" role="status"></p>
+    </div>
+    <div class="gal-corpo">
+      <div class="gal-grade" id="gal-grade"></div>
+      <aside class="gal-detalhe" id="gal-detalhe" aria-live="polite"></aside>
+    </div>
+  </dialog>
 
   <nav class="abas" aria-label="Seções do simulador">
     <button type="button" data-acao="aba" data-id="elementos">✦ Elementos</button>

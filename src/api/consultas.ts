@@ -56,6 +56,13 @@ import {
   type SkillConfig,
 } from '../engine/skills';
 import { MODOS_FUSAO, calcularFusao, previewFusao, type FusaoConfig } from '../engine/fusao';
+import { PRESETS, PRESETS_POR_ID, ROTULO_PAPEL, type PresetDef } from '../registry/presets';
+import {
+  custoDe,
+  elementosNotaveis,
+  materializarPreset,
+  verificarPresets,
+} from '../engine/presets';
 
 const BASES = elementosBase().map((e) => e.id as ElementoBaseId);
 
@@ -823,6 +830,18 @@ export function verificarIntegridade(): ProblemaIntegridade[] {
   const problemas: ProblemaIntegridade[] = [];
   const existe = (id: string) => Boolean(elementoDef(id));
 
+  // as classes prontas passam pelo mesmo crivo do resto do conteúdo: um
+  // preset que promete um arquétipo inalcançável falha o comando que o
+  // AGENTS.md já manda rodar antes de qualquer merge
+  for (const p of verificarPresets()) {
+    problemas.push({
+      severidade: p.severidade,
+      tipo: `preset_${p.tipo}`,
+      onde: `presets.${p.presetId}`,
+      mensagem: p.mensagem,
+    });
+  }
+
   for (const arq of Object.values(ARQUETIPOS)) {
     for (const id of Object.keys(arq.condicao.elementos ?? {})) {
       if (!existe(id)) {
@@ -976,6 +995,95 @@ export function verificarIntegridade(): ProblemaIntegridade[] {
 // ---------------------------------------------------------------------------
 // 10. Catálogos (listagens paginadas e determinísticas)
 // ---------------------------------------------------------------------------
+
+/** Metadado de preset — o que a galeria precisa sem materializar ficha. */
+export interface ResumoPreset {
+  id: string;
+  nome: string;
+  personagem: string;
+  descricao: string;
+  ensina: string;
+  papel: string;
+  rotuloPapel: string;
+  complexidade: number;
+  referencia?: string;
+  custoAtributos: number;
+  custoTalentos: number;
+  elementoDaSkill: string;
+  arquetipos: string[];
+}
+
+function resumirPreset(def: PresetDef): ResumoPreset {
+  const c = custoDe(def);
+  return {
+    id: def.id,
+    nome: def.nome,
+    personagem: def.personagem,
+    descricao: def.descricao,
+    ensina: def.ensina,
+    papel: def.papel,
+    rotuloPapel: ROTULO_PAPEL[def.papel],
+    complexidade: def.complexidade,
+    referencia: def.referencia,
+    custoAtributos: c.atributos,
+    custoTalentos: c.talentos,
+    elementoDaSkill: def.skill.elemento,
+    arquetipos: [...def.promete.arquetipos].sort(),
+  };
+}
+
+/** Lista as classes prontas. Determinística: ordenada por id. */
+export function listarPresets(
+  filtro: { papel?: string; complexidade?: number } = {},
+  limite = 25,
+  offset = 0,
+): Pagina<ResumoPreset> {
+  const todos = PRESETS.filter(
+    (p) =>
+      (!filtro.papel || p.papel === filtro.papel) &&
+      (!filtro.complexidade || p.complexidade === filtro.complexidade),
+  )
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map(resumirPreset);
+  return paginar(todos, limite, offset);
+}
+
+export interface ExplicacaoPreset extends ResumoPreset {
+  elementos: Record<string, number>;
+  escolas: Record<string, number>;
+  recursos: Record<string, number>;
+  talentos: Record<string, number>;
+  profissoes: Record<string, number>;
+  /** Elementos derivados/combinados que a ficha passa a ter. */
+  elementosAbertos: string[];
+  arquetiposAbertos: string[];
+  arquetiposDiluidos: string[];
+  skill: DiagnosticoSkill;
+  problemas: { severidade: string; tipo: string; mensagem: string }[];
+}
+
+export function explicarPreset(id: string): ExplicacaoPreset | undefined {
+  const def = PRESETS_POR_ID.get(id);
+  if (!def) return undefined;
+  const m = materializarPreset(def);
+  return {
+    ...resumirPreset(def),
+    elementos: { ...def.elementos } as Record<string, number>,
+    escolas: { ...def.escolas } as Record<string, number>,
+    recursos: { ...def.recursos } as Record<string, number>,
+    talentos: { ...(def.talentos ?? {}) } as Record<string, number>,
+    profissoes: { ...(def.profissoes ?? {}) } as Record<string, number>,
+    elementosAbertos: elementosNotaveis(m, 20),
+    arquetiposAbertos: m.progressao.arquetipos.map((a) => a.id).sort(),
+    arquetiposDiluidos: m.progressao.arquetiposDiluidos.map((a) => a.id).sort(),
+    skill: diagnosticarSkill(m.personagem, m.skill),
+    problemas: m.problemas.map((p) => ({
+      severidade: p.severidade,
+      tipo: p.tipo,
+      mensagem: p.mensagem,
+    })),
+  };
+}
 
 export interface Pagina<T> {
   itens: T[];

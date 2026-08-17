@@ -14,7 +14,11 @@ import {
   SINERGIAS,
   type ElementoId,
 } from '../registry/elementos';
-import { TODAS_COMBINACOES, type CombinacaoInfo } from '../registry/combinacoes';
+import {
+  ARIDADE_MAXIMA,
+  TODAS_COMBINACOES,
+  type CombinacaoInfo,
+} from '../registry/combinacoes';
 import { ARQUETIPOS, type ArquetipoDef } from '../registry/arquetipos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
 import type { Personagem } from './personagem';
@@ -164,7 +168,16 @@ export function calcularProgressao(p: Personagem): Progressao {
   const receitasAmplas: ElementoId[][] = [];
   for (const info of combinacoesLiberadas) receitasAmplas.push(info.componentes);
   for (const def of Object.values(ELEMENTOS)) {
-    if ((def.receita?.length ?? 0) >= 3 && (niveis[def.id] ?? 0) > 0) {
+    const n = def.receita?.length ?? 0;
+    // A faixa 3..ARIDADE_MAXIMA não é arbitrária. A meia-identidade paga por
+    // COMBINAR, e "combinar" no sistema significa 3 ou 4 componentes. As
+    // receitas amplas escritas à mão (Primordial com 5, Ciclo com 4, Nulo com
+    // os 17) escapavam por cima: a do Nulo contém, por construção, a exigência
+    // elemental de quase todo arquétipo do registro — medido, 53 arquétipos e
+    // 76 capacidades diluídas de uma vez, 61% do catálogo. Isso invertia a
+    // regra que a mecânica existe para sustentar: o generalista passava a ter
+    // meia versão de tudo, inclusive de coisas que nunca combinou.
+    if (n >= 3 && n <= ARIDADE_MAXIMA && (niveis[def.id] ?? 0) > 0) {
       receitasAmplas.push(def.receita!.map((c) => c.elemento));
     }
   }

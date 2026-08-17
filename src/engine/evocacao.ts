@@ -22,7 +22,8 @@ import { CRIATURAS, type CriaturaDef, type FamiliaCriatura } from '../registry/c
 import type { Personagem } from './personagem';
 import type { Progressao } from './progressao';
 
-export type ModoEvocacao = 'elemental' | 'aleatoria' | 'capturada';
+export type { ModoEvocacao } from '../registry/formatos';
+import type { ModoEvocacao } from '../registry/formatos';
 
 // ---- constantes de balanceamento ----
 export const MAESTRIA_LIMIAR = 8; // nível efetivo p/ imbuir um elemento
