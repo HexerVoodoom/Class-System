@@ -198,9 +198,18 @@ export function guiasDeFaixa(): { aridade: 2 | 3 | 4; raio: number; rotulo: stri
   }));
 }
 
-/** viewBox por nível de zoom — zoom 3 amplia 3.14×, tornando o miolo clicável. */
+/**
+ * viewBox por nível de zoom — zoom 3 amplia 3.14×, tornando o miolo clicável.
+ *
+ * O quadro é mais largo que alto de propósito: os rótulos dos elementos base
+ * ficam em R_ROTULO_BASE (404) e escrevem para fora, então um quadro quadrado
+ * de lado W cortava os nomes longos dos setores leste e oeste ("Eletricidade",
+ * "Gravidade"). A folga horizontal de 70 unidades de cada lado mantém o centro
+ * em W/2 e dá espaço para o texto.
+ */
+const FOLGA_ROTULO = 70;
 export const VIEWBOX: Record<1 | 2 | 3, string> = {
-  1: `0 0 ${W} ${W}`,
+  1: `${-FOLGA_ROTULO} 0 ${W + FOLGA_ROTULO * 2} ${W}`,
   2: '180 180 520 520',
   3: '300 300 280 280',
 };
