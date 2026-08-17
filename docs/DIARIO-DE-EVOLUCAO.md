@@ -436,3 +436,25 @@ laboratório consumiam via extração tsx ad-hoc.
   devolve o ponto e a conta volta de 101 para 99. Regressão em
   `tests/regressoes.test.ts` — e ela morre se `desinvestirElemento` voltar a
   consultar `podeInvestir` (verificado por mutação).
+
+### Rodada 3.3 — sinergia alimenta a cascata + lista mostra progresso (pedido do dono)
+
+Testado ao vivo no simulador pelo dono: "10 fogo + 10 água deveria liberar
+2 pontos em vapor e já aparecer na lista, mesmo sem poder pontuar ainda; a
+sinergia (ele viu fogo→vileza) também devia contar pra desbloquear".
+
+- **`calcularCascata` agora soma sinergia de ALVO ÚNICO** (fogo↔vileza,
+  sombra↔morte, luz↔vida, vigor↔vida, marcial↔vigor, arcano↔tempo/espaço,
+  gravidade↔espaço, eletricidade→som/ar, ar→som, terra→vigor) ao
+  `paraCascata` das bases — investir só em fogo já dá passivos ao par
+  fogo+vileza, mesmo sem ponto nenhum em vileza.
+- **Sinergias de LEQUE (`vida`→5 primais, `arcano`→7 elementos) ficam DE
+  FORA de propósito**: medido que alimentá-las destravaria os 10 pares
+  entre os 5 primais com 250 de orçamento em `vida` sozinho (a rota honesta
+  custa 1000) — a MESMA build degenerada que a auditoria anterior fechou em
+  `niveisEfetivos`, reaberta na cascata se eu não tivesse excluído o leque.
+  Sinergia de leque continua valendo pro nível efetivo (não muda nada ali).
+- **A lista de investimento agora mostra elementos EM PROGRESSO** (passivos
+  > 0, nunca destravados): sem "+"/"−", só o sigilo, nome e "X/Y passivos" —
+  visível assim que qualquer progresso existe, não só quando destrava do
+  nada. Opacidade reduzida pra não competir com o que é clicável.

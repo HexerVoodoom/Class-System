@@ -127,7 +127,7 @@ export function calcularProgressao(p: Personagem): Progressao {
   const reducaoDivisor = somaEfeitos(p, (e, r) =>
     e.tipo === 'cascata_divisor_reducao' ? e.valorPorRank * r : 0,
   );
-  const cascata = calcularCascata(p.elementos, { reducaoDivisor });
+  const cascata = calcularCascata(p.elementos, { reducaoDivisor, bonusTransbordo });
   const alocaveis = elementosAlocaveis(cascata);
   /** Ponto direto só conta se o elemento estiver destravado de verdade. */
   const diretoValido = (id: ElementoId): number =>

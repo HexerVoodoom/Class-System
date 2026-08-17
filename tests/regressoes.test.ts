@@ -3,6 +3,7 @@
  * que o revelou. Cada `describe` cita quem achou e o que estava errado.
  */
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   criarPersonagem,
   investirElemento,
@@ -253,5 +254,18 @@ describe('o Nulo continua exigindo TODOS os elementos base', () => {
       .sort();
     const receita = ELEMENTOS.nulo.receita!.map((c) => c.elemento).sort();
     expect(receita).toEqual(bases);
+  });
+});
+
+
+describe('lista de investimento mostra elementos EM PROGRESSO (pedido do dono)', () => {
+  const fonteUI = readFileSync(new URL('../src/ui/app.ts', import.meta.url), 'utf8');
+
+  it('renderPainelInvestir lê prog.cascata.progressoDestravamento — não só alocaveis', () => {
+    const painel = fonteUI.slice(
+      fonteUI.indexOf('function renderPainelInvestir'),
+      fonteUI.indexOf('function renderDetalheElemento'),
+    );
+    expect(painel).toContain('prog.cascata.progressoDestravamento');
   });
 });

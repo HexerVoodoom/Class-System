@@ -506,6 +506,10 @@
      continuam custando orçamento e precisam de um "−" ao alcance da mão. */
   .pi-selo-travado { color: var(--alerta); border-color: var(--alerta); }
   .pi-linha.pi-travado .pi-nome { color: var(--ink-2); }
+  /* elemento com passivos mas nunca destravado: visível na lista (pedido do
+     dono — "mesmo ainda não podendo pontuar nisso, já deveria estar ali"),
+     sem controles, opacidade reduzida pra não competir com o que é clicável. */
+  .pi-linha.pi-progresso { opacity: 0.6; grid-template-columns: 26px 1fr; }
   .pi-nivel { font-size: 11px; color: var(--ink-2); }
   .pi-nivel .sinergia { color: var(--ok); }
   .pi-controles { display: flex; align-items: center; gap: 4px; }
