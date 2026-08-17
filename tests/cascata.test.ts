@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   calcularCascata,
   custoDeAlocacao,
@@ -182,6 +183,29 @@ describe('cascata — estrutura e contratos', () => {
     // ...mas uma ficha típica toca DEZENAS
     const tipica = calcularCascata({ fogo: 30, agua: 20, vida: 10 });
     expect(tipica.paraCascata.size).toBeLessThan(20);
+  });
+});
+
+describe('a UI não reimplementa a regra (camadas)', () => {
+  const fonteUI = readFileSync(new URL('../src/ui/app.ts', import.meta.url), 'utf8');
+
+  it('o painel de investir LÊ prog.alocaveis — não lista as bases por conta própria', () => {
+    // Regressão real: a tabela lateral nasceu com `elementosBase()` fixo e o
+    // comentário "só os 17 base aceitam pontos diretos". Com isso, um par
+    // destravado não tinha onde receber o ponto direto que a regra concede —
+    // a regra existia no motor e era inalcançável pela interface.
+    const painel = fonteUI.slice(
+      fonteUI.indexOf('function renderPainelInvestir'),
+      fonteUI.indexOf('function renderDetalheElemento'),
+    );
+    expect(painel).toContain('prog.alocaveis');
+    expect(painel).not.toMatch(/const\s+\w+\s*=\s*elementosBase\(\)\s*\.filter/);
+  });
+
+  it('todo contador de orçamento cobra custoDeAlocacao, nunca soma crua de p.elementos', () => {
+    expect(fonteUI).not.toMatch(/Object\.values\(p\.elementos\)\.reduce/);
+    expect(fonteUI).toContain('custoDeAlocacao(estado.personagem.elementos)');
+    expect(fonteUI).toContain('custoDeAlocacao(p.elementos)');
   });
 });
 

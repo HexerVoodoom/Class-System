@@ -22,6 +22,7 @@ import {
 } from '../registry/elementos';
 import {
   TODAS_COMBINACOES,
+  aridadeDe,
   buscarCombinacoes,
   combinacoesRelevantes,
   elementoDef,
@@ -70,6 +71,7 @@ import { craftar, elementosDominados, type ConfigCraft } from '../engine/profiss
 import { calcularProgressao, type Progressao } from '../engine/progressao';
 import { CUSTO_PONTO_ALOCACAO, DIVISOR_CASCATA, LIMIAR_DESTRAVAMENTO, ORCAMENTO_POR_TIER } from '../registry/geracoes';
 import { custoDeAlocacao } from '../engine/cascata';
+import type { Aridade } from '../registry/geracoes';
 import { CRIATURAS, FAMILIAS, criaturas, type CriaturaDef } from '../registry/criaturas';
 import { efetividade } from '../registry/afinidades';
 import {
@@ -984,41 +986,53 @@ function renderMatrizAfinidades(): void {
  *
  * O céu deixou de ser um controle e voltou a ser um mapa: clicar numa estrela
  * seleciona, mostra a receita e ilumina a linhagem, mas não gasta ponto. Investir
- * pelo céu exigia caçar a estrela certa no anel externo antes de cada clique, e
- * como só os 17 elementos base aceitam pontos diretos, a lista lateral mostra
- * exatamente o conjunto investível — sem procura.
+ * pelo céu exigia caçar a estrela certa no anel externo antes de cada clique;
+ * a lista lateral mostra exatamente o conjunto investível — sem procura.
  */
 function renderPainelInvestir(prog: Progressao): void {
   const alvo = document.getElementById('painel-investir');
   if (!alvo) return;
   const p = estado.personagem;
   const filtro = norm(estado.filtroInvestir ?? '');
-  const bases = elementosBase().filter(
-    (def) => !filtro || norm(def.nome).includes(filtro) || norm(def.id).includes(filtro),
-  );
+  // O conjunto investível é `prog.alocaveis` — as 17 bases MAIS os derivados
+  // que a cascata destravou (10 passivos num par, 6 numa tripla, 4 numa
+  // quádrupla). NÃO pode ser `elementosBase()` fixo: um par destravado ficaria
+  // sem lugar para receber o ponto direto que a regra concede, e a UI estaria
+  // reimplementando o teste de destrave por omissão. Quem decide é o motor.
+  const investiveis = prog.alocaveis
+    .map((id) => elementoDef(id))
+    .filter((def): def is ElementoDef => Boolean(def))
+    .filter((def) => !filtro || norm(def.nome).includes(filtro) || norm(def.id).includes(filtro));
 
   const conta = document.getElementById('conta-investidos');
   if (conta) {
-    const gastos = Object.values(p.elementos).reduce<number>((soma, n) => soma + (n ?? 0), 0);
+    // custo por geração, nunca soma crua (ponto direto em derivado custa mais)
+    const gastos = custoDeAlocacao(p.elementos).total;
     conta.textContent = `${gastos} de ${estado.orcamentoAtributos} pts`;
   }
 
-  if (!bases.length) {
-    alvo.innerHTML = `<div class="pi-vazio">Nenhum elemento base com "${esc(estado.filtroInvestir ?? '')}".</div>`;
+  if (!investiveis.length) {
+    alvo.innerHTML = `<div class="pi-vazio">Nenhum elemento investível com "${esc(estado.filtroInvestir ?? '')}".</div>`;
     return;
   }
 
-  alvo.innerHTML = bases
+  alvo.innerHTML = investiveis
     .map((def) => {
-      const id = def.id as ElementoBaseId;
+      const id = def.id as ElementoId;
       const direto = p.elementos[id] ?? 0;
       const efetivo = prog.niveisEfetivos[id] ?? 0;
       const sinergia = efetivo - direto;
       const selecionada = elementoSelecionado === def.id ? ' selecionada' : '';
+      const aridade = Math.min(4, Math.max(1, aridadeDe(def.id))) as Aridade;
+      // derivado destravado: mostra a geração e o custo por ponto, para o
+      // jogador entender por que aquele "+" gasta mais que o de uma base
+      const selo = def.tipo === 'base'
+        ? ''
+        : ` <span class="pi-selo" title="Destravado pela cascata: cada ponto custa ${CUSTO_PONTO_ALOCACAO[aridade]} de orçamento">gen ${aridade} · ${CUSTO_PONTO_ALOCACAO[aridade]}pt</span>`;
       return `<div class="pi-linha${selecionada}" data-linha-elemento="${def.id}">
         ${sig(def.id, 'sig-mini')}
         <div>
-          <div class="pi-nome">${esc(def.nome)}</div>
+          <div class="pi-nome">${esc(def.nome)}${selo}</div>
           <div class="pi-nivel">nível ${efetivo}${
             sinergia > 0 ? ` <span class="sinergia">(+${sinergia} sinergia)</span>` : ''
           }</div>
