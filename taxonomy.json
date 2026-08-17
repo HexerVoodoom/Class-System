@@ -1,12 +1,50 @@
 {
   "$schema": "https://github.com/HexerVoodoom/class-system taxonomy export — see scripts/export-taxonomy.ts",
-  "generatedFrom": "src/registry/elementos.ts + src/registry/criaturas.ts",
+  "version": 2,
+  "generatedFrom": "src/registry/*.ts",
+  "geracoes": {
+    "divisorCascata": {
+      "1": 0,
+      "2": 5,
+      "3": 4,
+      "4": 3
+    },
+    "divisorCascataEspecial": 20,
+    "limiarDestravamento": {
+      "1": 0,
+      "2": 10,
+      "3": 6,
+      "4": 4
+    },
+    "custoPontoAlocacao": {
+      "1": 1,
+      "2": 2,
+      "3": 3,
+      "4": 4
+    },
+    "custoCascataEquivalente": {
+      "1": 1,
+      "2": 10,
+      "3": 60,
+      "4": 240
+    },
+    "orcamentoPorTier": {
+      "1": 60,
+      "2": 120,
+      "3": 200,
+      "4": 340,
+      "5": 500,
+      "6": 800,
+      "7": 1200
+    }
+  },
   "elements": [
     {
       "id": "fogo",
       "nome": "Fogo",
       "tipo": "base",
       "descricao": "Destruição pura: dano direto e queimadura.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 1,
         "controle": 0,
@@ -14,13 +52,15 @@
         "defesa": 0,
         "suporte": 0
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "agua",
       "nome": "Água",
       "tipo": "base",
       "descricao": "Fluxo e adaptação: empurra, puxa, afoga e sustenta.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.4,
         "controle": 0.4,
@@ -28,13 +68,15 @@
         "defesa": 0,
         "suporte": 0
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "terra",
       "nome": "Terra",
       "tipo": "base",
       "descricao": "Peso e permanência: muralhas, tremores e imobilidade.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.3,
         "controle": 0.2,
@@ -42,13 +84,15 @@
         "defesa": 0.5,
         "suporte": 0
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "ar",
       "nome": "Ar",
       "tipo": "base",
       "descricao": "Velocidade e alcance: lâminas de vento e deslocamento.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.4,
         "controle": 0.4,
@@ -56,13 +100,15 @@
         "defesa": 0,
         "suporte": 0.2
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "eletricidade",
       "nome": "Eletricidade",
       "tipo": "base",
       "descricao": "Picos instantâneos: dano em cadeia e paralisia breve.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.8,
         "controle": 0.2,
@@ -70,13 +116,15 @@
         "defesa": 0,
         "suporte": 0
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "arcano",
       "nome": "Arcano",
       "tipo": "base",
       "descricao": "Magia pura: conversa com todas as escolas e elementos mágicos.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.5,
         "controle": 0.2,
@@ -84,13 +132,15 @@
         "defesa": 0,
         "suporte": 0.3
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "sombra",
       "nome": "Sombra",
       "tipo": "base",
       "descricao": "Furtividade, drenagem e medo.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.5,
         "controle": 0.3,
@@ -98,13 +148,15 @@
         "defesa": 0,
         "suporte": 0.2
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "luz",
       "nome": "Luz",
       "tipo": "base",
       "descricao": "Revelação, punição e proteção.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.3,
         "controle": 0,
@@ -112,13 +164,15 @@
         "defesa": 0.2,
         "suporte": 0.2
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "vileza",
       "nome": "Vileza",
       "tipo": "base",
       "descricao": "Pactos, corrupção e demônios; vizinha do fogo.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.6,
         "controle": 0.3,
@@ -126,13 +180,15 @@
         "defesa": 0,
         "suporte": 0.1
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "morte",
       "nome": "Morte",
       "tipo": "base",
       "descricao": "Decadência, mortos-vivos e o fim inevitável.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.6,
         "controle": 0.3,
@@ -140,13 +196,15 @@
         "defesa": 0,
         "suporte": 0.1
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "vida",
       "nome": "Vida",
       "tipo": "base",
       "descricao": "Cura e crescimento; alimenta os elementos primais.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0,
         "controle": 0,
@@ -154,13 +212,15 @@
         "defesa": 0.2,
         "suporte": 0.2
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "vigor",
       "nome": "Vigor",
       "tipo": "base",
       "descricao": "O espírito do corpo; potencializa o combate físico.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.6,
         "controle": 0,
@@ -168,13 +228,15 @@
         "defesa": 0.3,
         "suporte": 0.1
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "marcial",
       "nome": "Marcial",
       "tipo": "base",
       "descricao": "A arte das armas: maestria, técnica e armas evocadas.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.7,
         "controle": 0.1,
@@ -182,13 +244,15 @@
         "defesa": 0.2,
         "suporte": 0
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "tempo",
       "nome": "Tempo",
       "tipo": "base",
       "descricao": "A corrente do tempo: pressa, lentidão, decadência e reversão.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.2,
         "controle": 0.5,
@@ -196,13 +260,15 @@
         "defesa": 0,
         "suporte": 0.3
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "som",
       "nome": "Som",
       "tipo": "base",
       "descricao": "Vibração e ressonância: brados, canções e ondas de choque.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.4,
         "controle": 0.3,
@@ -210,13 +276,15 @@
         "defesa": 0,
         "suporte": 0.3
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "gravidade",
       "nome": "Gravidade",
       "tipo": "base",
       "descricao": "A força que puxa e esmaga: peso, atração e colapso.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.5,
         "controle": 0.4,
@@ -224,13 +292,15 @@
         "defesa": 0.1,
         "suporte": 0
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "espaco",
       "nome": "Espaço",
       "tipo": "base",
       "descricao": "A distância entre os pontos: portais, teleporte e o cosmos.",
+      "fatorPotencia": 1,
       "pesos": {
         "dano": 0.3,
         "controle": 0.4,
@@ -238,13 +308,15 @@
         "defesa": 0,
         "suporte": 0.3
       },
-      "receita": null
+      "receita": null,
+      "cascata": null
     },
     {
       "id": "vapor",
       "nome": "Vapor",
       "tipo": "derivado",
       "descricao": "Névoa escaldante: queima, oculta e sufoca em área.",
+      "fatorPotencia": 1.2,
       "pesos": {
         "dano": 0.7,
         "controle": 0.2,
@@ -261,13 +333,15 @@
           "elemento": "agua",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "lava",
       "nome": "Lava",
       "tipo": "derivado",
       "descricao": "Fogo que adere: impacto pesado + queimadura persistente.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.65,
         "controle": 0.1,
@@ -284,13 +358,15 @@
           "elemento": "terra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "incendio",
       "nome": "Incêndio",
       "tipo": "derivado",
       "descricao": "Fogo alimentado pelo vento: espalha-se sozinho de alvo em alvo.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.7,
         "controle": 0.2,
@@ -307,13 +383,15 @@
           "elemento": "ar",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "plasma",
       "nome": "Plasma",
       "tipo": "derivado",
       "descricao": "Matéria ionizada: o dano mais cru do sistema, difícil de resistir.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.9,
         "controle": 0.1,
@@ -330,13 +408,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fogo_feiticeiro",
       "nome": "Fogo Feiticeiro",
       "tipo": "derivado",
       "descricao": "Chama programável: explosões com atraso, formas e gatilhos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.75,
         "controle": 0.1,
@@ -353,13 +433,15 @@
           "elemento": "arcano",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fogo_negro",
       "nome": "Fogo Negro",
       "tipo": "derivado",
       "descricao": "Chama que não ilumina: queima e drena ao mesmo tempo.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.75,
         "controle": 0.15,
@@ -376,13 +458,15 @@
           "elemento": "sombra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "chama_solar",
       "nome": "Chama Solar",
       "tipo": "derivado",
       "descricao": "Fogo purificador: dano que também abençoa aliados próximos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.65,
         "controle": 0,
@@ -399,13 +483,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fogo_infernal",
       "nome": "Fogo Infernal",
       "tipo": "derivado",
       "descricao": "A fornalha dos pactos: queima a carne e a vontade.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.8,
         "controle": 0.15,
@@ -422,13 +508,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "chama_azul",
       "nome": "Chama Azul",
       "tipo": "derivado",
       "descricao": "Fogo que queima a alma; ignora parte da defesa.",
+      "fatorPotencia": 1.2,
       "pesos": {
         "dano": 0.8,
         "controle": 0.15,
@@ -445,13 +533,15 @@
           "elemento": "morte",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fenix",
       "nome": "Fênix",
       "tipo": "derivado",
       "descricao": "Fogo que renasce: dano que retorna como cura.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0,
@@ -468,13 +558,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fervor",
       "nome": "Fervor",
       "tipo": "derivado",
       "descricao": "Sangue fervente: golpes físicos incendiários.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.8,
         "controle": 0,
@@ -491,13 +583,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "pantano",
       "nome": "Pântano",
       "tipo": "derivado",
       "descricao": "Lama viva: prende, afunda e engole os inimigos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.30000000000000004,
@@ -514,13 +608,15 @@
           "elemento": "terra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "gelo",
       "nome": "Gelo",
       "tipo": "derivado",
       "descricao": "Água parada no tempo: congela, retarda e estilhaça.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.4,
@@ -537,13 +633,15 @@
           "elemento": "ar",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "agua_viva",
       "nome": "Água-Viva",
       "tipo": "derivado",
       "descricao": "Corrente condutora: choques que viajam por superfícies molhadas.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6000000000000001,
         "controle": 0.30000000000000004,
@@ -560,13 +658,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "mare",
       "nome": "Maré",
       "tipo": "derivado",
       "descricao": "Fluxo lunar: ondas que reposicionam aliados e inimigos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.45,
         "controle": 0.30000000000000004,
@@ -583,13 +683,15 @@
           "elemento": "arcano",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "abismo",
       "nome": "Abismo",
       "tipo": "derivado",
       "descricao": "Pressão das profundezas: esmaga e cega quem afunda.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.45,
         "controle": 0.35,
@@ -606,13 +708,15 @@
           "elemento": "sombra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "prisma",
       "nome": "Prisma",
       "tipo": "derivado",
       "descricao": "Luz refratada: divide um efeito entre múltiplos feixes.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.2,
@@ -629,13 +733,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "acido",
       "nome": "Ácido",
       "tipo": "derivado",
       "descricao": "Corrosão: derrete armadura e derrete defesas.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.35,
@@ -652,13 +758,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "veneno",
       "nome": "Veneno",
       "tipo": "derivado",
       "descricao": "Toxina paciente: dano contínuo que se recusa a sair.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.35,
@@ -675,13 +783,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "nascente",
       "nome": "Nascente",
       "tipo": "derivado",
       "descricao": "Fonte restauradora: cura em área que persiste no chão.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.2,
         "controle": 0.2,
@@ -698,13 +808,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "correnteza",
       "nome": "Correnteza",
       "tipo": "derivado",
       "descricao": "Fluidez marcial: golpes encadeados sem pausa.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.2,
@@ -721,13 +833,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "areia",
       "nome": "Areia",
       "tipo": "derivado",
       "descricao": "Tempestade de areia: cega, corrói e desloca.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.30000000000000004,
@@ -744,13 +858,15 @@
           "elemento": "ar",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "magnetismo",
       "nome": "Magnetismo",
       "tipo": "derivado",
       "descricao": "Atração e repulsão: desarma, puxa e prende metais.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.2,
@@ -767,13 +883,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "cristal",
       "nome": "Cristal",
       "tipo": "derivado",
       "descricao": "Terra lapidada pelo arcano: barreiras e foco amplificador.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.2,
@@ -790,13 +908,15 @@
           "elemento": "arcano",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "obsidiana",
       "nome": "Obsidiana",
       "tipo": "derivado",
       "descricao": "Vidro vulcânico: lâminas defensivas que cortam quem ataca.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.25,
@@ -813,13 +933,15 @@
           "elemento": "sombra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "ouro_vivo",
       "nome": "Ouro Vivo",
       "tipo": "derivado",
       "descricao": "Metal sagrado: armaduras e armas conjuradas brilhantes.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.3,
         "controle": 0.1,
@@ -836,13 +958,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "solo_profano",
       "nome": "Solo Profano",
       "tipo": "derivado",
       "descricao": "Chão corrompido: território que enfraquece quem pisa.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0.25,
@@ -859,13 +983,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "ossuario",
       "nome": "Ossuário",
       "tipo": "derivado",
       "descricao": "Os ossos da terra: muralhas e lanças de osso.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0.25,
@@ -882,13 +1008,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "flora",
       "nome": "Flora",
       "tipo": "derivado",
       "descricao": "Natureza desperta: vinhas, raízes e crescimento selvagem.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.15,
         "controle": 0.1,
@@ -905,13 +1033,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "tita",
       "nome": "Titã",
       "tipo": "derivado",
       "descricao": "Corpo de pedra: força colossal e pele impenetrável.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0.1,
@@ -928,13 +1058,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "tempestade",
       "nome": "Tempestade",
       "tipo": "derivado",
       "descricao": "Céu em fúria: área enorme e relâmpagos encadeados.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6000000000000001,
         "controle": 0.30000000000000004,
@@ -951,13 +1083,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "eter",
       "nome": "Éter",
       "tipo": "derivado",
       "descricao": "O vento entre os mundos: teleporte curto e levitação.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.45,
         "controle": 0.30000000000000004,
@@ -974,13 +1108,15 @@
           "elemento": "arcano",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "murmurio",
       "nome": "Murmúrio",
       "tipo": "derivado",
       "descricao": "Vozes no vento: medo, confusão e sussurros que distraem.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.45,
         "controle": 0.35,
@@ -997,13 +1133,15 @@
           "elemento": "sombra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "aurora",
       "nome": "Aurora",
       "tipo": "derivado",
       "descricao": "Véu celeste: proteção em área e clareza mental.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.2,
@@ -1020,13 +1158,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "enxofre",
       "nome": "Enxofre",
       "tipo": "derivado",
       "descricao": "Fumaça infernal: nuvens tóxicas que corrompem o fôlego.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.35,
@@ -1043,13 +1183,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "miasma",
       "nome": "Miasma",
       "tipo": "derivado",
       "descricao": "Ar pútrido: praga aerotransportada de longo alcance.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.35,
@@ -1066,13 +1208,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "alento",
       "nome": "Alento",
       "tipo": "derivado",
       "descricao": "Sopro vital: cura à distância e fôlego renovado.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.2,
         "controle": 0.2,
@@ -1089,13 +1233,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "impeto",
       "nome": "Ímpeto",
       "tipo": "derivado",
       "descricao": "Velocidade sobre-humana: investidas e esquivas relâmpago.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.2,
@@ -1112,13 +1258,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fluxo",
       "nome": "Fluxo",
       "tipo": "derivado",
       "descricao": "Corrente de mana: sobrecarrega magias e dispositivos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.65,
         "controle": 0.2,
@@ -1135,13 +1283,15 @@
           "elemento": "arcano",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "trovao_negro",
       "nome": "Trovão Negro",
       "tipo": "derivado",
       "descricao": "Relâmpago silencioso: atinge sem aviso e sem som.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.65,
         "controle": 0.25,
@@ -1158,13 +1308,15 @@
           "elemento": "sombra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fulgor",
       "nome": "Fulgor",
       "tipo": "derivado",
       "descricao": "Clarão ofuscante: cega em área e pune quem ataca.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.1,
@@ -1181,13 +1333,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "tormento",
       "nome": "Tormento",
       "tipo": "derivado",
       "descricao": "Choque cruel: dor que interrompe e desespera.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.7,
         "controle": 0.25,
@@ -1204,13 +1358,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "galvanismo",
       "nome": "Galvanismo",
       "tipo": "derivado",
       "descricao": "A centelha que reanima: constructos de carne e raio.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.7,
         "controle": 0.25,
@@ -1227,13 +1383,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "sinapse",
       "nome": "Sinapse",
       "tipo": "derivado",
       "descricao": "Sistema nervoso: acelera aliados e trava reflexos inimigos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.1,
@@ -1250,13 +1408,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "reflexo",
       "nome": "Reflexo",
       "tipo": "derivado",
       "descricao": "Nervos elétricos: contra-ataques instantâneos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.7,
         "controle": 0.1,
@@ -1273,13 +1433,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "ocultismo",
       "nome": "Ocultismo",
       "tipo": "derivado",
       "descricao": "Saber proibido: magias que o alvo não vê chegar.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.25,
@@ -1296,13 +1458,15 @@
           "elemento": "sombra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "runa",
       "nome": "Runa",
       "tipo": "derivado",
       "descricao": "Palavra gravada: efeitos persistentes ancorados no chão ou em aliados.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.1,
@@ -1319,13 +1483,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "pacto",
       "nome": "Pacto",
       "tipo": "derivado",
       "descricao": "Contrato de poder: sacrifica recurso por efeito ampliado.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.25,
@@ -1342,13 +1508,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "alma",
       "nome": "Alma",
       "tipo": "derivado",
       "descricao": "A moeda dos mortos: manipula espíritos e essências.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.25,
@@ -1365,13 +1533,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "essencia",
       "nome": "Essência",
       "tipo": "derivado",
       "descricao": "A matéria-prima da vida: transmutação e restauração profunda.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.25,
         "controle": 0.1,
@@ -1388,13 +1558,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "encantamento",
       "nome": "Encantamento",
       "tipo": "derivado",
       "descricao": "Corpo como foco: armas e punhos imbuídos de magia.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.1,
@@ -1411,13 +1583,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "crepusculo",
       "nome": "Crepúsculo",
       "tipo": "derivado",
       "descricao": "A fronteira: revela e oculta ao mesmo tempo.",
+      "fatorPotencia": 1.25,
       "pesos": {
         "dano": 0.4,
         "controle": 0.15,
@@ -1434,13 +1608,15 @@
           "elemento": "luz",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "terror",
       "nome": "Terror",
       "tipo": "derivado",
       "descricao": "Medo encarnado: inimigos fogem ou congelam.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.3,
@@ -1457,13 +1633,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "espectro",
       "nome": "Espectro",
       "tipo": "derivado",
       "descricao": "Forma incorpórea: atravessa paredes e ignora armadura.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.3,
@@ -1480,13 +1658,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "parasita",
       "nome": "Parasita",
       "tipo": "derivado",
       "descricao": "Vida roubada: drena o inimigo para curar você.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.25,
         "controle": 0.15,
@@ -1503,13 +1683,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "assassinio",
       "nome": "Assassínio",
       "tipo": "derivado",
       "descricao": "A arte do golpe único: dano massivo pelas costas.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.15,
@@ -1526,13 +1708,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "heresia",
       "nome": "Heresia",
       "tipo": "derivado",
       "descricao": "Luz falsa: ilusões sagradas e milagres corrompidos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0.15,
@@ -1549,13 +1733,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "julgamento",
       "nome": "Julgamento",
       "tipo": "derivado",
       "descricao": "O veredito final: executa alvos enfraquecidos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0.15,
@@ -1572,13 +1758,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "santidade",
       "nome": "Santidade",
       "tipo": "derivado",
       "descricao": "Graça plena: a cura mais pura do sistema.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.15,
         "controle": 0,
@@ -1595,13 +1783,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "bravura",
       "nome": "Bravura",
       "tipo": "derivado",
       "descricao": "Coragem radiante: aura que fortalece a linha de frente.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0,
@@ -1618,13 +1808,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "praga",
       "nome": "Praga",
       "tipo": "derivado",
       "descricao": "Corrupção contagiosa: veneno e maldição se espalham.",
+      "fatorPotencia": 1.2,
       "pesos": {
         "dano": 0.6,
         "controle": 0.3,
@@ -1641,13 +1833,15 @@
           "elemento": "morte",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "mutacao",
       "nome": "Mutação",
       "tipo": "derivado",
       "descricao": "Carne moldável: transforma o próprio corpo em arma.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.3,
         "controle": 0.15,
@@ -1664,13 +1858,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "carnificina",
       "nome": "Carnificina",
       "tipo": "derivado",
       "descricao": "Sede de sangue: quanto mais fere, mais forte fica.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6,
         "controle": 0.15,
@@ -1687,13 +1883,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "equilibrio",
       "nome": "Equilíbrio",
       "tipo": "derivado",
       "descricao": "Vida e morte na mesma mão: converte dano em cura e cura em dano.",
+      "fatorPotencia": 1.25,
       "pesos": {
         "dano": 0.3,
         "controle": 0.15,
@@ -1710,13 +1908,15 @@
           "elemento": "vida",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "ceifa",
       "nome": "Ceifa",
       "tipo": "derivado",
       "descricao": "A foice encarnada: golpes físicos que colhem almas.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6,
         "controle": 0.15,
@@ -1733,13 +1933,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "vitalidade",
       "nome": "Vitalidade",
       "tipo": "derivado",
       "descricao": "Regeneração contínua: o corpo que não aceita cair.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.3,
         "controle": 0,
@@ -1756,13 +1958,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "forja",
       "nome": "Forja",
       "tipo": "derivado",
       "descricao": "Armas nascidas do fogo: lâminas incandescentes e martelos de brasa.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.85,
         "controle": 0.05,
@@ -1779,13 +1983,15 @@
           "elemento": "fogo",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "tempera",
       "nome": "Têmpera",
       "tipo": "derivado",
       "descricao": "O fio perfeito: lâminas temperadas que nunca perdem o corte.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.25,
@@ -1802,13 +2008,15 @@
           "elemento": "agua",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "aco",
       "nome": "Aço",
       "tipo": "derivado",
       "descricao": "Metal da terra: armas pesadas e armaduras vivas.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.15000000000000002,
@@ -1825,13 +2033,15 @@
           "elemento": "terra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "esgrima",
       "nome": "Esgrima",
       "tipo": "derivado",
       "descricao": "A dança da lâmina leve: estocadas rápidas como o vento.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.25,
@@ -1848,13 +2058,15 @@
           "elemento": "ar",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "aco_voltaico",
       "nome": "Aço Voltaico",
       "tipo": "derivado",
       "descricao": "Armas condutoras: cada golpe descarrega um relâmpago.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.75,
         "controle": 0.15000000000000002,
@@ -1871,13 +2083,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "arsenal",
       "nome": "Arsenal",
       "tipo": "derivado",
       "descricao": "Armas conjuradas do nada: um arsenal etéreo ao seu dispor.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6,
         "controle": 0.15000000000000002,
@@ -1894,13 +2108,15 @@
           "elemento": "arcano",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "lamina_oculta",
       "nome": "Lâmina Oculta",
       "tipo": "derivado",
       "descricao": "A arma que ninguém vê: golpes das sombras.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6,
         "controle": 0.2,
@@ -1917,13 +2133,15 @@
           "elemento": "sombra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "lamina_radiante",
       "nome": "Lâmina Radiante",
       "tipo": "derivado",
       "descricao": "A espada-voto: arde contra o profano e protege o portador.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.05,
@@ -1940,13 +2158,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "serrilha",
       "nome": "Serrilha",
       "tipo": "derivado",
       "descricao": "Armas cruéis: feridas que não fecham.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6499999999999999,
         "controle": 0.2,
@@ -1963,13 +2183,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fio_funebre",
       "nome": "Fio Fúnebre",
       "tipo": "derivado",
       "descricao": "A lâmina que colhe: cada abate fortalece o próximo golpe.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6499999999999999,
         "controle": 0.2,
@@ -1986,13 +2208,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "lamina_viva",
       "nome": "Lâmina Viva",
       "tipo": "derivado",
       "descricao": "Armas que crescem: madeira viva, espinhos e seiva.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.05,
@@ -2009,13 +2233,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "maestria",
       "nome": "Maestria",
       "tipo": "derivado",
       "descricao": "Corpo e arma como um só: a técnica além da perfeição.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6499999999999999,
         "controle": 0.05,
@@ -2032,13 +2258,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "pira_eterna",
       "nome": "Pira Eterna",
       "tipo": "derivado",
       "descricao": "Fogo que arde desde sempre: queima acelerada que nunca se apaga.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6,
         "controle": 0.25,
@@ -2055,13 +2283,15 @@
           "elemento": "fogo",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "erosao",
       "nome": "Erosão",
       "tipo": "derivado",
       "descricao": "A água que desgasta a montanha: dano que cresce com o tempo.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.30000000000000004,
         "controle": 0.45,
@@ -2078,13 +2308,15 @@
           "elemento": "agua",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fossil",
       "nome": "Fossilização",
       "tipo": "derivado",
       "descricao": "O peso das eras: petrifica e imobiliza lentamente.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.25,
         "controle": 0.35,
@@ -2101,13 +2333,15 @@
           "elemento": "terra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "aceleracao",
       "nome": "Aceleração",
       "tipo": "derivado",
       "descricao": "O vento apressado: velocidade e reflexos sobre-humanos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.30000000000000004,
         "controle": 0.45,
@@ -2124,13 +2358,15 @@
           "elemento": "ar",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "instante",
       "nome": "Instante",
       "tipo": "derivado",
       "descricao": "O relâmpago fora do tempo: golpe que acontece antes de ser visto.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.35,
@@ -2147,13 +2383,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "cronomancia",
       "nome": "Cronomancia",
       "tipo": "derivado",
       "descricao": "A magia pura do tempo: pressa, lentidão e paradas temporais.",
+      "fatorPotencia": 1.2,
       "pesos": {
         "dano": 0.35,
         "controle": 0.35,
@@ -2170,13 +2408,15 @@
           "elemento": "arcano",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "entropia",
       "nome": "Entropia",
       "tipo": "derivado",
       "descricao": "A desordem inevitável: tudo se desfaz e nada retorna.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.4,
@@ -2193,13 +2433,15 @@
           "elemento": "sombra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "eon",
       "nome": "Éon",
       "tipo": "derivado",
       "descricao": "A luz das eras: cura o que o tempo feriu e revela o que virá.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.25,
         "controle": 0.25,
@@ -2216,13 +2458,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "ruina",
       "nome": "Ruína",
       "tipo": "derivado",
       "descricao": "A maldição da idade: corrói corpo e vontade lentamente.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.4,
@@ -2239,13 +2483,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "ocaso",
       "nome": "Ocaso",
       "tipo": "derivado",
       "descricao": "O relógio que sempre para: acelera o fim de tudo que vive.",
+      "fatorPotencia": 1.2,
       "pesos": {
         "dano": 0.4,
         "controle": 0.4,
@@ -2262,13 +2508,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "florescer",
       "nome": "Florescer",
       "tipo": "derivado",
       "descricao": "O tempo a favor da vida: crescimento e rejuvenescimento acelerados.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.1,
         "controle": 0.25,
@@ -2285,13 +2533,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "frenesi",
       "nome": "Frenesi",
       "tipo": "derivado",
       "descricao": "O corpo além do limite: cada segundo vale por dois.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.25,
@@ -2308,13 +2558,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "contratempo",
       "nome": "Contratempo",
       "tipo": "derivado",
       "descricao": "A lâmina no tempo certo: contragolpes e cortes preemptivos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0.3,
@@ -2331,13 +2583,15 @@
           "elemento": "marcial",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "estrondo",
       "nome": "Estrondo",
       "tipo": "derivado",
       "descricao": "Explosão sonora: o estouro que ensurdece e queima.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.7,
         "controle": 0.15,
@@ -2354,13 +2608,15 @@
           "elemento": "fogo",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "sonar",
       "nome": "Sonar",
       "tipo": "derivado",
       "descricao": "Eco das profundezas: revela o oculto e esmaga sob a água.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.35,
@@ -2377,13 +2633,15 @@
           "elemento": "agua",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "terremoto",
       "nome": "Terremoto",
       "tipo": "derivado",
       "descricao": "Ondas sísmicas: o chão treme e rasga em área.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.25,
@@ -2400,13 +2658,15 @@
           "elemento": "terra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "estampido",
       "nome": "Estampido",
       "tipo": "derivado",
       "descricao": "Estrondo sônico: barreira de ar que empurra tudo.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.35,
@@ -2423,13 +2683,15 @@
           "elemento": "ar",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "trovao",
       "nome": "Trovão",
       "tipo": "derivado",
       "descricao": "O estouro do raio: choque e onda de choque juntos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6000000000000001,
         "controle": 0.25,
@@ -2446,13 +2708,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "cantico",
       "nome": "Cântico",
       "tipo": "derivado",
       "descricao": "Palavra cantada de poder: encantamentos que ecoam.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.45,
         "controle": 0.25,
@@ -2469,13 +2733,15 @@
           "elemento": "arcano",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "sussurro",
       "nome": "Sussurro",
       "tipo": "derivado",
       "descricao": "Vozes que enlouquecem: medo sussurrado ao ouvido.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.45,
         "controle": 0.3,
@@ -2492,13 +2758,15 @@
           "elemento": "sombra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "harmonia",
       "nome": "Harmonia",
       "tipo": "derivado",
       "descricao": "Acorde perfeito: cura e conforto que restauram a alma.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.15,
@@ -2515,13 +2783,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "dissonancia",
       "nome": "Dissonância",
       "tipo": "derivado",
       "descricao": "Acorde quebrado: dor que corrói a mente.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.3,
@@ -2538,13 +2808,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "requiem",
       "nome": "Réquiem",
       "tipo": "derivado",
       "descricao": "A canção fúnebre: paralisa os vivos e comanda os mortos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.3,
@@ -2561,13 +2833,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "melodia",
       "nome": "Melodia Vital",
       "tipo": "derivado",
       "descricao": "Canção de ninar: regeneração embalada em harmonia.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.2,
         "controle": 0.15,
@@ -2584,13 +2858,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "brado",
       "nome": "Brado",
       "tipo": "derivado",
       "descricao": "Grito de guerra: inflama aliados e apavora inimigos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.15,
@@ -2607,13 +2883,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "cadencia",
       "nome": "Cadência",
       "tipo": "derivado",
       "descricao": "Ritmo de batalha: golpes no compasso perfeito.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.2,
@@ -2630,13 +2908,15 @@
           "elemento": "marcial",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "eco",
       "nome": "Eco",
       "tipo": "derivado",
       "descricao": "O som que volta do passado: repete efeitos com atraso.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.30000000000000004,
         "controle": 0.4,
@@ -2653,13 +2933,15 @@
           "elemento": "tempo",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "fornalha_estelar",
       "nome": "Fornalha Estelar",
       "tipo": "derivado",
       "descricao": "O coração de uma estrela: fusão que consome tudo por perto.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.75,
         "controle": 0.2,
@@ -2676,13 +2958,15 @@
           "elemento": "fogo",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "voragem",
       "nome": "Voragem",
       "tipo": "derivado",
       "descricao": "Redemoinho colossal: engole e afoga em espiral.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.45,
         "controle": 0.4,
@@ -2699,13 +2983,15 @@
           "elemento": "agua",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "colapso",
       "nome": "Colapso",
       "tipo": "derivado",
       "descricao": "Desabamento: o terreno afunda sobre os inimigos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.30000000000000004,
@@ -2722,13 +3008,15 @@
           "elemento": "terra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "vacuo",
       "nome": "Vácuo",
       "tipo": "derivado",
       "descricao": "Ausência de ar: sufoca e implode de dentro.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.45,
         "controle": 0.4,
@@ -2745,13 +3033,15 @@
           "elemento": "ar",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "magnetar",
       "nome": "Magnetar",
       "tipo": "derivado",
       "descricao": "Campo magnético estelar: prende, atrai e eletrocuta.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.65,
         "controle": 0.30000000000000004,
@@ -2768,13 +3058,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "singularidade",
       "nome": "Singularidade",
       "tipo": "derivado",
       "descricao": "Ponto de massa infinita: dobra as regras da realidade.",
+      "fatorPotencia": 1.25,
       "pesos": {
         "dano": 0.5,
         "controle": 0.30000000000000004,
@@ -2791,13 +3083,15 @@
           "elemento": "arcano",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "buraco_negro",
       "nome": "Buraco Negro",
       "tipo": "derivado",
       "descricao": "Nem a luz escapa: engole tudo num ponto de trevas.",
+      "fatorPotencia": 1.25,
       "pesos": {
         "dano": 0.5,
         "controle": 0.35,
@@ -2814,13 +3108,15 @@
           "elemento": "sombra",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "halo_gravitacional",
       "nome": "Halo Gravitacional",
       "tipo": "derivado",
       "descricao": "Lente de luz curvada: cega e revela ao mesmo tempo.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.2,
@@ -2837,13 +3133,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "jugo",
       "nome": "Jugo",
       "tipo": "derivado",
       "descricao": "O peso da opressão: prende o alvo esmagado ao solo.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.35,
@@ -2860,13 +3158,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "implosao",
       "nome": "Implosão",
       "tipo": "derivado",
       "descricao": "Colapso interno: comprime o alvo até o fim.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.35,
@@ -2883,13 +3183,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "ancora_vital",
       "nome": "Âncora Vital",
       "tipo": "derivado",
       "descricao": "Massa que fixa a alma: impede que os aliados caiam.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.25,
         "controle": 0.2,
@@ -2906,13 +3208,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "peso_descomunal",
       "nome": "Peso Descomunal",
       "tipo": "derivado",
       "descricao": "Força multiplicada: golpes que carregam toneladas.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.2,
@@ -2929,13 +3233,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "ariete",
       "nome": "Aríete",
       "tipo": "derivado",
       "descricao": "A arma que pesa mundos: impacto que atravessa muralhas.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.6,
         "controle": 0.25,
@@ -2952,13 +3258,15 @@
           "elemento": "marcial",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "dilatacao",
       "nome": "Dilatação",
       "tipo": "derivado",
       "descricao": "O tempo curvado pela massa: retarda tudo num campo.",
+      "fatorPotencia": 1.25,
       "pesos": {
         "dano": 0.35,
         "controle": 0.45,
@@ -2975,13 +3283,15 @@
           "elemento": "tempo",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "onda_de_choque",
       "nome": "Onda de Choque",
       "tipo": "derivado",
       "descricao": "Pulso gravitacional sonoro: empurra e atordoa em anel.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.45,
         "controle": 0.35,
@@ -2998,13 +3308,15 @@
           "elemento": "som",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "meteoro",
       "nome": "Meteoro",
       "tipo": "derivado",
       "descricao": "Rocha em chamas do céu: impacto devastador em área.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.65,
         "controle": 0.2,
@@ -3021,13 +3333,15 @@
           "elemento": "fogo",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "cometa",
       "nome": "Cometa",
       "tipo": "derivado",
       "descricao": "Bola de gelo sideral: risca o céu e congela ao cair.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.4,
@@ -3044,13 +3358,15 @@
           "elemento": "agua",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "asteroide",
       "nome": "Asteroide",
       "tipo": "derivado",
       "descricao": "Fragmento de mundo: bombardeio de rocha do espaço.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.3,
         "controle": 0.30000000000000004,
@@ -3067,13 +3383,15 @@
           "elemento": "terra",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "estratosfera",
       "nome": "Estratosfera",
       "tipo": "derivado",
       "descricao": "O ar rarefeito das alturas: levita e sufoca lá em cima.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.4,
@@ -3090,13 +3408,15 @@
           "elemento": "ar",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "pulsar",
       "nome": "Pulsar",
       "tipo": "derivado",
       "descricao": "Farol estelar: pulsos de energia em intervalos precisos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.55,
         "controle": 0.30000000000000004,
@@ -3113,13 +3433,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "portal",
       "nome": "Portal",
       "tipo": "derivado",
       "descricao": "Dobra do espaço: teleporte, banimento e reposicionamento.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.4,
         "controle": 0.30000000000000004,
@@ -3136,13 +3458,15 @@
           "elemento": "arcano",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "vazio",
       "nome": "Vazio",
       "tipo": "derivado",
       "descricao": "O Nada entre estrelas: apaga o que toca.",
+      "fatorPotencia": 1.25,
       "pesos": {
         "dano": 0.4,
         "controle": 0.35,
@@ -3159,13 +3483,15 @@
           "elemento": "sombra",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "constelacao",
       "nome": "Constelação",
       "tipo": "derivado",
       "descricao": "Mapa de estrelas: guia, abençoa e marca alvos.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.3,
         "controle": 0.2,
@@ -3182,13 +3508,15 @@
           "elemento": "luz",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "devorador",
       "nome": "Devorador",
       "tipo": "derivado",
       "descricao": "O que vem de além: horror cósmico que não deveria existir.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0.35,
@@ -3205,13 +3533,15 @@
           "elemento": "vileza",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "nebulosa",
       "nome": "Nebulosa",
       "tipo": "derivado",
       "descricao": "Berço e túmulo de estrelas: névoa que mata e cria.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0.35,
@@ -3228,13 +3558,15 @@
           "elemento": "morte",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "semente_estelar",
       "nome": "Semente Estelar",
       "tipo": "derivado",
       "descricao": "Vida vinda do cosmos: brota onde nada deveria crescer.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.15,
         "controle": 0.2,
@@ -3251,13 +3583,15 @@
           "elemento": "vida",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "gigante_estelar",
       "nome": "Gigante Estelar",
       "tipo": "derivado",
       "descricao": "Corpo de proporções cósmicas: força além da escala.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.44999999999999996,
         "controle": 0.2,
@@ -3274,13 +3608,15 @@
           "elemento": "vigor",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "lamina_sideral",
       "nome": "Lâmina Sideral",
       "tipo": "derivado",
       "descricao": "Corte que atravessa a distância: fende o próprio espaço.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.5,
         "controle": 0.25,
@@ -3297,13 +3633,15 @@
           "elemento": "marcial",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "continuum",
       "nome": "Continuum",
       "tipo": "derivado",
       "descricao": "Espaço-tempo dominado: mover-se por onde e quando quiser.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.25,
         "controle": 0.45,
@@ -3320,13 +3658,15 @@
           "elemento": "tempo",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "silencio_cosmico",
       "nome": "Silêncio Cósmico",
       "tipo": "derivado",
       "descricao": "O vácuo não propaga som: sufoca canções e magias.",
+      "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
         "controle": 0.35,
@@ -3343,13 +3683,15 @@
           "elemento": "som",
           "nivelMinimo": 10
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "dobra",
       "nome": "Dobra",
       "tipo": "derivado",
       "descricao": "O espaço curvado sobre si: encurta distâncias e esmaga.",
+      "fatorPotencia": 1.25,
       "pesos": {
         "dano": 0.4,
         "controle": 0.4,
@@ -3366,13 +3708,15 @@
           "elemento": "gravidade",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "chama_demoniaca",
       "nome": "Chama Demoníaca",
       "tipo": "derivado",
       "descricao": "Fogo alimentado por pacto e morte: queima corpo, alma e contrato.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.7333333333333333,
         "controle": 0.19999999999999998,
@@ -3393,13 +3737,15 @@
           "elemento": "morte",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "paradoxo",
       "nome": "Paradoxo",
       "tipo": "derivado",
       "descricao": "Vida e morte fora de ordem: desfaz causas e efeitos.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.43333333333333335,
         "controle": 0.3333333333333333,
@@ -3420,13 +3766,15 @@
           "elemento": "morte",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "big_bang",
       "nome": "Big Bang",
       "tipo": "derivado",
       "descricao": "O início e o fim de tudo: a criação comprimida num instante.",
+      "fatorPotencia": 1.35,
       "pesos": {
         "dano": 0.3333333333333333,
         "controle": 0.43333333333333335,
@@ -3447,13 +3795,15 @@
           "elemento": "tempo",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "sinfonia",
       "nome": "Sinfonia",
       "tipo": "derivado",
       "descricao": "A canção da criação: aura que cura, protege e inspira em grande área.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.23333333333333334,
         "controle": 0.09999999999999999,
@@ -3474,13 +3824,15 @@
           "elemento": "vida",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "furacao",
       "nome": "Furacão",
       "tipo": "derivado",
       "descricao": "A tempestade perfeita: área devastadora que se move sozinha.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.5333333333333333,
         "controle": 0.3333333333333333,
@@ -3501,13 +3853,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "selva",
       "nome": "Selva",
       "tipo": "derivado",
       "descricao": "Ecossistema vivo: terreno inteiro que luta por você.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.23333333333333334,
         "controle": 0.2,
@@ -3528,13 +3882,15 @@
           "elemento": "vida",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "abominacao",
       "nome": "Abominação",
       "tipo": "derivado",
       "descricao": "O horror completo: criaturas que não deveriam existir.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.5666666666666667,
         "controle": 0.3,
@@ -3555,13 +3911,15 @@
           "elemento": "vileza",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "eclipse",
       "nome": "Eclipse",
       "tipo": "derivado",
       "descricao": "O instante em que os opostos se alinham: anula magias alheias.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.43333333333333335,
         "controle": 0.16666666666666666,
@@ -3582,13 +3940,15 @@
           "elemento": "arcano",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "reencarnacao",
       "nome": "Reencarnação",
       "tipo": "derivado",
       "descricao": "O ciclo dominado: retorno da morte e segunda chance.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.36666666666666664,
         "controle": 0.16666666666666666,
@@ -3609,13 +3969,15 @@
           "elemento": "arcano",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "sobrecarga",
       "nome": "Sobrecarga",
       "tipo": "derivado",
       "descricao": "Corpo-condutor: velocidade e poder além do limite seguro.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.6333333333333333,
         "controle": 0.13333333333333333,
@@ -3636,13 +3998,15 @@
           "elemento": "vigor",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "ascensao",
       "nome": "Ascensão",
       "tipo": "derivado",
       "descricao": "Forma exaltada: transcende brevemente a condição mortal.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.3,
         "controle": 0,
@@ -3663,13 +4027,15 @@
           "elemento": "vigor",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "nucleo",
       "nome": "Núcleo",
       "tipo": "derivado",
       "descricao": "O coração do mundo: erupções magnéticas e magma pressurizado.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.7,
         "controle": 0.13333333333333333,
@@ -3690,13 +4056,15 @@
           "elemento": "eletricidade",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "avatar_de_guerra",
       "nome": "Avatar de Guerra",
       "tipo": "derivado",
       "descricao": "A guerra encarnada: cem armas orbitando um corpo perfeito.",
+      "fatorPotencia": 1.3,
       "pesos": {
         "dano": 0.6,
         "controle": 0.1,
@@ -3717,13 +4085,15 @@
           "elemento": "arcano",
           "nivelMinimo": 15
         }
-      ]
+      ],
+      "cascata": null
     },
     {
       "id": "primordial",
       "nome": "Primordial",
       "tipo": "especial",
       "descricao": "Os cinco primais em harmonia: comanda o próprio terreno da batalha.",
+      "fatorPotencia": 1.35,
       "pesos": {
         "dano": 0.5800000000000001,
         "controle": 0.24000000000000002,
@@ -3752,13 +4122,25 @@
           "elemento": "eletricidade",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": {
+        "pais": [
+          "fogo",
+          "agua",
+          "terra",
+          "ar",
+          "eletricidade"
+        ],
+        "divisor": 20,
+        "destravavel": false
+      }
     },
     {
       "id": "ciclo",
       "nome": "Ciclo",
       "tipo": "especial",
       "descricao": "Nascimento, morte, dia e noite: inverte estados — cura vira dano, buff vira maldição.",
+      "fatorPotencia": 1.35,
       "pesos": {
         "dano": 0.35,
         "controle": 0.15,
@@ -3783,13 +4165,24 @@
           "elemento": "sombra",
           "nivelMinimo": 12
         }
-      ]
+      ],
+      "cascata": {
+        "pais": [
+          "vida",
+          "morte",
+          "luz",
+          "sombra"
+        ],
+        "divisor": 20,
+        "destravavel": false
+      }
     },
     {
       "id": "nulo",
       "nome": "Nulo",
       "tipo": "especial",
       "descricao": "O elemento de quem dominou todos: nega, absorve e devolve qualquer coisa.",
+      "fatorPotencia": 1.4,
       "pesos": {
         "dano": 0.47647058823529415,
         "controle": 0.23529411764705882,
@@ -3866,7 +4259,30 @@
           "elemento": "espaco",
           "nivelMinimo": 8
         }
-      ]
+      ],
+      "cascata": {
+        "pais": [
+          "fogo",
+          "agua",
+          "terra",
+          "ar",
+          "eletricidade",
+          "arcano",
+          "sombra",
+          "luz",
+          "vileza",
+          "morte",
+          "vida",
+          "vigor",
+          "marcial",
+          "tempo",
+          "som",
+          "gravidade",
+          "espaco"
+        ],
+        "divisor": 20,
+        "destravavel": false
+      }
     }
   ],
   "families": [
@@ -3940,5 +4356,964 @@
       "nome": "Humanoide",
       "descricao": "Povos de fala e ferramenta — não bestas, não monstros."
     }
-  ]
+  ],
+  "escolas": {
+    "combate_fisico": {
+      "nome": "Combate Físico",
+      "descricao": "Corpo a corpo; escala com vigor e alimenta a fúria."
+    },
+    "longo_alcance": {
+      "nome": "Longo Alcance",
+      "descricao": "Projéteis e precisão à distância."
+    },
+    "evocacao": {
+      "nome": "Evocação",
+      "descricao": "Traz criaturas e construtos para lutar por você."
+    },
+    "conjuracao": {
+      "nome": "Conjuração",
+      "descricao": "Molda o elemento em efeito direto: projétil, explosão, parede."
+    },
+    "benca": {
+      "nome": "Bênção (Buff)",
+      "descricao": "Fortalece aliados: escudos, auras e êxtase."
+    },
+    "maldicao": {
+      "nome": "Maldição (Debuff)",
+      "descricao": "Enfraquece, envenena e amaldiçoa inimigos."
+    }
+  },
+  "recursos": {
+    "mana": {
+      "nome": "Mana",
+      "descricao": "Gasto contínuo e previsível; regenera a taxa constante."
+    },
+    "fe": {
+      "nome": "Fé",
+      "descricao": "Cada uso aumenta o custo dos próximos; a penalidade decai com o tempo sem usar."
+    },
+    "furia": {
+      "nome": "Fúria",
+      "descricao": "Gerada ao causar e receber dano; decai fora de combate; sem regeneração passiva."
+    },
+    "soullink": {
+      "nome": "Soullink",
+      "descricao": "Paga o custo com a própria vida e amplifica o poder; nunca desce do limiar vital."
+    },
+    "ressonancia": {
+      "nome": "Ressonância",
+      "descricao": "Começa fraca e amplifica a cada uso consecutivo; parar de usar reseta o acúmulo."
+    }
+  },
+  "profissoes": {
+    "ferreiro": {
+      "nome": "Ferreiro",
+      "fatoresElementos": {
+        "vigor": 0.5,
+        "marcial": 0.5,
+        "fogo": 0.4,
+        "terra": 0.4
+      },
+      "fatoresEscolas": {
+        "combate_fisico": 0.3
+      }
+    },
+    "tecelao": {
+      "nome": "Tecelão",
+      "fatoresElementos": {
+        "arcano": 0.5,
+        "ar": 0.4,
+        "som": 0.4,
+        "luz": 0.3
+      },
+      "fatoresEscolas": {
+        "benca": 0.3
+      }
+    },
+    "artesao": {
+      "nome": "Artesão",
+      "fatoresElementos": {
+        "arcano": 0.5,
+        "eletricidade": 0.4,
+        "gravidade": 0.4,
+        "espaco": 0.4
+      },
+      "fatoresEscolas": {
+        "conjuracao": 0.3
+      }
+    },
+    "joalheiro": {
+      "nome": "Joalheiro",
+      "fatoresElementos": {
+        "luz": 0.5,
+        "arcano": 0.5,
+        "cristal": 0.5,
+        "tempo": 0.3
+      }
+    },
+    "alquimista": {
+      "nome": "Alquimista",
+      "fatoresElementos": {
+        "agua": 0.5,
+        "vida": 0.4,
+        "morte": 0.4,
+        "vileza": 0.4
+      },
+      "fatoresEscolas": {
+        "maldicao": 0.3,
+        "benca": 0.2
+      }
+    },
+    "curtidor": {
+      "nome": "Curtidor",
+      "fatoresElementos": {
+        "vida": 0.5,
+        "vigor": 0.4,
+        "sombra": 0.4,
+        "terra": 0.3
+      },
+      "fatoresEscolas": {
+        "evocacao": 0.2
+      }
+    },
+    "encantador": {
+      "nome": "Encantador",
+      "fatoresElementos": {
+        "arcano": 0.6,
+        "luz": 0.35,
+        "sombra": 0.35,
+        "espaco": 0.3
+      },
+      "fatoresEscolas": {
+        "benca": 0.3,
+        "conjuracao": 0.2
+      }
+    },
+    "escriba": {
+      "nome": "Escriba",
+      "fatoresElementos": {
+        "arcano": 0.5,
+        "tempo": 0.45,
+        "luz": 0.35,
+        "vileza": 0.3
+      },
+      "fatoresEscolas": {
+        "maldicao": 0.25,
+        "benca": 0.25
+      }
+    },
+    "cozinheiro": {
+      "nome": "Cozinheiro",
+      "fatoresElementos": {
+        "vida": 0.55,
+        "fogo": 0.4,
+        "agua": 0.35,
+        "vigor": 0.3
+      },
+      "fatoresEscolas": {
+        "benca": 0.35
+      }
+    },
+    "luthier": {
+      "nome": "Luthier",
+      "fatoresElementos": {
+        "som": 0.65,
+        "ar": 0.35,
+        "vida": 0.3,
+        "marcial": 0.25
+      },
+      "fatoresEscolas": {
+        "benca": 0.3
+      }
+    },
+    "cartografo": {
+      "nome": "Cartógrafo",
+      "fatoresElementos": {
+        "espaco": 0.6,
+        "tempo": 0.45,
+        "gravidade": 0.35,
+        "luz": 0.25
+      },
+      "fatoresEscolas": {
+        "conjuracao": 0.25
+      }
+    }
+  },
+  "talentos": {
+    "area_ampliada": {
+      "nome": "Área Ampliada",
+      "ranksMaximos": 5
+    },
+    "conjuracao_rapida": {
+      "nome": "Conjuração Rápida",
+      "ranksMaximos": 5
+    },
+    "alcance_estendido": {
+      "nome": "Alcance Estendido",
+      "ranksMaximos": 5
+    },
+    "canalizacao_profunda": {
+      "nome": "Canalização Profunda",
+      "ranksMaximos": 5
+    },
+    "economia_de_recurso": {
+      "nome": "Economia de Recurso",
+      "ranksMaximos": 5
+    },
+    "persistencia": {
+      "nome": "Persistência",
+      "ranksMaximos": 3
+    },
+    "impacto_imediato": {
+      "nome": "Impacto Imediato",
+      "ranksMaximos": 3,
+      "exclusivoCom": [
+        "dano_ao_longo_do_tempo"
+      ]
+    },
+    "dano_ao_longo_do_tempo": {
+      "nome": "Dano ao Longo do Tempo",
+      "ranksMaximos": 3,
+      "exclusivoCom": [
+        "impacto_imediato"
+      ]
+    },
+    "perfuracao": {
+      "nome": "Perfuração",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "conjuracao",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "estilhaco"
+      ]
+    },
+    "estilhaco": {
+      "nome": "Estilhaço",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "conjuracao",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "perfuracao"
+      ]
+    },
+    "eco_arcano": {
+      "nome": "Eco Arcano",
+      "ranksMaximos": 2,
+      "requisito": {
+        "escola": "conjuracao",
+        "nivelMinimo": 10
+      }
+    },
+    "enxame": {
+      "nome": "Enxame",
+      "ranksMaximos": 4,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "colosso"
+      ]
+    },
+    "colosso": {
+      "nome": "Colosso",
+      "ranksMaximos": 4,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "enxame"
+      ]
+    },
+    "vinculo_marcial": {
+      "nome": "Vínculo Marcial",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 5
+      }
+    },
+    "simbiose": {
+      "nome": "Simbiose",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 8
+      }
+    },
+    "autonomia": {
+      "nome": "Autonomia",
+      "ranksMaximos": 2,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 10
+      },
+      "exclusivoCom": [
+        "comando"
+      ]
+    },
+    "comando": {
+      "nome": "Comando",
+      "ranksMaximos": 2,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 10
+      },
+      "exclusivoCom": [
+        "autonomia"
+      ]
+    },
+    "instinto_de_caca": {
+      "nome": "Instinto de Caça",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 5
+      }
+    },
+    "vinculo_primal": {
+      "nome": "Vínculo Primal",
+      "ranksMaximos": 1,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 8
+      }
+    },
+    "matilha_domada": {
+      "nome": "Matilha Domada",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 10
+      },
+      "exclusivoCom": [
+        "fera_alfa"
+      ]
+    },
+    "fera_alfa": {
+      "nome": "Fera Alfa",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 10
+      },
+      "exclusivoCom": [
+        "matilha_domada"
+      ]
+    },
+    "evolucao_da_fera": {
+      "nome": "Evolução da Fera",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 10
+      }
+    },
+    "sincronia_de_combate": {
+      "nome": "Sincronia de Combate",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 5
+      }
+    },
+    "assalto_coordenado": {
+      "nome": "Assalto Coordenado",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 8
+      }
+    },
+    "guarda_da_fera": {
+      "nome": "Guarda da Fera",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 8
+      }
+    },
+    "montaria": {
+      "nome": "Montaria",
+      "ranksMaximos": 1,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 5
+      }
+    },
+    "carga_montada": {
+      "nome": "Carga Montada",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "evocacao",
+        "nivelMinimo": 10
+      }
+    },
+    "metamagia_gemea": {
+      "nome": "Metamagia Gêmea",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "conjuracao",
+        "nivelMinimo": 10
+      }
+    },
+    "auto_feitico": {
+      "nome": "Auto-Feitiço",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 8
+      }
+    },
+    "cancao_persistente": {
+      "nome": "Canção Persistente",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "benca",
+        "nivelMinimo": 8
+      }
+    },
+    "salto": {
+      "nome": "Salto",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 8
+      }
+    },
+    "endossar_elemento": {
+      "nome": "Endossar Elemento",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 5
+      }
+    },
+    "contagio": {
+      "nome": "Contágio",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "maldicao",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "aflicao_profunda"
+      ]
+    },
+    "aflicao_profunda": {
+      "nome": "Aflição Profunda",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "maldicao",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "contagio"
+      ]
+    },
+    "egide": {
+      "nome": "Égide",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "benca",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "exaltacao"
+      ]
+    },
+    "exaltacao": {
+      "nome": "Exaltação",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "benca",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "egide"
+      ]
+    },
+    "vinculo_de_grupo": {
+      "nome": "Vínculo de Grupo",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "benca",
+        "nivelMinimo": 8
+      }
+    },
+    "sequencia_marcial": {
+      "nome": "Sequência Marcial",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "golpe_devastador"
+      ]
+    },
+    "golpe_devastador": {
+      "nome": "Golpe Devastador",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "sequencia_marcial"
+      ]
+    },
+    "postura_inabalavel": {
+      "nome": "Postura Inabalável",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 8
+      }
+    },
+    "olho_de_aguia": {
+      "nome": "Olho de Águia",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "longo_alcance",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "rajada"
+      ]
+    },
+    "rajada": {
+      "nome": "Rajada",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "longo_alcance",
+        "nivelMinimo": 5
+      },
+      "exclusivoCom": [
+        "olho_de_aguia"
+      ]
+    },
+    "devocao": {
+      "nome": "Devoção",
+      "ranksMaximos": 3,
+      "requisito": {
+        "recurso": "fe",
+        "nivelMinimo": 5
+      }
+    },
+    "fluxo_constante": {
+      "nome": "Fluxo Constante",
+      "ranksMaximos": 3,
+      "requisito": {
+        "recurso": "mana",
+        "nivelMinimo": 5
+      }
+    },
+    "sede_de_batalha": {
+      "nome": "Sede de Batalha",
+      "ranksMaximos": 3,
+      "requisito": {
+        "recurso": "furia",
+        "nivelMinimo": 5
+      }
+    },
+    "elo_profundo": {
+      "nome": "Elo Profundo",
+      "ranksMaximos": 3,
+      "requisito": {
+        "recurso": "soullink",
+        "nivelMinimo": 5
+      }
+    },
+    "afinacao": {
+      "nome": "Afinação",
+      "ranksMaximos": 3,
+      "requisito": {
+        "recurso": "ressonancia",
+        "nivelMinimo": 5
+      }
+    },
+    "engenho_de_skill": {
+      "nome": "Engenho de Skill",
+      "ranksMaximos": 3
+    },
+    "arte_da_fusao": {
+      "nome": "Arte da Fusão",
+      "ranksMaximos": 3
+    },
+    "catalisador": {
+      "nome": "Catalisador",
+      "ranksMaximos": 3,
+      "exclusivoCom": [
+        "estabilizador"
+      ]
+    },
+    "estabilizador": {
+      "nome": "Estabilizador",
+      "ranksMaximos": 3,
+      "exclusivoCom": [
+        "catalisador"
+      ]
+    },
+    "prisma_interior": {
+      "nome": "Prisma Interior",
+      "ranksMaximos": 2,
+      "requisito": {
+        "escola": "conjuracao",
+        "nivelMinimo": 12
+      }
+    },
+    "sintonia_de_receita": {
+      "nome": "Sintonia de Receita",
+      "ranksMaximos": 4
+    },
+    "convergencia_elemental": {
+      "nome": "Convergência Elemental",
+      "ranksMaximos": 3
+    },
+    "leitor_de_constelacao": {
+      "nome": "Leitor de Constelação",
+      "ranksMaximos": 3
+    },
+    "transbordo_ampliado": {
+      "nome": "Transbordo Ampliado",
+      "ranksMaximos": 3
+    },
+    "maestria_paradoxal": {
+      "nome": "Maestria Paradoxal",
+      "ranksMaximos": 3
+    },
+    "mao_de_mestre": {
+      "nome": "Mão de Mestre",
+      "ranksMaximos": 3
+    },
+    "olho_de_materiais": {
+      "nome": "Olho de Materiais",
+      "ranksMaximos": 3
+    },
+    "assinatura_do_artesao": {
+      "nome": "Assinatura do Artesão",
+      "ranksMaximos": 2
+    },
+    "linha_de_producao": {
+      "nome": "Linha de Produção",
+      "ranksMaximos": 3
+    },
+    "duplo_chaveamento": {
+      "nome": "Duplo Chaveamento",
+      "ranksMaximos": 3
+    },
+    "ritmo_de_guerra": {
+      "nome": "Ritmo de Guerra",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "combate_fisico",
+        "nivelMinimo": 10
+      }
+    },
+    "pacto_de_sangue": {
+      "nome": "Pacto de Sangue",
+      "ranksMaximos": 3,
+      "requisito": {
+        "recurso": "soullink",
+        "nivelMinimo": 8
+      }
+    },
+    "eco_de_batalha": {
+      "nome": "Eco de Batalha",
+      "ranksMaximos": 3,
+      "requisito": {
+        "escola": "conjuracao",
+        "nivelMinimo": 15
+      }
+    }
+  },
+  "criaturas": {
+    "lobo": {
+      "nome": "Lobo Cinzento",
+      "familia": "besta",
+      "afinidades": [
+        "vida",
+        "vigor"
+      ],
+      "poderBase": 24
+    },
+    "urso": {
+      "nome": "Urso das Cavernas",
+      "familia": "besta",
+      "afinidades": [
+        "vida",
+        "vigor"
+      ],
+      "poderBase": 42
+    },
+    "felino": {
+      "nome": "Pantera Sombria",
+      "familia": "besta",
+      "afinidades": [
+        "vida",
+        "sombra"
+      ],
+      "poderBase": 38
+    },
+    "javali": {
+      "nome": "Javali de Presa",
+      "familia": "besta",
+      "afinidades": [
+        "vigor",
+        "terra"
+      ],
+      "poderBase": 30
+    },
+    "falcao": {
+      "nome": "Falcão Real",
+      "familia": "ave",
+      "afinidades": [
+        "ar",
+        "vida"
+      ],
+      "poderBase": 26
+    },
+    "coruja": {
+      "nome": "Coruja Arcana",
+      "familia": "ave",
+      "afinidades": [
+        "ar",
+        "arcano"
+      ],
+      "poderBase": 34
+    },
+    "serpente_marinha": {
+      "nome": "Serpente Marinha",
+      "familia": "aquatica",
+      "afinidades": [
+        "agua"
+      ],
+      "poderBase": 48
+    },
+    "tubarao": {
+      "nome": "Tubarão Abissal",
+      "familia": "aquatica",
+      "afinidades": [
+        "agua",
+        "sombra"
+      ],
+      "poderBase": 52
+    },
+    "salamandra": {
+      "nome": "Salamandra",
+      "familia": "ignea",
+      "afinidades": [
+        "fogo"
+      ],
+      "poderBase": 30
+    },
+    "cao_de_lava": {
+      "nome": "Cão de Lava",
+      "familia": "ignea",
+      "afinidades": [
+        "fogo",
+        "terra"
+      ],
+      "poderBase": 46
+    },
+    "fenix_menor": {
+      "nome": "Fênix Menor",
+      "familia": "ignea",
+      "afinidades": [
+        "fogo",
+        "vida"
+      ],
+      "poderBase": 72
+    },
+    "ghoul": {
+      "nome": "Ghoul",
+      "familia": "morto_vivo",
+      "afinidades": [
+        "morte"
+      ],
+      "poderBase": 28
+    },
+    "cavaleiro_morto": {
+      "nome": "Cavaleiro Morto",
+      "familia": "morto_vivo",
+      "afinidades": [
+        "morte",
+        "marcial"
+      ],
+      "poderBase": 58
+    },
+    "sombra_rastejante": {
+      "nome": "Sombra Rastejante",
+      "familia": "aberracao",
+      "afinidades": [
+        "sombra"
+      ],
+      "poderBase": 32
+    },
+    "olho_vil": {
+      "nome": "Olho Vil",
+      "familia": "aberracao",
+      "afinidades": [
+        "vileza",
+        "arcano"
+      ],
+      "poderBase": 50
+    },
+    "trevo_carnivoro": {
+      "nome": "Trevo Carnívoro",
+      "familia": "planta",
+      "afinidades": [
+        "vida",
+        "terra"
+      ],
+      "poderBase": 22
+    },
+    "ent": {
+      "nome": "Ent Ancião",
+      "familia": "planta",
+      "afinidades": [
+        "vida",
+        "terra"
+      ],
+      "poderBase": 64
+    },
+    "fada": {
+      "nome": "Fada Cintilante",
+      "familia": "espirito",
+      "afinidades": [
+        "arcano",
+        "luz"
+      ],
+      "poderBase": 26
+    },
+    "anjo_menor": {
+      "nome": "Anjo Menor",
+      "familia": "espirito",
+      "afinidades": [
+        "luz"
+      ],
+      "poderBase": 68
+    },
+    "espectro": {
+      "nome": "Espectro Errante",
+      "familia": "espirito",
+      "afinidades": [
+        "morte",
+        "arcano"
+      ],
+      "poderBase": 44
+    },
+    "golem_pedra": {
+      "nome": "Golem de Pedra",
+      "familia": "construto",
+      "afinidades": [
+        "terra"
+      ],
+      "poderBase": 54
+    },
+    "automato": {
+      "nome": "Autômato Voltaico",
+      "familia": "construto",
+      "afinidades": [
+        "eletricidade",
+        "marcial"
+      ],
+      "poderBase": 60
+    },
+    "imp": {
+      "nome": "Imp",
+      "familia": "demonio",
+      "afinidades": [
+        "vileza"
+      ],
+      "poderBase": 30
+    },
+    "demonio_maior": {
+      "nome": "Demônio Maior",
+      "familia": "demonio",
+      "afinidades": [
+        "vileza",
+        "fogo"
+      ],
+      "poderBase": 80
+    },
+    "wyvern": {
+      "nome": "Wyvern",
+      "familia": "draconico",
+      "afinidades": [
+        "ar",
+        "fogo"
+      ],
+      "poderBase": 90
+    },
+    "dragao_jovem": {
+      "nome": "Dragão Jovem",
+      "familia": "draconico",
+      "afinidades": [
+        "fogo",
+        "arcano"
+      ],
+      "poderBase": 120
+    },
+    "troll_montanhes": {
+      "nome": "Troll Montanhês",
+      "familia": "gigante",
+      "afinidades": [
+        "vigor",
+        "terra"
+      ],
+      "poderBase": 56
+    },
+    "ciclope_forjador": {
+      "nome": "Ciclope Forjador",
+      "familia": "gigante",
+      "afinidades": [
+        "vigor",
+        "fogo"
+      ],
+      "poderBase": 74
+    },
+    "gosma_acida": {
+      "nome": "Gosma Ácida",
+      "familia": "geleia",
+      "afinidades": [
+        "agua",
+        "vileza"
+      ],
+      "poderBase": 26
+    },
+    "slime_cristalino": {
+      "nome": "Slime Cristalino",
+      "familia": "geleia",
+      "afinidades": [
+        "terra",
+        "agua"
+      ],
+      "poderBase": 40
+    },
+    "batedor_orc": {
+      "nome": "Batedor Orc",
+      "familia": "humanoide",
+      "afinidades": [
+        "marcial",
+        "vigor"
+      ],
+      "poderBase": 32
+    },
+    "arauto_elfico": {
+      "nome": "Arauto Élfico",
+      "familia": "humanoide",
+      "afinidades": [
+        "arcano",
+        "ar"
+      ],
+      "poderBase": 46
+    }
+  }
 }

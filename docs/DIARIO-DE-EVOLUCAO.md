@@ -323,3 +323,138 @@ profissões) e a seção "Para programas e agentes". Simulador regenerado.
 | Testes | 162 | **201** |
 | Bugs de correção encontrados e corrigidos | — | **6** |
 | Talentos alcançáveis pela interface | 42 | **65** |
+
+---
+
+## Rodada 3 — Alocação geracional (ago/2026)
+
+Pedido do dono: ponto direto nasce restrito aos 17 elementos base; investir nos
+dois pais de um par rende pontos PASSIVOS no par (5 fogo + 5 água → 1 vapor);
+um derivado com 10 passivos DESTRAVA a alocação direta; triplas e quádruplas
+seguem a mesma escada com os pais de aridade N−1; gerações altas pesam mais.
+
+Decisões de arquitetura (plano do arquiteto-de-sistema, implementado na íntegra):
+
+- **Duas contabilidades, não uma.** `niveisEfetivos` continua medindo o que a
+  ficha expressa (skills/arquétipos/evocação intocados); a CASCATA
+  (`engine/cascata.ts`) mede o que virou parte da ficha — e é ela que decide
+  destrave e alimento da geração seguinte. Substituir uma pela outra derrubava
+  Lava de nível 12 para 2 e recalibrava o sistema inteiro.
+- **Peso de geração é CUSTO, não multiplicador.** A potência por aridade já
+  existia (`fatorPotencia` + compensação de aridade nas skills);
+  `CUSTO_PONTO_ALOCACAO` {1,3,10,30} redistribui o orçamento em vez de
+  multiplicá-lo. `pesoDiretoNaCascata = custo/custoCascataEquivalente` fecha a
+  arbitragem de "destravar e despejar" por construção — 1 ponto de orçamento
+  compra o MESMO progresso de cascata onde for gasto (teste de não-arbitragem).
+- **Exceção no registro, não no motor**: os especiais (primordial/ciclo/nulo)
+  declaram `cascata: { pais, divisor: 20, destravavel: false }` no próprio
+  `ElementoDef`.
+- Ponto direto em derivado só EXPRESSA com a receita atendida (impossível na
+  prática — o destrave exige 5× o mínimo — mas o invariante "derivado nunca
+  existe abaixo do piso" continua verdadeiro e testado).
+- Constantes em `registry/geracoes.ts`; parentesco (`paisDeCascata`, DAG
+  estrito por aridade) em `combinacoes.ts`; gancho de talento
+  `cascata_divisor_reducao` declarado (nenhum talento usa ainda).
+- UI: o detalhe do elemento derivado ganhou o ledger (passivos + diretos,
+  barra de destrave, custo por ponto) e controles que só aparecem destravados.
+  A UI LÊ `prog.cascata`/`prog.alocaveis` — nunca recalcula a regra.
+
+Marcos de custo (travados em `tests/cascata.test.ts`): 1 ponto gen-2 por
+cascata = 10 de orçamento · destravar gen-2 = 100 · gen-3 = 60/360 · gen-4 =
+240/960 · com 1200 pontos não existem duas quádruplas destravadas disjuntas.
+
+Testes: 204 → 225 (21 novos de cascata; 1 antigo atualizado para a regra nova).
+
+### Rodada 3.1 — Auditoria adversarial da cascata (mesmo dia)
+
+O supervisor-de-balanceamento devolveu 9 achados verificados; correções:
+
+- **Crítico**: o medidor de orçamento da UI somava pontos crus — build
+  degenerada de 1,77× via pontos diretos "grátis". `pontosAtributosGastos`
+  agora cobra `custoDeAlocacao`; orçamento default sai de `ORCAMENTO_POR_TIER`.
+- **Dominância estrita**: com custo {1,3,10,30} o ponto direto era sempre a
+  pior compra (1,5×/3,3×/7,5× vs subir os pais) — prêmio de destrave morto.
+  Custo agora em PARIDADE com os pais {1,2,3,4}; o peso econômico da geração
+  vive no marco do destrave (100/360/960).
+- **Invariante de aridade**: `FRACAO_BONUS_ARIDADE` 0.3→0.38 — a razão
+  especializar/combinar fecha ≤1,20 em toda a curva de orçamento (antes
+  estourava a 1,28–1,34 nos tiers 4–7).
+- **Pressa do tempo**: `BONUS_PRESSA_TETO` 0.35→0.12 (spread real entre
+  builds era 1,79× contra o 1,35× declarado).
+- **Teste de não-arbitragem** era identidade algébrica (passava com qualquer
+  constante); substituído por marco MEDIDO (rota "pares+diretos" ≥ bases).
+- **Alvo das quádruplas** reescrito para a verdade medida: a 1200, duas
+  disjuntas são impossíveis; a família de 5 bases destrava as 5 irmãs.
+- Gancho `cascata_divisor_reducao` restrito à gen-2 (compunha pela cadeia:
+  1 rank derrubava o marco da quádrupla em 60%).
+- Ledger: destrave agora explica que transbordo/receita não contam e mostra
+  o custo do marco em orçamento.
+
+E o **taxonomy.json virou v2**: além de elementos/famílias, exporta
+geracoes (diais da cascata), fatorPotencia, escolas, recursos, profissões,
+talentos e criaturas — o contrato de máquina único que o Soulmon e o
+laboratório consumiam via extração tsx ad-hoc.
+
+### Rodada 3.2 — QA pós-merge (auditoria adversarial nº 2)
+
+- **CRÍTICO — a regra vivia no mutador, não no modelo.** `investirElemento`
+  validava o destrave, mas `calcularProgressao` somava o ponto direto sem
+  perguntar: uma ficha montada à mão (CLI `--ficha`, import de build,
+  localStorage, agente escrevendo `Personagem`) punha `lava: 180` com 2/10
+  passivos e ganhava nível 190 — **1,76× de impacto em skill, 1,88× em
+  evocação** — enquanto `podeInvestir` respondia "não" sobre a MESMA ficha. A
+  cascata passou para antes dos passos 3/4 e o direto só é expresso se o
+  elemento estiver destravado.
+- **CRÍTICO — a camada de API (a que os agentes consomem) ainda contava soma
+  crua**: `analisarFicha().pontos.elementos` declarava 200 para uma ficha que
+  custa 380, o mesmo 1,76× pelo "mesmo orçamento". Agora cobra
+  `custoDeAlocacao`, com teste espelhando o da UI.
+- **ALTO — build degenerada por transbordo**: `transbordo_ampliado` (0.25/rank,
+  3 ranks) levava a razão efetiva de `vida` a 0,35 por alvo numa sinergia de
+  LEQUE (5 alvos), contra 1/aridade = 0,25 da rota honesta — despejar tudo em
+  `vida` batia qualquer build (1,385× a quádrupla honesta) **sem destravar
+  nada**, por fora do gate novo. Limiar derivado: `razao × (1+bonus) ≤
+  1/aridade` → `valorPorRank: 0.25 → 0.08` (3 ranks = 0,24).
+
+### Rodada 3.3 — QA nº 2: a armadilha de retrancar
+
+- **A UI cobrava por um ponto que o jogador não tinha mais como devolver.**
+  Cenário medido no simulador real (Playwright): `+50 fogo`, `+50 terra`
+  destravam a lava → `+` na lava (1 ponto, 2 de orçamento) → remover 1 ponto
+  do fogo RETRANCA a lava. O ponto direto continuava na ficha cobrando
+  orçamento (101/200), a lava sumia da tabela — que renderizava só
+  `prog.alocaveis` — e o detalhe só mostrava controles no ramo destravado.
+  Não restava **nenhum `−` na tela**: com o botão `+10`, 20 pts queimados,
+  recuperáveis só pelo "Resetar", que apaga a build inteira.
+- Correção: **investir tem porteiro, devolver não.** `desinvestirElemento`
+  (motor, com validação de não-negativo) é a única porta de saída; a tabela
+  lista `alocaveis` ∪ {derivados com ponto direto} e mostra o travado só com
+  `−` e o selo "travado · Npt"; o detalhe mostra os controles de devolução
+  sempre que sobrou ponto direto. A UI parou de escrever em `p.elementos` por
+  fora (`decrementar` era um mutador anônimo que não sabia da regra).
+- Medição depois: retrancado, a linha continua na tabela sem `+`, o `−`
+  devolve o ponto e a conta volta de 101 para 99. Regressão em
+  `tests/regressoes.test.ts` — e ela morre se `desinvestirElemento` voltar a
+  consultar `podeInvestir` (verificado por mutação).
+
+### Rodada 3.3 — sinergia alimenta a cascata + lista mostra progresso (pedido do dono)
+
+Testado ao vivo no simulador pelo dono: "10 fogo + 10 água deveria liberar
+2 pontos em vapor e já aparecer na lista, mesmo sem poder pontuar ainda; a
+sinergia (ele viu fogo→vileza) também devia contar pra desbloquear".
+
+- **`calcularCascata` agora soma sinergia de ALVO ÚNICO** (fogo↔vileza,
+  sombra↔morte, luz↔vida, vigor↔vida, marcial↔vigor, arcano↔tempo/espaço,
+  gravidade↔espaço, eletricidade→som/ar, ar→som, terra→vigor) ao
+  `paraCascata` das bases — investir só em fogo já dá passivos ao par
+  fogo+vileza, mesmo sem ponto nenhum em vileza.
+- **Sinergias de LEQUE (`vida`→5 primais, `arcano`→7 elementos) ficam DE
+  FORA de propósito**: medido que alimentá-las destravaria os 10 pares
+  entre os 5 primais com 250 de orçamento em `vida` sozinho (a rota honesta
+  custa 1000) — a MESMA build degenerada que a auditoria anterior fechou em
+  `niveisEfetivos`, reaberta na cascata se eu não tivesse excluído o leque.
+  Sinergia de leque continua valendo pro nível efetivo (não muda nada ali).
+- **A lista de investimento agora mostra elementos EM PROGRESSO** (passivos
+  > 0, nunca destravados): sem "+"/"−", só o sigilo, nome e "X/Y passivos" —
+  visível assim que qualquer progresso existe, não só quando destrava do
+  nada. Opacidade reduzida pra não competir com o que é clicável.

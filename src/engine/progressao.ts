@@ -19,6 +19,7 @@ import {
   TODAS_COMBINACOES,
   type CombinacaoInfo,
 } from '../registry/combinacoes';
+import { calcularCascata, elementosAlocaveis, type Cascata } from './cascata';
 import { ARQUETIPOS, type ArquetipoDef } from '../registry/arquetipos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
 import type { Personagem } from './personagem';
@@ -51,6 +52,14 @@ export interface Progressao {
    * 3.060 possíveis. Só o que a ficha realmente alcançou é materializado.
    */
   combinacoesLiberadas: CombinacaoInfo[];
+  /**
+   * A contabilidade da ALOCAÇÃO GERACIONAL: pontos passivos por cascata,
+   * destravamentos e o que alimenta a geração seguinte. NÃO substitui
+   * `niveisEfetivos` — mede outra coisa (ver `engine/cascata.ts`).
+   */
+  cascata: Cascata;
+  /** Atalho para a UI: ids que aceitam ponto direto AGORA. */
+  alocaveis: ElementoId[];
   arquetipos: ArquetipoDef[];
   capacidades: Set<string>;
   /**
@@ -89,9 +98,14 @@ export function calcularProgressao(p: Personagem): Progressao {
     e.tipo === 'propriedade' && e.chave === 'transbordo_bonus' ? e.valorPorRank * r : 0,
   );
 
-  // 1) pontos diretos
+  // 1) pontos diretos — SÓ as bases entram direto em `niveis`. Diretos em
+  //    derivados (alocação geracional destravada) somam nos passos 3/4,
+  //    ATRÁS da receita atendida; escrever aqui quebraria a guarda do passo 4
+  //    e deixaria derivado existir sem os componentes.
+  const diretosDerivados: Partial<Record<ElementoId, number>> = {};
   for (const [id, pontos] of Object.entries(p.elementos) as [ElementoId, number][]) {
-    niveis[id] += pontos;
+    if (ELEMENTOS[id]?.tipo === 'base') niveis[id] += pontos;
+    else diretosDerivados[id] = pontos;
   }
 
   // 2) transbordo de sinergias (a partir dos pontos diretos)
@@ -105,6 +119,24 @@ export function calcularProgressao(p: Personagem): Progressao {
     }
   }
 
+  // 2b) cascata geracional — a segunda contabilidade (destraves e alimento da
+  //     geração seguinte). Calculada ANTES dos passos 3/4 porque o ponto
+  //     direto num derivado só pode ser EXPRESSO se aquele derivado estiver
+  //     destravado: sem isso, uma ficha montada à mão (CLI `--ficha`, import
+  //     de build, localStorage, agente escrevendo `Personagem`) punha
+  //     `lava: 180` com 2/10 passivos e ganhava nível 190 — 1,76× de impacto
+  //     em skill e 1,88× em evocação, com `podeInvestir` respondendo "não"
+  //     sobre a MESMA ficha. A regra tem que viver no modelo, não só no
+  //     mutador. Puro, podado, sem realimentação (só lê `p.elementos`).
+  const reducaoDivisor = somaEfeitos(p, (e, r) =>
+    e.tipo === 'cascata_divisor_reducao' ? e.valorPorRank * r : 0,
+  );
+  const cascata = calcularCascata(p.elementos, { reducaoDivisor, bonusTransbordo });
+  const alocaveis = elementosAlocaveis(cascata);
+  /** Ponto direto só conta se o elemento estiver destravado de verdade. */
+  const diretoValido = (id: ElementoId): number =>
+    cascata.destravados.has(id) ? diretosDerivados[id] ?? 0 : 0;
+
   // 3) derivados: exigem todos os componentes no mínimo da receita;
   //    nível = menor nível efetivo entre os componentes (evolução conjunta).
   for (const def of Object.values(ELEMENTOS)) {
@@ -114,7 +146,7 @@ export function calcularProgressao(p: Personagem): Progressao {
       (c) => niveis[c.elemento] >= Math.max(1, c.nivelMinimo - reducaoMinimoReceita),
     );
     niveis[def.id] = atendeMinimos
-      ? Math.min(...niveisComponentes) + bonusNivelDerivado
+      ? Math.min(...niveisComponentes) + bonusNivelDerivado + diretoValido(def.id)
       : 0;
   }
 
@@ -136,9 +168,10 @@ export function calcularProgressao(p: Personagem): Progressao {
       if (n < menor) menor = n;
     }
     if (!atende) continue;
-    niveis[info.id] = menor + bonusNivelDerivado;
+    niveis[info.id] = menor + bonusNivelDerivado + diretoValido(info.id);
     combinacoesLiberadas.push(info);
   }
+
 
   // 5) arquétipos
   const arquetipos: ArquetipoDef[] = [];
@@ -216,6 +249,8 @@ export function calcularProgressao(p: Personagem): Progressao {
     bonusNivelDerivado,
     elementosDisponiveis,
     combinacoesLiberadas,
+    cascata,
+    alocaveis,
     arquetipos,
     capacidades,
     capacidadesDiluidas,

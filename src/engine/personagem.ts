@@ -5,6 +5,9 @@
  */
 
 import { ELEMENTOS, type ElementoId } from '../registry/elementos';
+import { elementoDef } from '../registry/combinacoes';
+import { LIMIAR_DESTRAVAMENTO, type Aridade } from '../registry/geracoes';
+import { calcularProgressao } from './progressao';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type TalentoId } from '../registry/talentos';
@@ -45,16 +48,75 @@ export function investirProfissao(p: Personagem, profissao: ProfissaoId, pontos:
   p.profissoes[profissao] = (p.profissoes[profissao] ?? 0) + pontos;
 }
 
-export function investirElemento(p: Personagem, elemento: ElementoId, pontos: number): void {
-  const def = ELEMENTOS[elemento];
-  if (!def) throw new Error(`Elemento desconhecido: ${elemento}`);
-  if (def.tipo !== 'base') {
-    throw new Error(
-      `"${def.nome}" é ${def.tipo}: não aceita pontos diretos. Ele evolui pelos componentes da receita.`,
-    );
+/**
+ * O elemento aceita ponto direto AGORA? Bases sempre; derivados só depois de
+ * DESTRAVADOS pela cascata geracional (passivos >= limiar da aridade — ver
+ * `engine/cascata.ts`). `prog` é opcional: a UI passa a progressão que já
+ * calculou; sem ela, calcula aqui (sem ciclo — progressao importa Personagem
+ * só como tipo).
+ */
+export function podeInvestir(
+  p: Personagem,
+  elemento: ElementoId,
+  prog?: Progressao,
+): { ok: true } | { ok: false; motivo: string; faltamPassivos?: number } {
+  const def = elementoDef(elemento);
+  if (!def) return { ok: false, motivo: `Elemento desconhecido: ${elemento}` };
+  if (def.tipo === 'base') return { ok: true };
+  const cascata = (prog ?? calcularProgressao(p)).cascata;
+  if (cascata.destravados.has(elemento)) return { ok: true };
+  if (def.cascata?.destravavel === false) {
+    return { ok: false, motivo: `"${def.nome}" nunca aceita pontos diretos.` };
   }
+  const progresso = cascata.progressoDestravamento.get(elemento);
+  const limiar = progresso?.limiar ?? LIMIAR_DESTRAVAMENTO[Math.min(4, def.receita?.length ?? 2) as Aridade];
+  const passivos = progresso?.passivos ?? 0;
+  return {
+    ok: false,
+    motivo:
+      `"${def.nome}" ainda não foi destravado: ${passivos}/${limiar} pontos passivos. ` +
+      'Invista nos componentes para a cascata destravá-lo.',
+    faltamPassivos: limiar - passivos,
+  };
+}
+
+export function investirElemento(
+  p: Personagem,
+  elemento: ElementoId,
+  pontos: number,
+  prog?: Progressao,
+): void {
+  const permitido = podeInvestir(p, elemento, prog);
+  if (!permitido.ok) throw new Error(permitido.motivo);
   if (pontos <= 0 || !Number.isInteger(pontos)) throw new Error('Pontos devem ser inteiros positivos.');
   p.elementos[elemento] = (p.elementos[elemento] ?? 0) + pontos;
+}
+
+/**
+ * Devolve pontos DIRETOS de um elemento ao orçamento.
+ *
+ * NÃO passa por `podeInvestir` de propósito: desinvestir jamais pode depender
+ * do destrave. O cenário que motivou isto: com lava destravada o jogador põe
+ * ponto direto nela e depois tira pontos de fogo; a lava RETRANCA, mas o ponto
+ * direto continua lá cobrando orçamento — e o único caminho de volta era
+ * "Resetar", que apaga a build inteira. Investir tem porteiro; devolver, não.
+ *
+ * Zerado, o elemento sai do mapa (a ficha guarda só o que foi gasto).
+ */
+export function desinvestirElemento(
+  p: Personagem,
+  elemento: ElementoId,
+  pontos: number,
+): void {
+  if (pontos <= 0 || !Number.isInteger(pontos)) throw new Error('Pontos devem ser inteiros positivos.');
+  const atual = p.elementos[elemento] ?? 0;
+  if (pontos > atual) {
+    const nome = elementoDef(elemento)?.nome ?? elemento;
+    throw new Error(`"${nome}" tem ${atual} pontos diretos — não dá para remover ${pontos}.`);
+  }
+  const restante = atual - pontos;
+  if (restante <= 0) delete p.elementos[elemento];
+  else p.elementos[elemento] = restante;
 }
 
 export function investirEscola(p: Personagem, escola: EscolaId, pontos: number): void {

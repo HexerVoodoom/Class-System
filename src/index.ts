@@ -1,4 +1,7 @@
 export * from './registry/elementos';
+// Alocação geracional — cascata de pontos, destraves e custo por geração
+export * from './registry/geracoes';
+export * from './engine/cascata';
 export * from './registry/recursos';
 export * from './registry/escolas';
 export * from './registry/talentos';

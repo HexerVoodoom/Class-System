@@ -40,6 +40,7 @@ import {
   investirTalento,
   type Personagem,
 } from './personagem';
+import { custoDeAlocacao } from './cascata';
 import { calcularProgressao, type Progressao } from './progressao';
 import { calcularSkill } from './skills';
 import { calcularFusao } from './fusao';
@@ -114,7 +115,11 @@ function tentar(
 }
 
 export function custoDe(def: PresetDef): CustoPreset {
-  const elementos = soma(def.elementos);
+  // o custo de um ponto de elemento depende da geração dele — a regra mora em
+  // `cascata.ts` e é ela que a tabela de investimento cobra. Somar por fora
+  // daria o mesmo número hoje (todo preset investe só em bases) e divergiria
+  // silenciosamente no primeiro preset que puser ponto direto num derivado.
+  const elementos = custoDeAlocacao(def.elementos).total;
   const escolas = soma(def.escolas);
   const recursos = soma(def.recursos);
   return {

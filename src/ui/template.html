@@ -611,6 +611,15 @@
   .pi-linha.selecionada { background: var(--surface-2); border-radius: 6px; }
   .pi-linha .sig-mini { width: 22px; height: 22px; }
   .pi-nome { font-size: 13px; color: var(--ink); line-height: 1.25; }
+  .pi-selo { font-size: 10px; color: var(--ink-2); border: 1px solid var(--linha); border-radius: 8px; padding: 0 5px; white-space: nowrap; }
+  /* linha só de devolução: o elemento retrancou, mas os pontos que sobraram
+     continuam custando orçamento e precisam de um "−" ao alcance da mão. */
+  .pi-selo-travado { color: var(--alerta); border-color: var(--alerta); }
+  .pi-linha.pi-travado .pi-nome { color: var(--ink-2); }
+  /* elemento com passivos mas nunca destravado: visível na lista (pedido do
+     dono — "mesmo ainda não podendo pontuar nisso, já deveria estar ali"),
+     sem controles, opacidade reduzida pra não competir com o que é clicável. */
+  .pi-linha.pi-progresso { opacity: 0.6; grid-template-columns: 26px 1fr; }
   .pi-nivel { font-size: 11px; color: var(--ink-2); }
   .pi-nivel .sinergia { color: var(--ok); }
   .pi-controles { display: flex; align-items: center; gap: 4px; }

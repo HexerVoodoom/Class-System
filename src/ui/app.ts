@@ -22,6 +22,7 @@ import {
 } from '../registry/elementos';
 import {
   TODAS_COMBINACOES,
+  aridadeDe,
   buscarCombinacoes,
   combinacoesRelevantes,
   elementoDef,
@@ -50,6 +51,7 @@ import { ARQUETIPOS } from '../registry/arquetipos';
 import {
   criarPersonagem,
   investirElemento,
+  desinvestirElemento,
   investirEscola,
   investirRecurso,
   investirTalento,
@@ -68,6 +70,9 @@ import {
 } from '../registry/profissoes';
 import { craftar, elementosDominados, type ConfigCraft } from '../engine/profissoes';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
+import { CUSTO_PONTO_ALOCACAO, DIVISOR_CASCATA, LIMIAR_DESTRAVAMENTO, ORCAMENTO_POR_TIER } from '../registry/geracoes';
+import { custoDeAlocacao } from '../engine/cascata';
+import type { Aridade } from '../registry/geracoes';
 import { CRIATURAS, FAMILIAS, criaturas, type CriaturaDef } from '../registry/criaturas';
 import { efetividade } from '../registry/afinidades';
 import {
@@ -189,7 +194,9 @@ function skillPadrao(): SkillConfig {
 function estadoPadrao(): Estado {
   return {
     personagem: criarPersonagem('Meu Personagem'),
-    orcamentoAtributos: 100,
+    // Tier 3 da curva do registro (ORCAMENTO_POR_TIER) — o suficiente para
+    // 1–2 destraves de par; antes era um literal 100 desconectado da curva.
+    orcamentoAtributos: ORCAMENTO_POR_TIER[3],
     orcamentoTalentos: 20,
     skill: skillPadrao(),
     skillsSalvas: [],
@@ -312,8 +319,11 @@ function toast(msg: string): void {
 function pontosAtributosGastos(): number {
   const soma = (obj: Partial<Record<string, number>>) =>
     Object.values(obj).reduce((a: number, b) => a + (b ?? 0), 0);
+  // Elementos entram pelo CUSTO por geração (custoDeAlocacao), nunca pela
+  // soma crua: contar 1 por ponto direto em derivado abria build degenerada
+  // medida em 1,77× sobre a especialização pura (auditoria da cascata).
   return (
-    soma(estado.personagem.elementos) +
+    custoDeAlocacao(estado.personagem.elementos).total +
     soma(estado.personagem.escolas) +
     soma(estado.personagem.recursos) +
     soma(estado.personagem.profissoes)
@@ -533,7 +543,12 @@ function aplicarPreset(id: string): void {
   // o orçamento passa a ser EXATAMENTE o que o preset gasta, nunca o máximo
   // acumulado — antes, clicar no Nulo (156 pts) deixava o teto em 160 para
   // sempre e todos os outros presets pareciam sobrar espaço.
-  estado.orcamentoAtributos = Math.max(20, Math.ceil(m.custo.atributos / 10) * 10);
+  // profissões entram no MESMO orçamento de atributos que o cabeçalho conta
+  // (`pontosAtributosGastos`). Sem somá-las aqui, todo preset de ofício abria
+  // marcado como estourado — o Mestre Encantador gasta 70 + 26 e o teto ficava
+  // em 70.
+  const totalAtributos = m.custo.atributos + m.custo.profissoes;
+  estado.orcamentoAtributos = Math.max(20, Math.ceil(totalAtributos / 10) * 10);
   estado.orcamentoTalentos = Math.max(5, m.custo.talentos);
   if (m.fusao) {
     estado.skillsSalvas = [...m.fusao.componentes];
@@ -1062,41 +1077,97 @@ function renderMatrizAfinidades(): void {
  *
  * O céu deixou de ser um controle e voltou a ser um mapa: clicar numa estrela
  * seleciona, mostra a receita e ilumina a linhagem, mas não gasta ponto. Investir
- * pelo céu exigia caçar a estrela certa no anel externo antes de cada clique, e
- * como só os 17 elementos base aceitam pontos diretos, a lista lateral mostra
- * exatamente o conjunto investível — sem procura.
+ * pelo céu exigia caçar a estrela certa no anel externo antes de cada clique;
+ * a lista lateral mostra exatamente o conjunto investível — sem procura.
  */
 function renderPainelInvestir(prog: Progressao): void {
   const alvo = document.getElementById('painel-investir');
   if (!alvo) return;
   const p = estado.personagem;
   const filtro = norm(estado.filtroInvestir ?? '');
-  const bases = elementosBase().filter(
-    (def) => !filtro || norm(def.nome).includes(filtro) || norm(def.id).includes(filtro),
-  );
+  // O conjunto investível é `prog.alocaveis` — as 17 bases MAIS os derivados
+  // que a cascata destravou (10 passivos num par, 6 numa tripla, 4 numa
+  // quádrupla). NÃO pode ser `elementosBase()` fixo: um par destravado ficaria
+  // sem lugar para receber o ponto direto que a regra concede, e a UI estaria
+  // reimplementando o teste de destrave por omissão. Quem decide é o motor.
+  //
+  // A tabela lista `alocaveis` ∪ {derivados que JÁ TÊM ponto direto}. A união
+  // não é detalhe: com só `alocaveis`, quem investisse num par destravado e
+  // depois baixasse um componente via "−" via o par RETRANCAR, sumir da lista
+  // e continuar cobrando orçamento — sem nenhum "−" na tela para recuperar o
+  // ponto (com o "+10", 20 pts irrecuperáveis a não ser pelo "Resetar", que
+  // apaga a build inteira). Investir depende do destrave; devolver, nunca.
+  const comPontoDireto = (Object.keys(p.elementos) as ElementoId[])
+    .filter((id) => (p.elementos[id] ?? 0) > 0 && !prog.alocaveis.includes(id));
+  // Derivados com passivos > 0 mas ainda travados (nunca tiveram ponto
+  // direto): já ganharam pontos de cascata (investimento nos pais, ou
+  // sinergia de alvo único transbordando) e merecem aparecer NA LISTA —
+  // mesmo sem poder receber ponto ainda — para o jogador ver o progresso em
+  // vez de descobrir o elemento só quando ele destrava do nada.
+  const emProgresso = [...prog.cascata.progressoDestravamento.keys()]
+    .filter((id) => !prog.alocaveis.includes(id) && !comPontoDireto.includes(id));
+  const investiveis = [...prog.alocaveis, ...comPontoDireto, ...emProgresso]
+    .map((id) => elementoDef(id))
+    .filter((def): def is ElementoDef => Boolean(def))
+    .filter((def) => !filtro || norm(def.nome).includes(filtro) || norm(def.id).includes(filtro));
+  const travados = new Set(comPontoDireto);
+  const progressoSet = new Set(emProgresso);
 
   const conta = document.getElementById('conta-investidos');
   if (conta) {
-    const gastos = Object.values(p.elementos).reduce<number>((soma, n) => soma + (n ?? 0), 0);
+    // custo por geração, nunca soma crua (ponto direto em derivado custa mais)
+    const gastos = custoDeAlocacao(p.elementos).total;
     conta.textContent = `${gastos} de ${estado.orcamentoAtributos} pts`;
   }
 
-  if (!bases.length) {
-    alvo.innerHTML = `<div class="pi-vazio">Nenhum elemento base com "${esc(estado.filtroInvestir ?? '')}".</div>`;
+  if (!investiveis.length) {
+    alvo.innerHTML = `<div class="pi-vazio">Nenhum elemento investível com "${esc(estado.filtroInvestir ?? '')}".</div>`;
     return;
   }
 
-  alvo.innerHTML = bases
+  alvo.innerHTML = investiveis
     .map((def) => {
-      const id = def.id as ElementoBaseId;
+      const id = def.id as ElementoId;
       const direto = p.elementos[id] ?? 0;
       const efetivo = prog.niveisEfetivos[id] ?? 0;
       const sinergia = efetivo - direto;
       const selecionada = elementoSelecionado === def.id ? ' selecionada' : '';
-      return `<div class="pi-linha${selecionada}" data-linha-elemento="${def.id}">
+      const aridade = Math.min(4, Math.max(1, aridadeDe(def.id))) as Aridade;
+      const travado = travados.has(id);
+      const emProgressoLinha = progressoSet.has(id);
+
+      // em progresso: nunca teve ponto direto, só passivos de cascata (pais
+      // investidos, ou sinergia de alvo único) — sem "+" nem "−", só a barra.
+      if (emProgressoLinha) {
+        const prog2 = prog.cascata.progressoDestravamento.get(id)!;
+        return `<div class="pi-linha pi-progresso" data-linha-elemento="${def.id}">
+          ${sig(def.id, 'sig-mini')}
+          <div>
+            <div class="pi-nome">${esc(def.nome)} <span class="pi-selo" title="Ganha passivos com o investimento nos componentes (e sinergias ligadas a eles) — ainda não aceita ponto direto.">${prog2.passivos}/${prog2.limiar} passivos</span></div>
+            <div class="pi-nivel">nível ${efetivo}${
+              sinergia > 0 ? ` <span class="sinergia">(+${sinergia} sinergia)</span>` : ''
+            }</div>
+          </div>
+        </div>`;
+      }
+
+      // derivado destravado: mostra a geração e o custo por ponto, para o
+      // jogador entender por que aquele "+" gasta mais que o de uma base
+      const selo = def.tipo === 'base'
+        ? ''
+        : travado
+          ? ` <span class="pi-selo pi-selo-travado" title="A cascata retrancou este elemento: os pontos diretos que ficaram continuam custando ${CUSTO_PONTO_ALOCACAO[aridade]} cada. Remova-os aqui ou reponha os componentes para destravar de novo.">travado · ${CUSTO_PONTO_ALOCACAO[aridade]}pt</span>`
+          : ` <span class="pi-selo" title="Destravado pela cascata: cada ponto custa ${CUSTO_PONTO_ALOCACAO[aridade]} de orçamento">gen ${aridade} · ${CUSTO_PONTO_ALOCACAO[aridade]}pt</span>`;
+      // travado: só o "−". O "+" some porque o motor recusaria o ponto — mas a
+      // devolução tem de continuar ao alcance de um clique.
+      const mais = travado
+        ? ''
+        : `<button type="button" data-acao="inc-elemento" data-id="${def.id}"
+            aria-label="Adicionar ponto em ${esc(def.nome)}">+</button>`;
+      return `<div class="pi-linha${selecionada}${travado ? ' pi-travado' : ''}" data-linha-elemento="${def.id}">
         ${sig(def.id, 'sig-mini')}
         <div>
-          <div class="pi-nome">${esc(def.nome)}</div>
+          <div class="pi-nome">${esc(def.nome)}${selo}</div>
           <div class="pi-nivel">nível ${efetivo}${
             sinergia > 0 ? ` <span class="sinergia">(+${sinergia} sinergia)</span>` : ''
           }</div>
@@ -1105,8 +1176,7 @@ function renderPainelInvestir(prog: Progressao): void {
           <button type="button" data-acao="dec-elemento" data-id="${def.id}"
             aria-label="Remover ponto de ${esc(def.nome)}"${direto <= 0 ? ' disabled' : ''}>−</button>
           <span class="valor num">${direto}</span>
-          <button type="button" data-acao="inc-elemento" data-id="${def.id}"
-            aria-label="Adicionar ponto em ${esc(def.nome)}">+</button>
+          ${mais}
         </div>
       </div>`;
     })
@@ -1147,14 +1217,67 @@ function renderDetalheElemento(prog: Progressao): void {
     })
     .join('');
   const sigDeriv = def.receita!.map((c) => sig(c.elemento, 'sig-mini')).join('');
+
+  // Ledger da ALOCAÇÃO GERACIONAL — a UI LÊ a cascata, nunca a recalcula
+  // (reimplementar o destrave aqui é o footgun de regra copiada).
+  const cascata = prog.cascata;
+  const passivos = cascata.passivos.get(def.id) ?? 0;
+  const diretos = estado.personagem.elementos[def.id] ?? 0;
+  const destravado = cascata.destravados.has(def.id);
+  const progresso = cascata.progressoDestravamento.get(def.id);
+  const aridade = Math.min(4, def.receita!.length) as 1 | 2 | 3 | 4;
+  const custoPonto = CUSTO_PONTO_ALOCACAO[aridade];
+  const nuncaDestrava = def.cascata?.destravavel === false;
+
+  // Pontos diretos que sobraram num elemento TRAVADO (o jogador investiu com
+  // ele destravado e depois baixou um componente, retrancando-o) continuam
+  // custando orçamento. Sem estes controles, o único caminho de volta era
+  // "Resetar" — devolver ponto não pode depender do destrave.
+  const controlesDevolucao = diretos > 0
+    ? `<div>${diretos === 1
+          ? 'Restou <strong class="num">1</strong> ponto direto'
+          : `Restaram <strong class="num">${diretos}</strong> pontos diretos`} de quando estava destravado
+        <span class="conta">· ainda custa${diretos === 1 ? ` ${custoPonto} de orçamento` : `m ${custoPonto} de orçamento cada`}</span></div>
+      <div class="controles">
+        <button type="button" data-acao="dec-elemento" data-id="${def.id}" aria-label="Remover ponto">−</button>
+        <span class="valor num">${diretos}</span>
+        <button type="button" data-acao="dec-elemento" data-id="${def.id}" data-passo="10" aria-label="Remover dez pontos">−10</button>
+      </div>`
+    : '';
+
+  let ledger: string;
+  if (nuncaDestrava) {
+    ledger = `<div class="desc">Receita ampla: nunca aceita pontos diretos — evolui só pela cascata dos componentes.</div>${controlesDevolucao}`;
+  } else if (destravado) {
+    ledger = `<div>Cascata <strong class="num">${passivos}</strong> passivos + <strong class="num">${diretos}</strong> diretos
+      <span class="conta">· ponto direto custa ${custoPonto} de orçamento</span></div>
+      <div class="controles">
+        <button type="button" data-acao="dec-elemento" data-id="${def.id}" aria-label="Remover ponto">−</button>
+        <span class="valor num">${diretos}</span>
+        <button type="button" data-acao="inc-elemento" data-id="${def.id}" aria-label="Adicionar ponto">+</button>
+        <button type="button" data-acao="inc-elemento" data-id="${def.id}" data-passo="10" aria-label="Adicionar dez pontos">+10</button>
+        <button type="button" data-acao="dec-elemento" data-id="${def.id}" data-passo="10" aria-label="Remover dez pontos"${diretos <= 0 ? ' disabled' : ''}>−10</button>
+      </div>`;
+  } else {
+    const limiar = progresso?.limiar ?? LIMIAR_DESTRAVAMENTO[aridade];
+    const fracao = Math.min(1, passivos / limiar);
+    // marco em orçamento: limiar × divisor em cada um dos N componentes
+    const marcoOrcamento = limiar * DIVISOR_CASCATA[aridade] * aridade;
+    ledger = `<div class="perfil-linha"><span>Destrave da alocação direta</span>
+      <div class="barra ${passivos >= limiar ? 'cheia' : ''}"><i style="width:${pct(fracao)}"></i></div>
+      <span class="num">${passivos}/${limiar}</span></div>
+      <div class="desc">A cada ${DIVISOR_CASCATA[aridade]} pontos DIRETOS em CADA componente, +1 ponto passivo aqui (transbordo de sinergia e nível de receita NÃO contam). Com ${limiar} passivos (≈${marcoOrcamento} de orçamento nas bases), este elemento passa a aceitar pontos diretos.</div>
+      ${controlesDevolucao}`;
+  }
+
   alvo.innerHTML = `<div class="talento-detalhe detalhe-com-sig">
     <div class="sig-combo">${sigDeriv}</div>
     <div class="detalhe-corpo">
     <div class="nome">${esc(def.nome)} <span class="conta">${def.tipo} · potência ×${def.fatorPotencia}</span></div>
     <div class="desc">${esc(def.descricao)}</div>
-    <div>${nivel > 0 ? `Nível <strong class="num">${nivel}</strong> — igual ao menor componente.` : 'Ainda não liberado — todos os componentes precisam atingir o mínimo.'}</div>
+    <div>${nivel > 0 ? `Nível <strong class="num">${nivel}</strong> — menor componente${diretos > 0 ? ' + pontos diretos' : ''}.` : 'Ainda não liberado — todos os componentes precisam atingir o mínimo.'}</div>
     ${receita}
-    <div class="desc">Elementos combinados não aceitam pontos diretos: evoluem quando os componentes sobem juntos.</div>
+    ${ledger}
   </div></div>`;
 }
 
@@ -2459,8 +2582,17 @@ document.addEventListener('click', (ev) => {
         }
         return;
       }
-      case 'inc-elemento': investirElemento(p, id, 1); break;
-      case 'dec-elemento': decrementar(p.elementos, id); break;
+      case 'inc-elemento': investirElemento(p, id, Number(alvo.dataset.passo ?? 1)); break;
+      case 'dec-elemento': {
+        // pelo MOTOR (`desinvestirElemento`), nunca escrevendo em `p.elementos`
+        // por fora: é o único lugar que sabe que zerar remove a chave. O passo
+        // é limitado ao que existe para o botão "−10" nunca virar erro.
+        const atual = p.elementos[id as ElementoId] ?? 0;
+        if (atual > 0) {
+          desinvestirElemento(p, id as ElementoId, Math.min(Number(alvo.dataset.passo ?? 1), atual));
+        }
+        break;
+      }
       case 'inc-escola': investirEscola(p, id as EscolaId, 1); break;
       case 'dec-escola': decrementar(p.escolas, id); break;
       case 'inc-recurso': investirRecurso(p, id as RecursoId, 1); break;

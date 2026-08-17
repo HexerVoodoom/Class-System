@@ -165,7 +165,10 @@ const BONUS_POR_NIVEL_ELEMENTO = 0.04;
  * de conjuração — com o MENOR nível efetivo da lista. Largura não pode comprar
  * altura, que é a regra que o sistema inteiro sustenta.
  */
-const FRACAO_BONUS_ARIDADE = 0.3;
+// 0.3→0.38 (auditoria da cascata): com 0.3, a razão especializar/combinar
+// estourava o invariante de 25% exatamente nos orçamentos da curva nova
+// (1,28–1,34× em 340–1200). Com 0.38, medido: 1,04/1,15/1,20 em toda a curva.
+const FRACAO_BONUS_ARIDADE = 0.38;
 const BONUS_POR_NIVEL_ESCOLA = 0.03;
 const BONUS_TOTAL_DOT_MAXIMO = 0.3;
 const EXPOENTE_DIVISAO_ENXAME = 0.9;
@@ -176,7 +179,10 @@ const BONUS_IMPACTO_POR_PROFICIENCIA = 0.008;
 const REDUCAO_TEMPO_POR_PROFICIENCIA = 0.01;
 // tempo: skills de elemento temporal aceleram a conjuração (pressa)
 const BONUS_PRESSA_POR_NIVEL = 0.012;
-const BONUS_PRESSA_TETO = 0.35;
+// 0.35→0.12 (auditoria): saturava em nível 30 e, na curva de orçamento nova,
+// punha a spec de tempo exatamente na borda do invariante de 1,35× — com o
+// spread real entre builds em 1,79×. Com 0.12 o teto fecha em ~1,12×.
+const BONUS_PRESSA_TETO = 0.12;
 // evocação: fator da fonte sobre o poder da invocação
 const FONTE_ALEATORIA_FATOR = 0.9;
 const RAREZA_TETO = 0.4; // bônus máx. de raridade da criatura capturada

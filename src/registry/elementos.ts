@@ -15,6 +15,8 @@
  * componentes — a identidade mecânica da combinação emerge sozinha.
  */
 
+import { DIVISOR_CASCATA_ESPECIAL } from './geracoes';
+
 export type ElementoBaseId =
   | 'fogo'
   | 'agua'
@@ -48,6 +50,22 @@ export interface ReceitaComponente {
   nivelMinimo: number;
 }
 
+/**
+ * Regra de CASCATA declarativa — o escape hatch dos elementos cuja cascata
+ * foge do padrão (os `especial`). Sem este campo, o motor usa o default:
+ * pais = sub-combinações de aridade N−1, divisor = DIVISOR_CASCata da
+ * aridade, destravável. Exceção declarada no REGISTRO, nunca `if` por id
+ * dentro do motor.
+ */
+export interface RegraCascata {
+  /** Pais explícitos (default: sub-combinações de aridade N−1). */
+  pais?: string[];
+  /** Divisor próprio (default: DIVISOR_CASCATA[aridade]). */
+  divisor?: number;
+  /** false = nunca aceita ponto direto. Default: true para aridade 2..4. */
+  destravavel?: boolean;
+}
+
 export interface ElementoDef {
   id: string;
   nome: string;
@@ -57,6 +75,7 @@ export interface ElementoDef {
   fatorPotencia: number;
   pesos: PerfilPesos;
   receita?: ReceitaComponente[];
+  cascata?: RegraCascata;
 }
 
 /** Elementos primais: recebem transbordo de pontos de "vida". */
@@ -219,6 +238,7 @@ interface OpcoesDerivado {
   fator?: number;
   minimo?: number;
   tipo?: 'derivado' | 'especial';
+  cascata?: RegraCascata;
 }
 
 function derivado(
@@ -239,6 +259,14 @@ function derivado(
     media.defesa += p.defesa / componentes.length;
     media.suporte += p.suporte / componentes.length;
   }
+  // Especiais têm receita AMPLA (5/4/17 componentes) sem sub-combinações de
+  // aridade N−1 no espaço enumerado: a cascata deles vem declarada — pais são
+  // as próprias bases, divisor alto, nunca destraváveis para ponto direto.
+  const cascata =
+    opts.cascata ??
+    (opts.tipo === 'especial'
+      ? { pais: [...componentes], divisor: DIVISOR_CASCATA_ESPECIAL, destravavel: false }
+      : undefined);
   return {
     id,
     nome,
@@ -247,6 +275,7 @@ function derivado(
     pesos: media,
     descricao,
     receita: componentes.map((elemento) => ({ elemento, nivelMinimo: minimo })),
+    ...(cascata ? { cascata } : {}),
   };
 }
 
