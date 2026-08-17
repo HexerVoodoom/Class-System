@@ -394,3 +394,24 @@ E o **taxonomy.json virou v2**: além de elementos/famílias, exporta
 geracoes (diais da cascata), fatorPotencia, escolas, recursos, profissões,
 talentos e criaturas — o contrato de máquina único que o Soulmon e o
 laboratório consumiam via extração tsx ad-hoc.
+
+### Rodada 3.2 — QA pós-merge (auditoria adversarial nº 2)
+
+- **CRÍTICO — a regra vivia no mutador, não no modelo.** `investirElemento`
+  validava o destrave, mas `calcularProgressao` somava o ponto direto sem
+  perguntar: uma ficha montada à mão (CLI `--ficha`, import de build,
+  localStorage, agente escrevendo `Personagem`) punha `lava: 180` com 2/10
+  passivos e ganhava nível 190 — **1,76× de impacto em skill, 1,88× em
+  evocação** — enquanto `podeInvestir` respondia "não" sobre a MESMA ficha. A
+  cascata passou para antes dos passos 3/4 e o direto só é expresso se o
+  elemento estiver destravado.
+- **CRÍTICO — a camada de API (a que os agentes consomem) ainda contava soma
+  crua**: `analisarFicha().pontos.elementos` declarava 200 para uma ficha que
+  custa 380, o mesmo 1,76× pelo "mesmo orçamento". Agora cobra
+  `custoDeAlocacao`, com teste espelhando o da UI.
+- **ALTO — build degenerada por transbordo**: `transbordo_ampliado` (0.25/rank,
+  3 ranks) levava a razão efetiva de `vida` a 0,35 por alvo numa sinergia de
+  LEQUE (5 alvos), contra 1/aridade = 0,25 da rota honesta — despejar tudo em
+  `vida` batia qualquer build (1,385× a quádrupla honesta) **sem destravar
+  nada**, por fora do gate novo. Limiar derivado: `razao × (1+bonus) ≤
+  1/aridade` → `valorPorRank: 0.25 → 0.08` (3 ranks = 0,24).

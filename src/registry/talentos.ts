@@ -622,9 +622,15 @@ export const TALENTOS: Record<TalentoId, TalentoDef> = {
   transbordo_ampliado: {
     id: 'transbordo_ampliado',
     nome: 'Transbordo Ampliado',
-    descricao: 'As sinergias entre elementos vazam 25%/rank mais forte para os vizinhos.',
+    descricao: 'As sinergias entre elementos vazam 8%/rank mais forte para os vizinhos.',
     ranksMaximos: 3,
-    efeitos: [{ tipo: 'propriedade', chave: 'transbordo_bonus', rotulo: 'Intensidade do transbordo', valorPorRank: 0.25 }],
+    // 0.25 -> 0.08 (auditoria adversarial). Uma sinergia de LEQUE espalha para
+    // 5 alvos: com 0.25/rank a razão efetiva de `vida` ia a 0.2x1.75 = 0.35 por
+    // alvo, contra 1/aridade = 0.25 da rota honesta de uma quadrupla — e
+    // despejar tudo em `vida` batia qualquer build (1,385x a quadrupla honesta,
+    // 1,17x a especializacao pura) SEM destravar nada, por fora do gate novo.
+    // O limiar e' `razao x (1+bonus) <= 1/aridade`: com 3 ranks, 0.24 < 0.25.
+    efeitos: [{ tipo: 'propriedade', chave: 'transbordo_bonus', rotulo: 'Intensidade do transbordo', valorPorRank: 0.08 }],
   },
   maestria_paradoxal: {
     id: 'maestria_paradoxal',
