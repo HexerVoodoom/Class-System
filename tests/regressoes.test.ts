@@ -6,10 +6,12 @@ import { describe, expect, it } from 'vitest';
 import {
   criarPersonagem,
   investirElemento,
+  desinvestirElemento,
   investirEscola,
   investirRecurso,
   investirTalento,
 } from '../src/engine/personagem';
+import { custoDeAlocacao } from '../src/engine/cascata';
 import { calcularProgressao } from '../src/engine/progressao';
 import {
   TETO_EFICIENCIA_MODIFICADORES,
@@ -181,6 +183,65 @@ describe('a interface precisa alcançar todo o conteúdo', () => {
     expect(typeof (api as Record<string, unknown>).calcularFusao).toBe('function');
     expect((api as Record<string, unknown>).MODIFICADORES).toBeTruthy();
     expect(typeof (api as Record<string, unknown>).caminhoParaArquetipo).toBe('function');
+  });
+});
+
+describe('devolver ponto NUNCA pode depender do destrave', () => {
+  // QA rodada 2: com lava destravada (50 fogo + 50 terra) o jogador põe ponto
+  // direto nela; ao remover pontos do fogo a lava RETRANCA. O ponto direto
+  // continuava lá cobrando orçamento, a lava sumia de `alocaveis` (a tabela só
+  // renderizava esse conjunto) e o detalhe só mostrava controles no ramo
+  // destravado — não sobrava um único "−" na tela. Com o "+10", 20 pts
+  // queimados, recuperáveis só pelo "Resetar", que apaga a build inteira.
+  function comLavaDestravada() {
+    const p = criarPersonagem('t');
+    investirElemento(p, 'fogo', 50);
+    investirElemento(p, 'terra', 50);
+    expect(calcularProgressao(p).cascata.destravados.has('lava')).toBe(true);
+    investirElemento(p, 'lava', 1);
+    return p;
+  }
+
+  it('o ponto direto do par retrancado volta ao orçamento', () => {
+    const p = comLavaDestravada();
+    expect(custoDeAlocacao(p.elementos).total).toBe(102); // 100 bases + 1 ponto de par (×2)
+
+    desinvestirElemento(p, 'fogo', 1); // o jogador remexe na build
+    const prog = calcularProgressao(p);
+    expect(prog.cascata.destravados.has('lava')).toBe(false); // retrancou
+    expect(prog.alocaveis).not.toContain('lava');
+    expect(p.elementos.lava).toBe(1); // e o ponto continua cobrando
+    expect(custoDeAlocacao(p.elementos).total).toBe(101);
+
+    // ...e mesmo travado, desinvestir funciona: é o caminho de volta.
+    desinvestirElemento(p, 'lava', 1);
+    expect(p.elementos.lava).toBeUndefined();
+    expect(custoDeAlocacao(p.elementos).total).toBe(99); // 49 fogo + 50 terra
+  });
+
+  it('desinvestir valida em vez de deixar a ficha negativa', () => {
+    const p = comLavaDestravada();
+    expect(() => desinvestirElemento(p, 'lava', 2)).toThrow(/não dá para remover/);
+    expect(() => desinvestirElemento(p, 'agua', 1)).toThrow(/não dá para remover/);
+    expect(() => desinvestirElemento(p, 'fogo', 0)).toThrow(/inteiros positivos/);
+    expect(() => desinvestirElemento(p, 'fogo', 1.5)).toThrow(/inteiros positivos/);
+    expect(p.elementos.lava).toBe(1);
+    expect(p.elementos.fogo).toBe(50);
+    expect(p.elementos.agua).toBeUndefined(); // recusa não cria a chave
+  });
+
+  it('a tabela de investimento alcança o derivado travado que ainda tem pontos', async () => {
+    // a lista é `prog.alocaveis` ∪ {derivados com ponto direto}, e o "−" da UI
+    // passa pelo motor (`desinvestirElemento`) em vez de escrever no mapa.
+    const fonte = await import('node:fs').then((fs) => fs.readFileSync('src/ui/app.ts', 'utf8'));
+    const painel = fonte.slice(
+      fonte.indexOf('function renderPainelInvestir'),
+      fonte.indexOf('function renderDetalheElemento'),
+    );
+    expect(painel).toContain('!prog.alocaveis.includes(id)');
+    expect(painel).toContain('travados');
+    expect(fonte).toContain('desinvestirElemento(');
+    expect(fonte).not.toContain('decrementar(p.elementos');
   });
 });
 

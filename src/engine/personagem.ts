@@ -92,6 +92,33 @@ export function investirElemento(
   p.elementos[elemento] = (p.elementos[elemento] ?? 0) + pontos;
 }
 
+/**
+ * Devolve pontos DIRETOS de um elemento ao orçamento.
+ *
+ * NÃO passa por `podeInvestir` de propósito: desinvestir jamais pode depender
+ * do destrave. O cenário que motivou isto: com lava destravada o jogador põe
+ * ponto direto nela e depois tira pontos de fogo; a lava RETRANCA, mas o ponto
+ * direto continua lá cobrando orçamento — e o único caminho de volta era
+ * "Resetar", que apaga a build inteira. Investir tem porteiro; devolver, não.
+ *
+ * Zerado, o elemento sai do mapa (a ficha guarda só o que foi gasto).
+ */
+export function desinvestirElemento(
+  p: Personagem,
+  elemento: ElementoId,
+  pontos: number,
+): void {
+  if (pontos <= 0 || !Number.isInteger(pontos)) throw new Error('Pontos devem ser inteiros positivos.');
+  const atual = p.elementos[elemento] ?? 0;
+  if (pontos > atual) {
+    const nome = elementoDef(elemento)?.nome ?? elemento;
+    throw new Error(`"${nome}" tem ${atual} pontos diretos — não dá para remover ${pontos}.`);
+  }
+  const restante = atual - pontos;
+  if (restante <= 0) delete p.elementos[elemento];
+  else p.elementos[elemento] = restante;
+}
+
 export function investirEscola(p: Personagem, escola: EscolaId, pontos: number): void {
   if (!ESCOLAS[escola]) throw new Error(`Escola desconhecida: ${escola}`);
   if (pontos <= 0 || !Number.isInteger(pontos)) throw new Error('Pontos devem ser inteiros positivos.');
