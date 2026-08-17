@@ -196,6 +196,36 @@ describe('integração com o personagem e a progressão', () => {
     expect(p.elementos.lava).toBe(1);
   });
 
+  it('REGRA DO DONO: base primeiro, secundário SÓ com 10 passivos — a fronteira exata', () => {
+    // 49+50 = 9 passivos: ainda recusa, com o contador no motivo.
+    const quase = criarPersonagem('quase');
+    investirElemento(quase, 'fogo', 49);
+    investirElemento(quase, 'agua', 50);
+    const veredito = podeInvestir(quase, 'vapor');
+    expect(veredito.ok).toBe(false);
+    if (!veredito.ok) {
+      expect(veredito.motivo).toMatch(/9\/10/);
+      expect(veredito.faltamPassivos).toBe(1);
+    }
+    expect(() => investirElemento(quase, 'vapor', 1)).toThrow(/destravado/);
+
+    // +1 ponto na base que faltava → 10 passivos → aceita ponto direto.
+    investirElemento(quase, 'fogo', 1);
+    expect(calcularCascata(quase.elementos).passivos.get('vapor')).toBe(LIMIAR_DESTRAVAMENTO[2]);
+    expect(podeInvestir(quase, 'vapor').ok).toBe(true);
+    expect(() => investirElemento(quase, 'vapor', 1)).not.toThrow();
+
+    // E a regra vale para TODOS os 136 pares, não só para o vapor: numa ficha
+    // nova, nenhum derivado aceita ponto direto (só as 17 bases).
+    const novo = criarPersonagem('novo');
+    const alocaveisIniciais = calcularProgressao(novo).alocaveis;
+    expect(alocaveisIniciais).toEqual(elementosBase().map((d) => d.id));
+    for (const def of Object.values(ELEMENTOS)) {
+      if (def.tipo === 'base') continue;
+      expect(podeInvestir(novo, def.id).ok).toBe(false);
+    }
+  });
+
   it('especial nunca aceita ponto direto, com motivo claro', () => {
     const p = criarPersonagem('teste');
     for (const def of elementosBase()) investirElemento(p, def.id, 100);
