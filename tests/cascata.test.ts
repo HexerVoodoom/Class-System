@@ -21,6 +21,12 @@ import { calcularProgressao } from '../src/engine/progressao';
 import { analisarFicha } from '../src/api/consultas';
 
 const TRIPLA_FAT = combinacaoInfoPorComponentes(['fogo', 'agua', 'terra'])!.id;
+
+const PARES_PRIMAIS: Record<string, string> = {
+  'fogo+agua': 'vapor', 'fogo+terra': 'lava', 'fogo+ar': 'incendio', 'fogo+eletricidade': 'plasma',
+  'agua+terra': 'pantano', 'agua+ar': 'gelo', 'agua+eletricidade': 'agua_viva',
+  'terra+ar': 'areia', 'terra+eletricidade': 'magnetismo', 'ar+eletricidade': 'tempestade',
+};
 const QUAD_FAT = combinacaoInfoPorComponentes(['fogo', 'agua', 'terra', 'ar'])!.id;
 
 describe('cascata — rendimento passivo', () => {
@@ -184,6 +190,38 @@ describe('cascata — estrutura e contratos', () => {
     // ...mas uma ficha típica toca DEZENAS
     const tipica = calcularCascata({ fogo: 30, agua: 20, vida: 10 });
     expect(tipica.paraCascata.size).toBeLessThan(20);
+  });
+});
+
+describe('sinergia de alvo único alimenta a cascata — sinergia de leque NÃO', () => {
+  it('fogo->vileza (alvo único): investir só em fogo já dá passivos ao par fogo+vileza', () => {
+    // Pedido do dono: bônus de sinergia também deve contar para desbloquear
+    // outros elementos. fogo->vileza é sinergia de UM alvo só — segura.
+    const fogoInfernal = 'fogo_infernal';
+    const sim = calcularCascata({ fogo: 100 }); // sem NENHUM ponto direto em vileza
+    expect(sim.passivos.get(fogoInfernal)).toBeGreaterThan(0);
+  });
+
+  it('SEGURANÇA: vida (sinergia de LEQUE, 5 alvos) NÃO alimenta a cascata dos primais', () => {
+    // Se alimentasse, 250 em vida (250 de orçamento) destravaria os 10 pares
+    // entre os 5 primais de uma vez (rota honesta: 1000 de orçamento) — a
+    // MESMA build degenerada que a auditoria anterior fechou em niveisEfetivos,
+    // reaberta na cascata. Sinergias de leque continuam valendo para o nível
+    // efetivo (progressao.ts) — só NÃO entram na cascata de destravamento.
+    const primais = ['fogo', 'agua', 'terra', 'ar', 'eletricidade'] as const;
+    const sim = calcularCascata({ vida: 250 });
+    for (let i = 0; i < primais.length; i++) {
+      for (let j = i + 1; j < primais.length; j++) {
+        const id = PARES_PRIMAIS[`${primais[i]}+${primais[j]}`];
+        expect(sim.destravados.has(id), `${id} não pode destravar só com vida`).toBe(false);
+      }
+    }
+  });
+
+  it('a regra do dono, no cenário exato dele: 10 fogo + 10 água = 2 passivos em vapor', () => {
+    const sim = calcularCascata({ fogo: 10, agua: 10 });
+    expect(sim.passivos.get('vapor')).toBe(2);
+    expect(sim.destravados.has('vapor')).toBe(false);
   });
 });
 

@@ -27,6 +27,7 @@
 
 import {
   ELEMENTOS,
+  SINERGIAS,
   elementosBase,
   type ElementoBaseId,
   type ElementoId,
@@ -64,7 +65,28 @@ export interface Cascata {
 export interface OpcoesCascata {
   /** Redução do divisor (gancho do efeito de talento `cascata_divisor_reducao`). */
   reducaoDivisor?: number;
+  /** Intensidade do transbordo (gancho do talento `transbordo_bonus`), mesmo
+   *  fator que `progressao.ts` já aplica aos níveis efetivos. */
+  bonusTransbordo?: number;
 }
+
+/**
+ * Sinergias de ALVO ÚNICO (fogo↔vileza, sombra↔morte…) alimentam a cascata:
+ * é investimento de verdade que transbordou, então conta para destravar o par
+ * feito daquela base — pequeno demais para desequilibrar (o "grátis" nunca
+ * passa de `razao` do que já foi pago, e o par ainda exige o OUTRO componente
+ * também no divisor).
+ *
+ * Sinergias de LEQUE (`vida`→5 primais, `arcano`→7 elementos) ficam DE FORA
+ * de propósito. Medido: se `vida` alimentasse a cascata como alimenta
+ * `niveisEfetivos`, 250 pontos em `vida` (250 de orçamento) dariam +50 em
+ * CADA um dos 5 primais — passivos suficientes para destravar as 10 pares
+ * entre eles simultaneamente, contra 1000 de orçamento pela rota honesta.
+ * O leque já concede nível efetivo de graça (por desenho); destravar em
+ * cascata TAMBÉM de graça é o exploit que a rodada anterior fechou — não
+ * reabra sem refazer essa conta.
+ */
+const SINERGIAS_ALVO_UNICO = SINERGIAS.filter((s) => s.para.length === 1);
 
 /** Os 17 ids base na ordem canônica do registro. */
 const BASE_IDS: ElementoBaseId[] = elementosBase().map((d) => d.id as ElementoBaseId);
@@ -136,15 +158,29 @@ export function calcularCascata(
   opcoes: OpcoesCascata = {},
 ): Cascata {
   const reducao = opcoes.reducaoDivisor ?? 0;
+  const bonusTransbordo = opcoes.bonusTransbordo ?? 0;
 
   const diretos = new Map<ElementoId, number>();
   for (const [id, pts] of Object.entries(diretosRecord)) {
     if ((pts ?? 0) > 0 && elementoDef(id)) diretos.set(id, pts!);
   }
 
+  // Transbordo de sinergias de alvo único — mesma fórmula de progressao.ts,
+  // mas só a fatia segura de alimentar a cascata (ver docstring acima).
+  const transbordoSimples = new Map<ElementoBaseId, number>();
+  for (const s of SINERGIAS_ALVO_UNICO) {
+    const origem = diretos.get(s.de) ?? 0;
+    if (origem <= 0) continue;
+    const bonus = Math.floor(origem * s.razao * (1 + bonusTransbordo));
+    if (bonus <= 0) continue;
+    const alvo = s.para[0];
+    transbordoSimples.set(alvo, (transbordoSimples.get(alvo) ?? 0) + bonus);
+  }
+
   // Bases semente: as investidas diretamente + as das receitas de qualquer
   // derivado com ponto direto (um par com diretos alimenta triplas mesmo que
-  // as bases dele não tenham sido tocadas nesta ficha).
+  // as bases dele não tenham sido tocadas nesta ficha) + as que só receberam
+  // transbordo de alvo único (a sinergia sozinha já justifica olhar o par).
   const basesSemente = new Set<ElementoBaseId>();
   for (const id of diretos.keys()) {
     const def = elementoDef(id);
@@ -152,6 +188,7 @@ export function calcularCascata(
     if (def.tipo === 'base') basesSemente.add(id as ElementoBaseId);
     else for (const c of def.receita ?? []) basesSemente.add(c.elemento);
   }
+  for (const alvo of transbordoSimples.keys()) basesSemente.add(alvo);
   const bases = BASE_IDS.filter((b) => basesSemente.has(b));
 
   const passivos = new Map<ElementoId, number>();
@@ -167,8 +204,17 @@ export function calcularCascata(
   };
 
   // aridade 1 — as bases alimentam a cascata com o ponto direto integral
-  // (pesoDiretoNaCascata(1) = 1, então registrar já grava direto : 1).
-  for (const b of bases) registrar(b, 0);
+  // (pesoDiretoNaCascata(1) = 1) MAIS o transbordo de alvo único que
+  // receberam — é investimento pago em outro lugar que refletiu aqui.
+  for (const b of bases) {
+    const direto = diretos.get(b) ?? 0;
+    const bonus = transbordoSimples.get(b) ?? 0;
+    const total = direto + bonus;
+    if (total <= 0) continue;
+    passivos.set(b, 0);
+    paraCascata.set(b, total);
+    tocados.push(b);
+  }
 
   // aridades 2..4 — filhos das bases semente, em ordem crescente
   for (const aridade of [2, 3, 4] as const) {

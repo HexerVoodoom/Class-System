@@ -1009,11 +1009,19 @@ function renderPainelInvestir(prog: Progressao): void {
   // apaga a build inteira). Investir depende do destrave; devolver, nunca.
   const comPontoDireto = (Object.keys(p.elementos) as ElementoId[])
     .filter((id) => (p.elementos[id] ?? 0) > 0 && !prog.alocaveis.includes(id));
-  const investiveis = [...prog.alocaveis, ...comPontoDireto]
+  // Derivados com passivos > 0 mas ainda travados (nunca tiveram ponto
+  // direto): já ganharam pontos de cascata (investimento nos pais, ou
+  // sinergia de alvo único transbordando) e merecem aparecer NA LISTA —
+  // mesmo sem poder receber ponto ainda — para o jogador ver o progresso em
+  // vez de descobrir o elemento só quando ele destrava do nada.
+  const emProgresso = [...prog.cascata.progressoDestravamento.keys()]
+    .filter((id) => !prog.alocaveis.includes(id) && !comPontoDireto.includes(id));
+  const investiveis = [...prog.alocaveis, ...comPontoDireto, ...emProgresso]
     .map((id) => elementoDef(id))
     .filter((def): def is ElementoDef => Boolean(def))
     .filter((def) => !filtro || norm(def.nome).includes(filtro) || norm(def.id).includes(filtro));
   const travados = new Set(comPontoDireto);
+  const progressoSet = new Set(emProgresso);
 
   const conta = document.getElementById('conta-investidos');
   if (conta) {
@@ -1035,9 +1043,26 @@ function renderPainelInvestir(prog: Progressao): void {
       const sinergia = efetivo - direto;
       const selecionada = elementoSelecionado === def.id ? ' selecionada' : '';
       const aridade = Math.min(4, Math.max(1, aridadeDe(def.id))) as Aridade;
+      const travado = travados.has(id);
+      const emProgressoLinha = progressoSet.has(id);
+
+      // em progresso: nunca teve ponto direto, só passivos de cascata (pais
+      // investidos, ou sinergia de alvo único) — sem "+" nem "−", só a barra.
+      if (emProgressoLinha) {
+        const prog2 = prog.cascata.progressoDestravamento.get(id)!;
+        return `<div class="pi-linha pi-progresso" data-linha-elemento="${def.id}">
+          ${sig(def.id, 'sig-mini')}
+          <div>
+            <div class="pi-nome">${esc(def.nome)} <span class="pi-selo" title="Ganha passivos com o investimento nos componentes (e sinergias ligadas a eles) — ainda não aceita ponto direto.">${prog2.passivos}/${prog2.limiar} passivos</span></div>
+            <div class="pi-nivel">nível ${efetivo}${
+              sinergia > 0 ? ` <span class="sinergia">(+${sinergia} sinergia)</span>` : ''
+            }</div>
+          </div>
+        </div>`;
+      }
+
       // derivado destravado: mostra a geração e o custo por ponto, para o
       // jogador entender por que aquele "+" gasta mais que o de uma base
-      const travado = travados.has(id);
       const selo = def.tipo === 'base'
         ? ''
         : travado
