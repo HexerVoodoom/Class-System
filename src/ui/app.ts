@@ -68,7 +68,8 @@ import {
 } from '../registry/profissoes';
 import { craftar, elementosDominados, type ConfigCraft } from '../engine/profissoes';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
-import { CUSTO_PONTO_ALOCACAO, DIVISOR_CASCATA, LIMIAR_DESTRAVAMENTO } from '../registry/geracoes';
+import { CUSTO_PONTO_ALOCACAO, DIVISOR_CASCATA, LIMIAR_DESTRAVAMENTO, ORCAMENTO_POR_TIER } from '../registry/geracoes';
+import { custoDeAlocacao } from '../engine/cascata';
 import { CRIATURAS, FAMILIAS, criaturas, type CriaturaDef } from '../registry/criaturas';
 import { efetividade } from '../registry/afinidades';
 import {
@@ -166,7 +167,9 @@ function skillPadrao(): SkillConfig {
 function estadoPadrao(): Estado {
   return {
     personagem: criarPersonagem('Meu Personagem'),
-    orcamentoAtributos: 100,
+    // Tier 3 da curva do registro (ORCAMENTO_POR_TIER) — o suficiente para
+    // 1–2 destraves de par; antes era um literal 100 desconectado da curva.
+    orcamentoAtributos: ORCAMENTO_POR_TIER[3],
     orcamentoTalentos: 20,
     skill: skillPadrao(),
     skillsSalvas: [],
@@ -287,8 +290,11 @@ function toast(msg: string): void {
 function pontosAtributosGastos(): number {
   const soma = (obj: Partial<Record<string, number>>) =>
     Object.values(obj).reduce((a: number, b) => a + (b ?? 0), 0);
+  // Elementos entram pelo CUSTO por geração (custoDeAlocacao), nunca pela
+  // soma crua: contar 1 por ponto direto em derivado abria build degenerada
+  // medida em 1,77× sobre a especialização pura (auditoria da cascata).
   return (
-    soma(estado.personagem.elementos) +
+    custoDeAlocacao(estado.personagem.elementos).total +
     soma(estado.personagem.escolas) +
     soma(estado.personagem.recursos) +
     soma(estado.personagem.profissoes)
@@ -1032,10 +1038,12 @@ function renderDetalheElemento(prog: Progressao): void {
   } else {
     const limiar = progresso?.limiar ?? LIMIAR_DESTRAVAMENTO[aridade];
     const fracao = Math.min(1, passivos / limiar);
+    // marco em orçamento: limiar × divisor em cada um dos N componentes
+    const marcoOrcamento = limiar * DIVISOR_CASCATA[aridade] * aridade;
     ledger = `<div class="perfil-linha"><span>Destrave da alocação direta</span>
       <div class="barra ${passivos >= limiar ? 'cheia' : ''}"><i style="width:${pct(fracao)}"></i></div>
       <span class="num">${passivos}/${limiar}</span></div>
-      <div class="desc">A cada ${DIVISOR_CASCATA[aridade]} pontos em CADA componente, +1 ponto passivo aqui. Com ${limiar} passivos, este elemento passa a aceitar pontos diretos.</div>`;
+      <div class="desc">A cada ${DIVISOR_CASCATA[aridade]} pontos DIRETOS em CADA componente, +1 ponto passivo aqui (transbordo de sinergia e nível de receita NÃO contam). Com ${limiar} passivos (≈${marcoOrcamento} de orçamento nas bases), este elemento passa a aceitar pontos diretos.</div>`;
   }
 
   alvo.innerHTML = `<div class="talento-detalhe detalhe-com-sig">

@@ -15,10 +15,11 @@
  *   passivos(Y)    = min sobre pais P de floor(paraCascata(P) / divisor(Y))
  *   destravado(Y)  = passivos(Y) >= LIMIAR_DESTRAVAMENTO[aridade Y]
  *
- * O peso do direto na cascata é CUSTO_PONTO/CUSTO_CASCATA_EQUIVALENTE — 1
- * ponto de orçamento compra o mesmo progresso de cascata onde for gasto.
- * NÃO "simplifique" para 1: isso abre arbitragem composta por geração
- * (há teste de não-arbitragem travando).
+ * O peso do direto na cascata é CUSTO_PONTO/CUSTO_CASCATA_EQUIVALENTE — a
+ * paridade vale para o `paraCascata` do PRÓPRIO nó por ponto de orçamento;
+ * o destrave da geração seguinte pelas bases continua a rota mais barata
+ * (o `min` sobre N pais cobra N vezes) e há teste de marco MEDIDO travando.
+ * NÃO "simplifique" o peso para 1: abriria arbitragem composta por geração.
  *
  * Mapas ESPARSOS: só nós tocados entram — uma ficha típica (3–5 bases) toca
  * dezenas de nós, nunca os 3.213 do espaço completo.
@@ -74,7 +75,13 @@ function aridadeClamp(id: ElementoId): Aridade {
 
 function divisorDe(id: ElementoId, reducao: number): number {
   const declarado = elementoDef(id)?.cascata?.divisor;
-  const base = declarado ?? DIVISOR_CASCATA[aridadeClamp(id)];
+  const aridade = aridadeClamp(id);
+  const base = declarado ?? DIVISOR_CASCATA[aridade];
+  // A redução de divisor (gancho de talento) só age na GERAÇÃO 2 e nunca em
+  // divisor declarado (especiais): aplicada em todas as gerações ela compõe
+  // pela cadeia — 1 rank derrubava o marco da quádrupla em 60% (960→384) e
+  // com 2 ranks a quádrupla ficava mais barata que o par (auditoria medida).
+  if (declarado !== undefined || aridade !== 2) return base;
   return Math.max(1, base - reducao);
 }
 

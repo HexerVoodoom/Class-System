@@ -364,3 +364,33 @@ cascata = 10 de orçamento · destravar gen-2 = 100 · gen-3 = 60/360 · gen-4 =
 240/960 · com 1200 pontos não existem duas quádruplas destravadas disjuntas.
 
 Testes: 204 → 225 (21 novos de cascata; 1 antigo atualizado para a regra nova).
+
+### Rodada 3.1 — Auditoria adversarial da cascata (mesmo dia)
+
+O supervisor-de-balanceamento devolveu 9 achados verificados; correções:
+
+- **Crítico**: o medidor de orçamento da UI somava pontos crus — build
+  degenerada de 1,77× via pontos diretos "grátis". `pontosAtributosGastos`
+  agora cobra `custoDeAlocacao`; orçamento default sai de `ORCAMENTO_POR_TIER`.
+- **Dominância estrita**: com custo {1,3,10,30} o ponto direto era sempre a
+  pior compra (1,5×/3,3×/7,5× vs subir os pais) — prêmio de destrave morto.
+  Custo agora em PARIDADE com os pais {1,2,3,4}; o peso econômico da geração
+  vive no marco do destrave (100/360/960).
+- **Invariante de aridade**: `FRACAO_BONUS_ARIDADE` 0.3→0.38 — a razão
+  especializar/combinar fecha ≤1,20 em toda a curva de orçamento (antes
+  estourava a 1,28–1,34 nos tiers 4–7).
+- **Pressa do tempo**: `BONUS_PRESSA_TETO` 0.35→0.12 (spread real entre
+  builds era 1,79× contra o 1,35× declarado).
+- **Teste de não-arbitragem** era identidade algébrica (passava com qualquer
+  constante); substituído por marco MEDIDO (rota "pares+diretos" ≥ bases).
+- **Alvo das quádruplas** reescrito para a verdade medida: a 1200, duas
+  disjuntas são impossíveis; a família de 5 bases destrava as 5 irmãs.
+- Gancho `cascata_divisor_reducao` restrito à gen-2 (compunha pela cadeia:
+  1 rank derrubava o marco da quádrupla em 60%).
+- Ledger: destrave agora explica que transbordo/receita não contam e mostra
+  o custo do marco em orçamento.
+
+E o **taxonomy.json virou v2**: além de elementos/famílias, exporta
+geracoes (diais da cascata), fatorPotencia, escolas, recursos, profissões,
+talentos e criaturas — o contrato de máquina único que o Soulmon e o
+laboratório consumiam via extração tsx ad-hoc.

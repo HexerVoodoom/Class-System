@@ -49,3 +49,21 @@ describe('the 3 new creature families are fully wired, not just typed', () => {
     }
   });
 });
+
+// v2: o contrato de máquina do ecossistema (Soulmon/bestiário/lab) — travado.
+import taxonomyJson from '../taxonomy.json';
+
+describe('taxonomy v2 — contrato de máquina', () => {
+  it('carrega versão, diais de geração e os registros que os consumidores extraíam via tsx', () => {
+    const t = taxonomyJson as Record<string, unknown>;
+    expect(t.version).toBe(2);
+    const g = t.geracoes as Record<string, unknown>;
+    expect(g.divisorCascata).toBeTruthy();
+    expect(g.custoPontoAlocacao).toBeTruthy();
+    expect(Object.keys(t.talentos as object).length).toBeGreaterThanOrEqual(65);
+    expect(Object.keys(t.profissoes as object).length).toBeGreaterThanOrEqual(11);
+    expect(Object.keys(t.criaturas as object).length).toBeGreaterThanOrEqual(32);
+    const lava = (t.elements as Array<{ id: string; fatorPotencia?: number }>).find(e => e.id === 'lava');
+    expect(lava?.fatorPotencia).toBeGreaterThan(1);
+  });
+});

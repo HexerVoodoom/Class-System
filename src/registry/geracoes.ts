@@ -28,8 +28,20 @@ export const DIVISOR_CASCATA: Record<Aridade, number> = { 1: 0, 2: 5, 3: 4, 4: 3
 /** Pontos PASSIVOS acumulados que destravam a alocação direta no elemento. */
 export const LIMIAR_DESTRAVAMENTO: Record<Aridade, number> = { 1: 0, 2: 10, 3: 6, 4: 4 };
 
-/** Custo, em pontos de orçamento, de 1 ponto DIRETO em cada geração. */
-export const CUSTO_PONTO_ALOCACAO: Record<Aridade, number> = { 1: 1, 2: 3, 3: 10, 4: 30 };
+/**
+ * Custo, em pontos de orçamento, de 1 ponto DIRETO em cada geração.
+ *
+ * PARIDADE COM OS PAIS por desenho: +1 nível num derivado via pais custa
+ * (aridade) pontos de orçamento (1 em cada componente), então o direto custa
+ * o MESMO — {1,2,3,4}. A auditoria adversarial mediu que o valor antigo
+ * {1,3,10,30} criava dominância estrita (o direto era sempre a pior compra,
+ * 1,5×/3,3×/7,5× mais caro que subir os pais, que ainda davam colaterais):
+ * o prêmio do destrave era conteúdo morto. Com a paridade, o direto compra
+ * FOCO (sobe só aquele derivado, sem alargar irmãos) pelo mesmo preço —
+ * uma troca honesta. O peso econômico da geração vive no MARCO do destrave
+ * (100/360/960), não no preço do ponto.
+ */
+export const CUSTO_PONTO_ALOCACAO: Record<Aridade, number> = { 1: 1, 2: 2, 3: 3, 4: 4 };
 
 /** Custo, em orçamento, de 1 ponto obtido pela cascata pura (build simétrica):
  *  gen-2 = 5×2 bases = 10 · gen-3 = 20×3 = 60 · gen-4 = 60×4 = 240. */
@@ -40,9 +52,12 @@ export const CUSTO_CASCATA_EQUIVALENTE: Record<Aridade, number> = { 1: 1, 2: 10,
 export const DIVISOR_CASCATA_ESPECIAL = 20;
 
 /**
- * Fração de um ponto DIRETO que alimenta a geração seguinte. Amarrada ao
- * custo de propósito (custo direto ÷ custo da cascata equivalente):
- * 1 · 0.3 · 0.1667 · 0.125 — mesmo progresso por ponto de orçamento.
+ * Fração de um ponto DIRETO que alimenta a geração seguinte, amarrada ao
+ * custo (custo direto ÷ custo da cascata equivalente). A paridade que isso
+ * garante vale para o `paraCascata` DO PRÓPRIO nó por ponto de orçamento —
+ * o destrave da geração seguinte pela rota "pares + diretos" continua MAIS
+ * caro que pelas bases (o `min` sobre N pais cobra N vezes), e há teste de
+ * marco MEDIDO travando isso em `tests/cascata.test.ts`.
  */
 export function pesoDiretoNaCascata(aridade: Aridade): number {
   return CUSTO_PONTO_ALOCACAO[aridade] / CUSTO_CASCATA_EQUIVALENTE[aridade];
@@ -51,8 +66,11 @@ export function pesoDiretoNaCascata(aridade: Aridade): number {
 /**
  * Curva de orçamento sugerida por tier de personagem — conteúdo de registro
  * lido pela UI/consumidores, NUNCA imposto pelo motor (point-buy continua
- * aberto). Alvo de desenho: no teto (1200) existe no máximo UM destrave de
- * quádrupla — nunca dois (há teste travando).
+ * aberto). Alvo de desenho MEDIDO: no teto (1200), duas quádruplas
+ * DISJUNTAS são impossíveis (custariam 1920); o que existe é UMA família de
+ * 5 bases a 240 destravando as C(5,4)=5 quádruplas irmãs pelo preço exato do
+ * teto — dominar uma família elemental inteira, e nada além dela (teste em
+ * `tests/cascata.test.ts`).
  */
 export const ORCAMENTO_POR_TIER: Record<number, number> = {
   1: 60, 2: 120, 3: 200, 4: 340, 5: 500, 6: 800, 7: 1200,

@@ -74,26 +74,38 @@ describe('cascata — rendimento passivo', () => {
 });
 
 describe('cascata — não-arbitragem e economia', () => {
-  it('gastar X de orçamento em direto nunca rende mais cascata que X nas bases', () => {
-    // Para cada aridade, o progresso de cascata por ponto de ORÇAMENTO tem
-    // que ser o mesmo nos dois caminhos (tolerância numérica) — é o que
-    // fecha a máquina de inflação de "destravar e despejar".
-    for (const aridade of [2, 3, 4] as Aridade[]) {
-      const porOrcamentoDireto = pesoDiretoNaCascata(aridade) / CUSTO_PONTO_ALOCACAO[aridade];
-      const porOrcamentoCascata = 1 / CUSTO_CASCATA_EQUIVALENTE[aridade];
-      expect(porOrcamentoDireto).toBeCloseTo(porOrcamentoCascata, 10);
-    }
+  it('MARCO MEDIDO: destravar gen-3 pela rota "pares + diretos" nunca é mais barato que pelas bases', () => {
+    // A versão antiga deste teste comparava pesoDireto/custo com 1/custoEq —
+    // uma identidade algébrica que passava para QUALQUER valor das
+    // constantes (auditoria). Este mede a economia de verdade.
+    // Rota das bases: 120 em cada uma de 3 bases = 360 → 6 passivos na tripla.
+    const pelasBases = custoDeAlocacao({ fogo: 120, agua: 120, terra: 120 });
+    expect(pelasBases.total).toBe(360);
+    expect(calcularCascata({ fogo: 120, agua: 120, terra: 120 }).destravados.has(TRIPLA_FAT)).toBe(true);
+    // Rota alternativa: destravar os 3 pares (50+50+50 nas bases) e despejar
+    // diretos nos pares até a tripla destravar. paraCascata(par) = 10 +
+    // peso(2)·d; a tripla precisa de floor(paraCascata/4) >= 6 em TODOS.
+    const peso = pesoDiretoNaCascata(2);
+    const dPorPar = Math.ceil((24 - 10) / peso);
+    const diretos: Record<string, number> = { fogo: 50, agua: 50, terra: 50, vapor: dPorPar, pantano: dPorPar, lava: dPorPar };
+    const alternativa = custoDeAlocacao(diretos);
+    expect(calcularCascata(diretos).destravados.has(TRIPLA_FAT)).toBe(true);
+    expect(alternativa.total).toBeGreaterThan(pelasBases.total);
   });
 
-  it('custoDeAlocacao cobra por geração: base 1 · par 3 · tripla 10 · quádrupla 30', () => {
+  it('custoDeAlocacao cobra por geração em PARIDADE com os pais: 1 · 2 · 3 · 4', () => {
     const { porAridade, total } = custoDeAlocacao({
       fogo: 10, vapor: 2, [TRIPLA_FAT]: 1, [QUAD_FAT]: 1,
     });
     expect(porAridade[1]).toBe(10);
-    expect(porAridade[2]).toBe(6);
-    expect(porAridade[3]).toBe(10);
-    expect(porAridade[4]).toBe(30);
-    expect(total).toBe(56);
+    expect(porAridade[2]).toBe(4);
+    expect(porAridade[3]).toBe(3);
+    expect(porAridade[4]).toBe(4);
+    expect(total).toBe(21);
+    // paridade: +1 nível via direto custa o mesmo que +1 em cada pai
+    for (const aridade of [2, 3, 4] as Aridade[]) {
+      expect(CUSTO_PONTO_ALOCACAO[aridade]).toBe(aridade);
+    }
   });
 
   it('tabela de marcos: destravar gen-2 custa 100 de orçamento nas bases', () => {
@@ -103,21 +115,20 @@ describe('cascata — não-arbitragem e economia', () => {
     expect(sim.destravados.has('vapor')).toBe(true);
   });
 
-  it('com 1200 pontos de orçamento não existe ficha que destrave duas quádruplas', () => {
-    // Destravar UMA quádrupla exige 4 passivos → cada tripla-pai precisa
-    // alimentar floor(x/3) >= 4 → x >= 12 → cada par floor(y/4) >= 12 → y >= 48
-    // → cada base floor(B/5) >= 48 → B >= 240 → 4 bases × 240 = 960.
-    // Duas quádruplas DISJUNTAS custariam 8 bases × 240 = 1920 > 1200.
-    // Compartilhando 3 bases (ex.: abcd + abce), d e e precisam de 240 cada e
-    // as compartilhadas idem: 5 × 240 = 1200 — MAS o custo mínimo real com
-    // interseção máxima ainda é 1200 cravado, sem sobrar ponto para escola,
-    // recurso ou talento. O teste trava o caso disjunto e documenta o limite.
+  it('quádruplas a 1200: disjuntas são impossíveis; a família de 5 bases destrava as 5 irmãs', () => {
+    // O alvo de desenho MEDIDO (auditoria): duas quádruplas DISJUNTAS custam
+    // 1920 > 1200 — impossível. O que o teto compra é UMA família: 5 bases a
+    // 240 (= 1200 cravado) destravam as C(5,4)=5 quádruplas irmãs — dominar
+    // uma família elemental inteira, sem sobrar um ponto para nada além.
     const umaQuad = custoDeAlocacao({ fogo: 240, agua: 240, terra: 240, ar: 240 });
     expect(umaQuad.total).toBe(960);
-    const sim = calcularCascata({ fogo: 240, agua: 240, terra: 240, ar: 240 });
-    expect(sim.destravados.has(QUAD_FAT)).toBe(true);
-    const duasDisjuntas = 2 * 4 * 240;
-    expect(duasDisjuntas).toBeGreaterThan(1200);
+    expect(calcularCascata({ fogo: 240, agua: 240, terra: 240, ar: 240 }).destravados.has(QUAD_FAT)).toBe(true);
+    expect(2 * 4 * 240).toBeGreaterThan(1200);
+    const familia = { fogo: 240, agua: 240, terra: 240, ar: 240, eletricidade: 240 };
+    expect(custoDeAlocacao(familia).total).toBe(1200);
+    const sim = calcularCascata(familia);
+    const quadsDestravadas = [...sim.destravados].filter(id => aridadeDe(id) === 4);
+    expect(quadsDestravadas.length).toBe(5);
   });
 });
 
