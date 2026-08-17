@@ -346,14 +346,14 @@
   .ceu-controles { display:flex; flex-wrap:wrap; gap:.75rem 1.1rem; align-items:center;
                    margin:.4rem 0 .6rem; font-size:.78rem; }
   .ceu-grupo { display:flex; align-items:center; gap:.3rem; }
-  .ceu-rot { color:#8d84ad; text-transform:uppercase; letter-spacing:.08em; font-size:.66rem; }
-  .ceu-controles button { background:#241f3a; border:1px solid #3a3358; color:#b7aed6;
+  .ceu-rot { color:var(--ink-2); text-transform:uppercase; letter-spacing:.08em; font-size:.66rem; }
+  .ceu-controles button { background:var(--surface-2); border:1px solid var(--linha); color:var(--ink-2);
                           border-radius:5px; padding:.18rem .5rem; cursor:pointer; font-size:.75rem; }
-  .ceu-controles button:hover { border-color:#6f649c; color:#e6e0f5; }
-  .ceu-controles button.ativo { background:#3d3363; border-color:#c9a84c; color:#f0e9ff; }
-  .ceu-busca input { background:#1b1730; border:1px solid #3a3358; color:#e6e0f5;
+  .ceu-controles button:hover { border-color:var(--acento); color:var(--ink); }
+  .ceu-controles button.ativo { background:var(--surface-2); border-color:var(--acento); color:var(--ink); }
+  .ceu-busca input { background:var(--bg); border:1px solid var(--linha); color:var(--ink);
                      border-radius:5px; padding:.22rem .5rem; min-width:16rem; font-size:.75rem; }
-  .ceu-conta { margin-left:auto; color:#6f649c; font-size:.7rem; }
+  .ceu-conta { margin-left:auto; color:var(--ink-2); font-size:.7rem; }
 
   /* ---- faixas e guias ---- */
   .ceu .faixa-aridade { fill:none; stroke:#6f649c; opacity:.08; stroke-dasharray:2 6; }
@@ -377,7 +377,7 @@
   .ceu .procedural .nucleo { fill:none; stroke:var(--cor); stroke-width:1.1; }
   .ceu .procedural .halo { opacity:calc(var(--halo) * .55); }
   .ceu .curado.e-desbloqueado .nucleo { filter:drop-shadow(0 0 3px #e9c95e88); }
-  .ceu .a5 .nucleo { stroke:#e9c95e; stroke-width:1.4; }
+  .ceu .a5 .nucleo { stroke:var(--acento); stroke-width:1.4; }
 
   /* ---- foco de linhagem ---- */
   .ceu .foco-ativo [data-acao='estrela-ceu'] { opacity:.12; pointer-events:none; }
@@ -390,7 +390,7 @@
   .ceu .linhagem-descendente { opacity:.85; }
   .ceu .linhagem-selecionado .halo { opacity:.45; }
   .ceu .foco-ativo .anel-zodiaco { opacity:.06; }
-  .ceu .liga-ancestral { stroke:#e9c95e; stroke-width:1.3; opacity:.85; }
+  .ceu .liga-ancestral { stroke:var(--acento); stroke-width:1.3; opacity:.85; }
 
   /* ---- busca ---- */
   .ceu .busca-ativa [data-acao='estrela-ceu'] { opacity:.1; pointer-events:none; }
@@ -404,76 +404,120 @@
   .ceu .rotulo-deriv.procedural { fill:#8d84ad; font-style:italic; }
 
   /* ---- modificadores de skill ---- */
-  .bloco-modificadores { border:1px solid #2f2a4a; border-radius:8px; padding:.7rem .8rem; margin:.8rem 0; }
+  .bloco-modificadores { border:1px solid var(--linha); border-radius:8px; padding:.7rem .8rem; margin:.8rem 0; }
   .mod-cabecalho { display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; }
   .mod-cabecalho h4 { margin:0; font-size:.9rem; }
-  .mod-dica { color:#6f649c; font-size:.7rem; }
-  .mod-tags { margin:.4rem 0 .5rem; font-size:.74rem; color:#8d84ad; }
-  .tag-skill { display:inline-block; background:#241f3a; border:1px solid #3a3358; color:#b7aed6;
+  .mod-dica { color:var(--ink-2); font-size:.7rem; }
+  .mod-tags { margin:.4rem 0 .5rem; font-size:.74rem; color:var(--ink-2); }
+  .tag-skill { display:inline-block; background:var(--surface-2); border:1px solid var(--linha); color:var(--ink-2);
                border-radius:99px; padding:.05rem .45rem; margin-right:.25rem; font-size:.7rem; }
   .mod-teto { display:flex; align-items:center; gap:.6rem; margin:.4rem 0 .6rem; font-size:.72rem; }
-  .barra-teto { position:relative; flex:1; height:8px; background:#1b1730; border-radius:4px; overflow:hidden; }
-  .barra-teto span { display:block; height:100%; background:linear-gradient(90deg,#6f649c,#c9a84c); }
-  .barra-teto .marca-teto { position:absolute; right:0; top:-2px; width:2px; height:12px; background:#e9c95e; }
+  .barra-teto { position:relative; flex:1; height:8px; background:var(--barra-fundo); border-radius:4px; overflow:hidden; }
+  .barra-teto span { display:block; height:100%; background:linear-gradient(90deg,var(--arcano),var(--acento)); }
+  .barra-teto .marca-teto { position:absolute; right:0; top:-2px; width:2px; height:12px; background:var(--acento); }
   .mod-familia h5 { margin:.5rem 0 .2rem; font-size:.72rem; text-transform:uppercase;
-                    letter-spacing:.07em; color:#6f649c; }
+                    letter-spacing:.07em; color:var(--ink-2); }
   .mod-familia ul, .mod-nao-cabem ul { list-style:none; margin:0; padding:0; }
   .mod-familia li { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap;
                     padding:.16rem .3rem; border-radius:4px; font-size:.76rem; }
-  .mod-familia li.marcado { background:#2b2447; }
+  .mod-familia li.marcado { background:var(--surface-2); }
   .mod-familia li.bloqueado { opacity:.45; }
   .mod-familia label { display:flex; align-items:center; gap:.35rem; cursor:pointer; min-width:12rem; }
-  .mod-nome { color:#e6e0f5; }
-  .mod-custo { color:#c9a84c; }
-  .mod-efeito { color:#8d84ad; font-size:.72rem; }
-  .mod-selo { background:#3a2b2b; border:1px solid #6b4a4a; color:#e0a5a5;
+  .mod-nome { color:var(--ink); }
+  .mod-custo { color:var(--acento); }
+  .mod-efeito { color:var(--ink-2); font-size:.72rem; }
+  .mod-selo { background:var(--surface-2); border:1px solid var(--erro); color:var(--erro);
               border-radius:99px; padding:0 .4rem; font-size:.66rem; }
-  .mod-selo.alerta { background:#3d3320; border-color:#7a6330; color:#e9c95e; }
+  .mod-selo.alerta { background:var(--surface-2); border-color:var(--alerta); color:var(--alerta); }
   .mod-nao-cabem { margin-top:.5rem; font-size:.74rem; }
-  .mod-nao-cabem summary { cursor:pointer; color:#6f649c; }
-  .mod-nao-cabem li { display:flex; gap:.6rem; padding:.1rem 0; color:#8d84ad; }
+  .mod-nao-cabem summary { cursor:pointer; color:var(--ink-2); }
+  .mod-nao-cabem li { display:flex; gap:.6rem; padding:.1rem 0; color:var(--ink-2); }
   .cascata table { width:100%; font-size:.76rem; border-collapse:collapse; margin:.5rem 0; }
-  .cascata td { padding:.12rem .3rem; border-bottom:1px solid #241f3a; }
-  .cascata tr.total td { font-weight:600; color:#e9c95e; border-top:1px solid #3a3358; border-bottom:none; }
-  .aviso-teto { font-size:.74rem; color:#e9c95e; margin:.3rem 0 0; }
+  .cascata td { padding:.12rem .3rem; border-bottom:1px solid var(--linha); }
+  .cascata tr.total td { font-weight:600; color:var(--acento); border-top:1px solid var(--linha); border-bottom:none; }
+  .aviso-teto { font-size:.74rem; color:var(--acento); margin:.3rem 0 0; }
 
   /* ---- aba fusão ---- */
   .fusao-cabecalho { display:flex; align-items:baseline; gap:.6rem; margin:.6rem 0 .3rem; }
   .fusao-cabecalho h4 { margin:0; font-size:.9rem; }
   .fusao-cartoes { display:flex; flex-wrap:wrap; gap:.5rem; }
-  .cartao-fusao { display:flex; align-items:center; gap:.4rem; border:1px solid #2f2a4a;
+  .cartao-fusao { display:flex; align-items:center; gap:.4rem; border:1px solid var(--linha);
                   border-radius:7px; padding:.35rem .55rem; cursor:pointer; font-size:.78rem; }
-  .cartao-fusao.marcado { border-color:#c9a84c; background:#2b2447; }
+  .cartao-fusao.marcado { border-color:var(--acento); background:var(--surface-2); }
   .cartao-fusao.bloqueado { opacity:.4; cursor:not-allowed; }
-  .cf-nome { color:#e6e0f5; }
-  .cf-meta { color:#8d84ad; font-size:.7rem; }
+  .cf-nome { color:var(--ink); }
+  .cf-meta { color:var(--ink-2); font-size:.7rem; }
   .convergencia { display:flex; align-items:center; gap:.7rem; flex-wrap:wrap;
-                  background:#1b1730; border:1px solid #2f2a4a; border-radius:8px;
+                  background:#1b1730; border:1px solid var(--linha); border-radius:8px;
                   padding:.7rem .9rem; margin:.9rem 0; }
-  .conv-item { display:flex; align-items:center; gap:.3rem; color:#b7aed6; font-size:.8rem; }
-  .conv-mais { color:#6f649c; }
-  .conv-seta { color:#c9a84c; font-size:1.2rem; }
+  .conv-item { display:flex; align-items:center; gap:.3rem; color:var(--ink-2); font-size:.8rem; }
+  .conv-mais { color:var(--ink-2); }
+  .conv-seta { color:var(--acento); font-size:1.2rem; }
   .conv-alvo { display:flex; align-items:center; gap:.4rem; }
-  .conv-alvo strong { color:#e9c95e; font-size:1rem; }
-  .conv-alvo strong.riscado { text-decoration:line-through; color:#8d84ad; }
-  .conv-alvo em { color:#8d84ad; font-size:.72rem; font-style:normal; }
+  .conv-alvo strong { color:var(--acento); font-size:1rem; }
+  .conv-alvo strong.riscado { text-decoration:line-through; color:var(--ink-2); }
+  .conv-alvo em { color:var(--ink-2); font-size:.72rem; font-style:normal; }
   .convergencia.travada { border-color:#6b4a4a; }
   .comparacao-fusao { width:100%; font-size:.78rem; border-collapse:collapse; margin:.6rem 0; }
-  .comparacao-fusao th { color:#6f649c; font-weight:500; text-align:left; font-size:.7rem; }
+  .comparacao-fusao th { color:var(--ink-2); font-weight:500; text-align:left; font-size:.7rem; }
   .comparacao-fusao td { padding:.2rem .3rem; }
   .barra-comp { display:inline-block; width:9rem; height:8px; background:#1b1730;
                 border-radius:4px; overflow:hidden; margin-right:.4rem; vertical-align:middle; }
   .barra-comp i { display:block; height:100%; }
-  .barra-comp.imp i { background:#c9a84c; }
-  .barra-comp.cus i { background:#6f649c; }
-  .corte-teto { display:inline-block; width:2px; height:12px; background:#e9c95e;
+  .barra-comp.imp i { background:var(--acento); }
+  .barra-comp.cus i { background:var(--arcano); }
+  .corte-teto { display:inline-block; width:2px; height:12px; background:var(--acento);
                 margin-left:.3rem; vertical-align:middle; }
-  .comparacao-fusao tr.veredito td { color:#e9c95e; border-top:1px solid #2f2a4a; padding-top:.4rem; }
+  .comparacao-fusao tr.veredito td { color:var(--acento); border-top:1px solid var(--linha); padding-top:.4rem; }
   .so-fundindo h4 { margin:.8rem 0 .3rem; font-size:.78rem; text-transform:uppercase;
-                    letter-spacing:.07em; color:#6f649c; }
+                    letter-spacing:.07em; color:var(--ink-2); }
   .so-fundindo ul { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:.4rem; }
-  .so-fundindo li { background:#241f3a; border:1px solid #3a3358; color:#b7aed6;
+  .so-fundindo li { background:var(--surface-2); border:1px solid var(--linha); color:var(--ink-2);
                     border-radius:99px; padding:.12rem .55rem; font-size:.74rem; }
+
+  /* ---- layout: céu à esquerda, tabela de investimento à direita ---- */
+  :root { --nav-h: 58px; }
+  .ceu-layout { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 14px; align-items: start; }
+  .ceu-coluna { min-width: 0; }
+
+  .painel-investir {
+    position: sticky; top: calc(var(--nav-h) + 8px);
+    height: calc(100vh - var(--nav-h) - 24px);
+    display: flex; flex-direction: column; gap: 6px;
+    background: var(--surface); border: 1px solid var(--linha);
+    border-radius: 8px; padding: 8px 10px;
+  }
+  .pi-cabecalho { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .pi-cabecalho h3 { margin: 0; font-size: 14px; }
+  .painel-investir .filtro { width: 100%; margin: 0; }
+  /* o scroll vive aqui: a lista ocupa a altura restante e rola sozinha */
+  .pi-lista { flex: 1; min-height: 0; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+
+  .pi-linha {
+    display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 8px;
+    padding: 5px 4px; border-bottom: 1px solid var(--linha); scroll-margin: 8px;
+  }
+  .pi-linha:last-child { border-bottom: none; }
+  .pi-linha.selecionada { background: var(--surface-2); border-radius: 6px; }
+  .pi-linha .sig-mini { width: 22px; height: 22px; }
+  .pi-nome { font-size: 13px; color: var(--ink); line-height: 1.25; }
+  .pi-nivel { font-size: 11px; color: var(--ink-2); }
+  .pi-nivel .sinergia { color: var(--ok); }
+  .pi-controles { display: flex; align-items: center; gap: 4px; }
+  .pi-controles button {
+    background: var(--surface-2); border: 1px solid var(--linha); color: var(--ink);
+    border-radius: 5px; width: 24px; height: 24px; line-height: 1; padding: 0;
+    cursor: pointer; font-size: 14px;
+  }
+  .pi-controles button:hover:not(:disabled) { border-color: var(--acento); }
+  .pi-controles button:disabled { opacity: .35; cursor: not-allowed; }
+  .pi-controles .valor { min-width: 22px; text-align: center; font-size: 13px; }
+  .pi-vazio { color: var(--ink-2); font-size: 12px; padding: 8px 4px; }
+
+  @media (max-width: 900px) {
+    .ceu-layout { grid-template-columns: 1fr; }
+    .painel-investir { position: static; height: auto; max-height: 60vh; }
+  }
   .ceu [data-acao='estrela-ceu'] { cursor: pointer; }
   .ceu [data-acao='estrela-ceu']:focus-visible .nucleo { stroke: #c9a84c; stroke-width: 2; }
   .ceu .halo { fill: #cfc8e6; opacity: 0.08; }
@@ -609,23 +653,37 @@
 
   <main>
     <section id="aba-elementos" class="aba">
-      <section class="bloco">
-        <h2>Céu dos Elementos <span class="conta" id="conta-elementos"></span></h2>
-        <p class="dica">Clique numa estrela para ver detalhes e investir pontos. Os 17 elementos base formam o anel externo;
-          as combinações orbitam mais perto do centro e acendem quando os componentes evoluem juntos. O Nulo espera no coração do céu.</p>
-        <div id="ceu-controles" class="ceu-controles"></div>
-        <div id="ceu-elementos" class="ceu"></div>
-        <div id="elemento-detalhe"></div>
-      </section>
-      <section class="bloco">
-        <h2>Elementos combinados <span class="conta" id="conta-derivados"></span></h2>
-        <input id="filtro-derivados" class="filtro" type="search" placeholder="Filtrar por nome ou componente…">
-        <div id="derivados" class="painel"></div>
-      </section>
-      <section class="bloco">
-        <h2>Afinidade elemental <span class="conta">linha ataca coluna · verde = forte, laranja = fraco</span></h2>
-        <div id="matriz-afinidades" class="matriz-scroll"></div>
-      </section>
+      <div class="ceu-layout">
+        <div class="ceu-coluna">
+        <section class="bloco">
+          <h2>Céu dos Elementos <span class="conta" id="conta-elementos"></span></h2>
+          <p class="dica">Invista pontos na tabela ao lado — os 17 elementos base são os únicos que aceitam pontos diretos.
+            No céu, clique numa estrela para ver a receita dela e iluminar a linhagem: as combinações orbitam
+            mais perto do centro e acendem quando os componentes evoluem juntos. O Nulo espera no coração do céu.</p>
+          <div id="ceu-controles" class="ceu-controles"></div>
+          <div id="ceu-elementos" class="ceu"></div>
+          <div id="elemento-detalhe"></div>
+        </section>
+        <section class="bloco">
+          <h2>Elementos combinados <span class="conta" id="conta-derivados"></span></h2>
+          <input id="filtro-derivados" class="filtro" type="search" placeholder="Filtrar por nome ou componente…">
+          <div id="derivados" class="painel"></div>
+        </section>
+        <section class="bloco">
+          <h2>Afinidade elemental <span class="conta">linha ataca coluna · verde = forte, laranja = fraco</span></h2>
+          <div id="matriz-afinidades" class="matriz-scroll"></div>
+        </section>
+        </div>
+        <aside class="painel-investir" aria-label="Investimento em elementos base">
+          <div class="pi-cabecalho">
+            <h3>Investir pontos</h3>
+            <span class="conta" id="conta-investidos"></span>
+          </div>
+          <input id="filtro-investir" class="filtro" type="search"
+            placeholder="Filtrar elemento…" aria-label="Filtrar elementos base">
+          <div id="painel-investir" class="pi-lista"></div>
+        </aside>
+      </div>
     </section>
 
     <section id="aba-escolas" class="aba">

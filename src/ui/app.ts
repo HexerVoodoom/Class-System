@@ -138,6 +138,7 @@ interface Estado {
   skill: SkillConfig;
   skillsSalvas: SkillConfig[];
   filtroDerivados: string;
+  filtroInvestir: string;
   filtroCriaturas: string;
   snapshots: Snapshot[];
   vistaTalentos: 'arvore' | 'cartas';
@@ -174,6 +175,7 @@ function estadoPadrao(): Estado {
     skill: skillPadrao(),
     skillsSalvas: [],
     filtroDerivados: '',
+    filtroInvestir: '',
     filtroCriaturas: '',
     snapshots: [],
     vistaTalentos: 'arvore',
@@ -229,6 +231,7 @@ function carregar(): Estado {
         : [],
       evocacao: salvo.evocacao ?? base.evocacao,
       filtroCriaturas: salvo.filtroCriaturas ?? '',
+      filtroInvestir: salvo.filtroInvestir ?? '',
       craft: salvo.craft ?? base.craft,
       fusao: Array.isArray(salvo.fusao) ? salvo.fusao : [],
     };
@@ -543,6 +546,7 @@ function render(): void {
   renderPresets();
   renderAbas();
   renderCeuElementos(prog);
+  renderPainelInvestir(prog);
   renderDetalheElemento(prog);
   renderMatrizAfinidades();
   renderEscolas();
@@ -973,10 +977,68 @@ function renderMatrizAfinidades(): void {
   el('matriz-afinidades').innerHTML = `<table class="matriz">${cabecalho}${linhas}</table>`;
 }
 
+
+/**
+ * A tabela de investimento — a única superfície onde pontos são gastos em
+ * elementos.
+ *
+ * O céu deixou de ser um controle e voltou a ser um mapa: clicar numa estrela
+ * seleciona, mostra a receita e ilumina a linhagem, mas não gasta ponto. Investir
+ * pelo céu exigia caçar a estrela certa no anel externo antes de cada clique, e
+ * como só os 17 elementos base aceitam pontos diretos, a lista lateral mostra
+ * exatamente o conjunto investível — sem procura.
+ */
+function renderPainelInvestir(prog: Progressao): void {
+  const alvo = document.getElementById('painel-investir');
+  if (!alvo) return;
+  const p = estado.personagem;
+  const filtro = norm(estado.filtroInvestir ?? '');
+  const bases = elementosBase().filter(
+    (def) => !filtro || norm(def.nome).includes(filtro) || norm(def.id).includes(filtro),
+  );
+
+  const conta = document.getElementById('conta-investidos');
+  if (conta) {
+    const gastos = Object.values(p.elementos).reduce<number>((soma, n) => soma + (n ?? 0), 0);
+    conta.textContent = `${gastos} de ${estado.orcamentoAtributos} pts`;
+  }
+
+  if (!bases.length) {
+    alvo.innerHTML = `<div class="pi-vazio">Nenhum elemento base com "${esc(estado.filtroInvestir ?? '')}".</div>`;
+    return;
+  }
+
+  alvo.innerHTML = bases
+    .map((def) => {
+      const id = def.id as ElementoBaseId;
+      const direto = p.elementos[id] ?? 0;
+      const efetivo = prog.niveisEfetivos[id] ?? 0;
+      const sinergia = efetivo - direto;
+      const selecionada = elementoSelecionado === def.id ? ' selecionada' : '';
+      return `<div class="pi-linha${selecionada}" data-linha-elemento="${def.id}">
+        ${sig(def.id, 'sig-mini')}
+        <div>
+          <div class="pi-nome">${esc(def.nome)}</div>
+          <div class="pi-nivel">nível ${efetivo}${
+            sinergia > 0 ? ` <span class="sinergia">(+${sinergia} sinergia)</span>` : ''
+          }</div>
+        </div>
+        <div class="pi-controles">
+          <button type="button" data-acao="dec-elemento" data-id="${def.id}"
+            aria-label="Remover ponto de ${esc(def.nome)}"${direto <= 0 ? ' disabled' : ''}>−</button>
+          <span class="valor num">${direto}</span>
+          <button type="button" data-acao="inc-elemento" data-id="${def.id}"
+            aria-label="Adicionar ponto em ${esc(def.nome)}">+</button>
+        </div>
+      </div>`;
+    })
+    .join('');
+}
+
 function renderDetalheElemento(prog: Progressao): void {
   const alvo = el('elemento-detalhe');
   if (!elementoSelecionado || !elementoDef(elementoSelecionado)) {
-    alvo.innerHTML = `<div class="talento-detalhe vazio">Clique numa estrela do céu para ver detalhes e investir pontos.</div>`;
+    alvo.innerHTML = `<div class="talento-detalhe vazio">Clique numa estrela do céu para ver a receita dela e iluminar a linhagem. Os pontos você investe na tabela ao lado.</div>`;
     return;
   }
   const def = elementoDef(elementoSelecionado)!;
@@ -991,11 +1053,7 @@ function renderDetalheElemento(prog: Progressao): void {
       <div class="nome">${esc(def.nome)} <span class="conta">elemento base</span></div>
       <div class="desc">${esc(def.descricao)}</div>
       <div>Nível efetivo <strong class="num">${nivel}</strong>${bonus > 0 ? ` <span class="efetivo">(${direto} diretos + ${bonus} de sinergia)</span>` : ''}</div>
-      <div class="controles">
-        <button type="button" data-acao="dec-elemento" data-id="${def.id}" aria-label="Remover ponto">−</button>
-        <span class="valor num">${direto}</span>
-        <button type="button" data-acao="inc-elemento" data-id="${def.id}" aria-label="Adicionar ponto">+</button>
-      </div>
+      <div class="desc">Investir pontos é na tabela ao lado — a linha deste elemento está destacada lá.</div>
     </div></div>`;
     return;
   }
@@ -2347,6 +2405,15 @@ document.addEventListener('click', (ev) => {
         const prog = calcularProgressao(p);
         renderCeuElementos(prog);
         renderDetalheElemento(prog);
+        // a tabela também precisa redesenhar: é ela que carrega o destaque da
+        // linha selecionada. Rolar até a linha depois do redesenho é o que
+        // conecta as duas metades da tela sem o usuário ter de procurar.
+        renderPainelInvestir(prog);
+        if (elementoSelecionado) {
+          document
+            .querySelector(`[data-linha-elemento="${CSS.escape(elementoSelecionado)}"]`)
+            ?.scrollIntoView({ block: 'nearest' });
+        }
         return;
       }
       case 'inc-elemento': investirElemento(p, id, Number(alvo.dataset.passo ?? 1)); break;
@@ -2487,6 +2554,13 @@ document.addEventListener('click', (ev) => {
 document.addEventListener('input', (ev) => {
   const t = ev.target as HTMLInputElement;
   const s = estado.skill;
+
+  if (t.id === 'filtro-investir') {
+    estado.filtroInvestir = t.value;
+    renderPainelInvestir(calcularProgressao(estado.personagem));
+    salvar();
+    return;
+  }
 
   if (t.id === 'ceu-busca') {
     ceu.busca = t.value;
