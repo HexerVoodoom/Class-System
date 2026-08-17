@@ -18,6 +18,7 @@ import { aridadeDe, paisDeCascata, combinacaoInfoPorComponentes } from '../src/r
 import { ELEMENTOS, elementosBase, type ElementoId } from '../src/registry/elementos';
 import { criarPersonagem, investirElemento, podeInvestir } from '../src/engine/personagem';
 import { calcularProgressao } from '../src/engine/progressao';
+import { analisarFicha } from '../src/api/consultas';
 
 const TRIPLA_FAT = combinacaoInfoPorComponentes(['fogo', 'agua', 'terra'])!.id;
 const QUAD_FAT = combinacaoInfoPorComponentes(['fogo', 'agua', 'terra', 'ar'])!.id;
@@ -268,6 +269,36 @@ describe('integração com o personagem e a progressão', () => {
     expect(depois.niveisEfetivos.lava).toBe(antes.niveisEfetivos.lava + 3);
     expect(depois.niveisEfetivos.vapor).toBe(antes.niveisEfetivos.vapor);
     expect(depois.niveisEfetivos.fogo).toBe(antes.niveisEfetivos.fogo);
+  });
+
+  it('REGRA NO MODELO: ficha montada à mão não expressa direto em derivado TRAVADO', () => {
+    // A regra vivia só no mutador (`investirElemento`). Uma ficha escrita à
+    // mão — CLI `--ficha`, import de build, localStorage, agente montando
+    // `Personagem` — punha `lava: 180` com 2/10 passivos e ganhava nível 190,
+    // com 1,76× de impacto em skill. Agora `calcularProgressao` e
+    // `podeInvestir` concordam sobre a mesma ficha.
+    const burlada = criarPersonagem('burlada');
+    burlada.elementos = { fogo: 10, terra: 10, lava: 180 };
+    const prog = calcularProgressao(burlada);
+    expect(prog.cascata.destravados.has('lava')).toBe(false);
+    expect(podeInvestir(burlada, 'lava').ok).toBe(false);
+    // nível = min(componentes) só, sem os 180 ilegais
+    expect(prog.niveisEfetivos.lava).toBe(10);
+
+    // e a ficha LEGÍTIMA continua expressando o direto
+    const legitima = criarPersonagem('legitima');
+    legitima.elementos = { fogo: 50, terra: 50 };
+    const antes = calcularProgressao(legitima).niveisEfetivos.lava;
+    legitima.elementos.lava = 5;
+    expect(calcularProgressao(legitima).niveisEfetivos.lava).toBe(antes + 5);
+  });
+
+  it('a API cobra ORÇAMENTO por geração, igual à UI — a camada dos agentes não fica de fora', () => {
+    const p = criarPersonagem('agente');
+    p.elementos = { fogo: 50, agua: 50, vapor: 10 };
+    const ficha = analisarFicha(p);
+    expect(ficha.pontos.elementos).toBe(custoDeAlocacao(p.elementos).total);
+    expect(ficha.pontos.elementos).toBe(50 + 50 + 10 * CUSTO_PONTO_ALOCACAO[2]);
   });
 
   it('derivado NUNCA tem nível efetivo sem a receita atendida, mesmo com ponto direto', () => {

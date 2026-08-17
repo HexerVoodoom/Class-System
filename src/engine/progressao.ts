@@ -115,6 +115,24 @@ export function calcularProgressao(p: Personagem): Progressao {
     }
   }
 
+  // 2b) cascata geracional — a segunda contabilidade (destraves e alimento da
+  //     geração seguinte). Calculada ANTES dos passos 3/4 porque o ponto
+  //     direto num derivado só pode ser EXPRESSO se aquele derivado estiver
+  //     destravado: sem isso, uma ficha montada à mão (CLI `--ficha`, import
+  //     de build, localStorage, agente escrevendo `Personagem`) punha
+  //     `lava: 180` com 2/10 passivos e ganhava nível 190 — 1,76× de impacto
+  //     em skill e 1,88× em evocação, com `podeInvestir` respondendo "não"
+  //     sobre a MESMA ficha. A regra tem que viver no modelo, não só no
+  //     mutador. Puro, podado, sem realimentação (só lê `p.elementos`).
+  const reducaoDivisor = somaEfeitos(p, (e, r) =>
+    e.tipo === 'cascata_divisor_reducao' ? e.valorPorRank * r : 0,
+  );
+  const cascata = calcularCascata(p.elementos, { reducaoDivisor });
+  const alocaveis = elementosAlocaveis(cascata);
+  /** Ponto direto só conta se o elemento estiver destravado de verdade. */
+  const diretoValido = (id: ElementoId): number =>
+    cascata.destravados.has(id) ? diretosDerivados[id] ?? 0 : 0;
+
   // 3) derivados: exigem todos os componentes no mínimo da receita;
   //    nível = menor nível efetivo entre os componentes (evolução conjunta).
   for (const def of Object.values(ELEMENTOS)) {
@@ -124,7 +142,7 @@ export function calcularProgressao(p: Personagem): Progressao {
       (c) => niveis[c.elemento] >= Math.max(1, c.nivelMinimo - reducaoMinimoReceita),
     );
     niveis[def.id] = atendeMinimos
-      ? Math.min(...niveisComponentes) + bonusNivelDerivado + (diretosDerivados[def.id] ?? 0)
+      ? Math.min(...niveisComponentes) + bonusNivelDerivado + diretoValido(def.id)
       : 0;
   }
 
@@ -146,17 +164,10 @@ export function calcularProgressao(p: Personagem): Progressao {
       if (n < menor) menor = n;
     }
     if (!atende) continue;
-    niveis[info.id] = menor + bonusNivelDerivado + (diretosDerivados[info.id] ?? 0);
+    niveis[info.id] = menor + bonusNivelDerivado + diretoValido(info.id);
     combinacoesLiberadas.push(info);
   }
 
-  // 4b) cascata geracional — a segunda contabilidade (destraves e alimento
-  //     da geração seguinte). Puro, podado, sem realimentação.
-  const reducaoDivisor = somaEfeitos(p, (e, r) =>
-    e.tipo === 'cascata_divisor_reducao' ? e.valorPorRank * r : 0,
-  );
-  const cascata = calcularCascata(p.elementos, { reducaoDivisor });
-  const alocaveis = elementosAlocaveis(cascata);
 
   // 5) arquétipos
   const arquetipos: ArquetipoDef[] = [];

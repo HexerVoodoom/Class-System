@@ -45,6 +45,7 @@ import { TALENTOS, type TalentoId } from '../registry/talentos';
 import { PROFISSOES, PROPRIEDADES_ITEM, ITENS_BASE } from '../registry/profissoes';
 import { MODIFICADORES, ROTULO_TAG, type ModificadorId } from '../registry/modificadores';
 import { CRIATURAS } from '../registry/criaturas';
+import { custoDeAlocacao } from '../engine/cascata';
 import { calcularProgressao, type Progressao } from '../engine/progressao';
 import { criarPersonagem, type Personagem } from '../engine/personagem';
 import {
@@ -281,13 +282,16 @@ export function analisarFicha(p: Personagem, limiteDerivados = 40): AnaliseFicha
   return {
     nome: p.nome,
     pontos: {
-      elementos: totalDePontos(p.elementos),
+      // ORÇAMENTO, não soma crua: ponto direto em derivado custa mais (a UI
+      // já cobrava; esta é a camada que os AGENTES consomem, e sem isso um
+      // agente montava 1,76x de impacto pelo mesmo "custo" declarado).
+      elementos: custoDeAlocacao(p.elementos).total,
       escolas: totalDePontos(p.escolas),
       recursos: totalDePontos(p.recursos),
       talentos: totalDePontos(p.talentos),
       profissoes: totalDePontos(p.profissoes),
       total:
-        totalDePontos(p.elementos) +
+        custoDeAlocacao(p.elementos).total +
         totalDePontos(p.escolas) +
         totalDePontos(p.recursos) +
         totalDePontos(p.talentos) +
