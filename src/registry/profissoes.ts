@@ -382,4 +382,19 @@ export const MATERIAIS_CRIATURA: Record<FamiliaCriatura, MaterialCriaturaDef> = 
     propriedade: { nome: 'Dracônica', descricao: 'A cobiça dos reis: resistência elemental lendária.', categorias: ['arma', 'armadura', 'acessorio'], bonusQualidade: 14 },
     qualidadePorPoder: 0.28,
   },
+  gigante: {
+    familia: 'gigante', material: 'Ossatura Colossal',
+    propriedade: { nome: 'Descomunal', descricao: 'Peso e alcance fora da escala: golpes mais pesados.', categorias: ['arma', 'armadura'], bonusQualidade: 10 },
+    qualidadePorPoder: 0.24,
+  },
+  geleia: {
+    familia: 'geleia', material: 'Gel Reativo',
+    propriedade: { nome: 'Absorvente', descricao: 'Amortece impacto ao se deformar sob o golpe.', categorias: ['armadura', 'acessorio'], bonusQualidade: 6 },
+    qualidadePorPoder: 0.17,
+  },
+  humanoide: {
+    familia: 'humanoide', material: 'Couro Curtido',
+    propriedade: { nome: 'Versátil', descricao: 'Trabalhado por mãos hábeis: encaixe confortável em qualquer peça.', categorias: ['arma', 'armadura', 'acessorio'], bonusQualidade: 5 },
+    qualidadePorPoder: 0.14,
+  },
 };
