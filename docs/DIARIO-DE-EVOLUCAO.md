@@ -415,3 +415,24 @@ laboratório consumiam via extração tsx ad-hoc.
   `vida` batia qualquer build (1,385× a quádrupla honesta) **sem destravar
   nada**, por fora do gate novo. Limiar derivado: `razao × (1+bonus) ≤
   1/aridade` → `valorPorRank: 0.25 → 0.08` (3 ranks = 0,24).
+
+### Rodada 3.3 — QA nº 2: a armadilha de retrancar
+
+- **A UI cobrava por um ponto que o jogador não tinha mais como devolver.**
+  Cenário medido no simulador real (Playwright): `+50 fogo`, `+50 terra`
+  destravam a lava → `+` na lava (1 ponto, 2 de orçamento) → remover 1 ponto
+  do fogo RETRANCA a lava. O ponto direto continuava na ficha cobrando
+  orçamento (101/200), a lava sumia da tabela — que renderizava só
+  `prog.alocaveis` — e o detalhe só mostrava controles no ramo destravado.
+  Não restava **nenhum `−` na tela**: com o botão `+10`, 20 pts queimados,
+  recuperáveis só pelo "Resetar", que apaga a build inteira.
+- Correção: **investir tem porteiro, devolver não.** `desinvestirElemento`
+  (motor, com validação de não-negativo) é a única porta de saída; a tabela
+  lista `alocaveis` ∪ {derivados com ponto direto} e mostra o travado só com
+  `−` e o selo "travado · Npt"; o detalhe mostra os controles de devolução
+  sempre que sobrou ponto direto. A UI parou de escrever em `p.elementos` por
+  fora (`decrementar` era um mutador anônimo que não sabia da regra).
+- Medição depois: retrancado, a linha continua na tabela sem `+`, o `−`
+  devolve o ponto e a conta volta de 101 para 99. Regressão em
+  `tests/regressoes.test.ts` — e ela morre se `desinvestirElemento` voltar a
+  consultar `podeInvestir` (verificado por mutação).

@@ -51,6 +51,7 @@ import { ARQUETIPOS } from '../registry/arquetipos';
 import {
   criarPersonagem,
   investirElemento,
+  desinvestirElemento,
   investirEscola,
   investirRecurso,
   investirTalento,
@@ -999,10 +1000,20 @@ function renderPainelInvestir(prog: Progressao): void {
   // quádrupla). NÃO pode ser `elementosBase()` fixo: um par destravado ficaria
   // sem lugar para receber o ponto direto que a regra concede, e a UI estaria
   // reimplementando o teste de destrave por omissão. Quem decide é o motor.
-  const investiveis = prog.alocaveis
+  //
+  // A tabela lista `alocaveis` ∪ {derivados que JÁ TÊM ponto direto}. A união
+  // não é detalhe: com só `alocaveis`, quem investisse num par destravado e
+  // depois baixasse um componente via "−" via o par RETRANCAR, sumir da lista
+  // e continuar cobrando orçamento — sem nenhum "−" na tela para recuperar o
+  // ponto (com o "+10", 20 pts irrecuperáveis a não ser pelo "Resetar", que
+  // apaga a build inteira). Investir depende do destrave; devolver, nunca.
+  const comPontoDireto = (Object.keys(p.elementos) as ElementoId[])
+    .filter((id) => (p.elementos[id] ?? 0) > 0 && !prog.alocaveis.includes(id));
+  const investiveis = [...prog.alocaveis, ...comPontoDireto]
     .map((id) => elementoDef(id))
     .filter((def): def is ElementoDef => Boolean(def))
     .filter((def) => !filtro || norm(def.nome).includes(filtro) || norm(def.id).includes(filtro));
+  const travados = new Set(comPontoDireto);
 
   const conta = document.getElementById('conta-investidos');
   if (conta) {
@@ -1026,10 +1037,19 @@ function renderPainelInvestir(prog: Progressao): void {
       const aridade = Math.min(4, Math.max(1, aridadeDe(def.id))) as Aridade;
       // derivado destravado: mostra a geração e o custo por ponto, para o
       // jogador entender por que aquele "+" gasta mais que o de uma base
+      const travado = travados.has(id);
       const selo = def.tipo === 'base'
         ? ''
-        : ` <span class="pi-selo" title="Destravado pela cascata: cada ponto custa ${CUSTO_PONTO_ALOCACAO[aridade]} de orçamento">gen ${aridade} · ${CUSTO_PONTO_ALOCACAO[aridade]}pt</span>`;
-      return `<div class="pi-linha${selecionada}" data-linha-elemento="${def.id}">
+        : travado
+          ? ` <span class="pi-selo pi-selo-travado" title="A cascata retrancou este elemento: os pontos diretos que ficaram continuam custando ${CUSTO_PONTO_ALOCACAO[aridade]} cada. Remova-os aqui ou reponha os componentes para destravar de novo.">travado · ${CUSTO_PONTO_ALOCACAO[aridade]}pt</span>`
+          : ` <span class="pi-selo" title="Destravado pela cascata: cada ponto custa ${CUSTO_PONTO_ALOCACAO[aridade]} de orçamento">gen ${aridade} · ${CUSTO_PONTO_ALOCACAO[aridade]}pt</span>`;
+      // travado: só o "−". O "+" some porque o motor recusaria o ponto — mas a
+      // devolução tem de continuar ao alcance de um clique.
+      const mais = travado
+        ? ''
+        : `<button type="button" data-acao="inc-elemento" data-id="${def.id}"
+            aria-label="Adicionar ponto em ${esc(def.nome)}">+</button>`;
+      return `<div class="pi-linha${selecionada}${travado ? ' pi-travado' : ''}" data-linha-elemento="${def.id}">
         ${sig(def.id, 'sig-mini')}
         <div>
           <div class="pi-nome">${esc(def.nome)}${selo}</div>
@@ -1041,8 +1061,7 @@ function renderPainelInvestir(prog: Progressao): void {
           <button type="button" data-acao="dec-elemento" data-id="${def.id}"
             aria-label="Remover ponto de ${esc(def.nome)}"${direto <= 0 ? ' disabled' : ''}>−</button>
           <span class="valor num">${direto}</span>
-          <button type="button" data-acao="inc-elemento" data-id="${def.id}"
-            aria-label="Adicionar ponto em ${esc(def.nome)}">+</button>
+          ${mais}
         </div>
       </div>`;
     })
@@ -1095,9 +1114,25 @@ function renderDetalheElemento(prog: Progressao): void {
   const custoPonto = CUSTO_PONTO_ALOCACAO[aridade];
   const nuncaDestrava = def.cascata?.destravavel === false;
 
+  // Pontos diretos que sobraram num elemento TRAVADO (o jogador investiu com
+  // ele destravado e depois baixou um componente, retrancando-o) continuam
+  // custando orçamento. Sem estes controles, o único caminho de volta era
+  // "Resetar" — devolver ponto não pode depender do destrave.
+  const controlesDevolucao = diretos > 0
+    ? `<div>${diretos === 1
+          ? 'Restou <strong class="num">1</strong> ponto direto'
+          : `Restaram <strong class="num">${diretos}</strong> pontos diretos`} de quando estava destravado
+        <span class="conta">· ainda custa${diretos === 1 ? ` ${custoPonto} de orçamento` : `m ${custoPonto} de orçamento cada`}</span></div>
+      <div class="controles">
+        <button type="button" data-acao="dec-elemento" data-id="${def.id}" aria-label="Remover ponto">−</button>
+        <span class="valor num">${diretos}</span>
+        <button type="button" data-acao="dec-elemento" data-id="${def.id}" data-passo="10" aria-label="Remover dez pontos">−10</button>
+      </div>`
+    : '';
+
   let ledger: string;
   if (nuncaDestrava) {
-    ledger = `<div class="desc">Receita ampla: nunca aceita pontos diretos — evolui só pela cascata dos componentes.</div>`;
+    ledger = `<div class="desc">Receita ampla: nunca aceita pontos diretos — evolui só pela cascata dos componentes.</div>${controlesDevolucao}`;
   } else if (destravado) {
     ledger = `<div>Cascata <strong class="num">${passivos}</strong> passivos + <strong class="num">${diretos}</strong> diretos
       <span class="conta">· ponto direto custa ${custoPonto} de orçamento</span></div>
@@ -1106,6 +1141,7 @@ function renderDetalheElemento(prog: Progressao): void {
         <span class="valor num">${diretos}</span>
         <button type="button" data-acao="inc-elemento" data-id="${def.id}" aria-label="Adicionar ponto">+</button>
         <button type="button" data-acao="inc-elemento" data-id="${def.id}" data-passo="10" aria-label="Adicionar dez pontos">+10</button>
+        <button type="button" data-acao="dec-elemento" data-id="${def.id}" data-passo="10" aria-label="Remover dez pontos"${diretos <= 0 ? ' disabled' : ''}>−10</button>
       </div>`;
   } else {
     const limiar = progresso?.limiar ?? LIMIAR_DESTRAVAMENTO[aridade];
@@ -1115,7 +1151,8 @@ function renderDetalheElemento(prog: Progressao): void {
     ledger = `<div class="perfil-linha"><span>Destrave da alocação direta</span>
       <div class="barra ${passivos >= limiar ? 'cheia' : ''}"><i style="width:${pct(fracao)}"></i></div>
       <span class="num">${passivos}/${limiar}</span></div>
-      <div class="desc">A cada ${DIVISOR_CASCATA[aridade]} pontos DIRETOS em CADA componente, +1 ponto passivo aqui (transbordo de sinergia e nível de receita NÃO contam). Com ${limiar} passivos (≈${marcoOrcamento} de orçamento nas bases), este elemento passa a aceitar pontos diretos.</div>`;
+      <div class="desc">A cada ${DIVISOR_CASCATA[aridade]} pontos DIRETOS em CADA componente, +1 ponto passivo aqui (transbordo de sinergia e nível de receita NÃO contam). Com ${limiar} passivos (≈${marcoOrcamento} de orçamento nas bases), este elemento passa a aceitar pontos diretos.</div>
+      ${controlesDevolucao}`;
   }
 
   alvo.innerHTML = `<div class="talento-detalhe detalhe-com-sig">
@@ -2431,7 +2468,16 @@ document.addEventListener('click', (ev) => {
         return;
       }
       case 'inc-elemento': investirElemento(p, id, Number(alvo.dataset.passo ?? 1)); break;
-      case 'dec-elemento': decrementar(p.elementos, id); break;
+      case 'dec-elemento': {
+        // pelo MOTOR (`desinvestirElemento`), nunca escrevendo em `p.elementos`
+        // por fora: é o único lugar que sabe que zerar remove a chave. O passo
+        // é limitado ao que existe para o botão "−10" nunca virar erro.
+        const atual = p.elementos[id as ElementoId] ?? 0;
+        if (atual > 0) {
+          desinvestirElemento(p, id as ElementoId, Math.min(Number(alvo.dataset.passo ?? 1), atual));
+        }
+        break;
+      }
       case 'inc-escola': investirEscola(p, id as EscolaId, 1); break;
       case 'dec-escola': decrementar(p.escolas, id); break;
       case 'inc-recurso': investirRecurso(p, id as RecursoId, 1); break;
