@@ -664,3 +664,61 @@ export function buscarCombinacoes(termo: string, limite = 40): CombinacaoInfo[] 
   }
   return saida;
 }
+
+// ---------------------------------------------------------------------------
+// Parentesco de CASCATA — quem alimenta quem na alocação geracional.
+//
+// DAG estrito por aridade (pais têm sempre aridade N−1), portanto sem ciclos
+// e resolvível numa única passada em aridade crescente:
+//
+//   par {a,b}         → [a, b]                       (2 bases)
+//   tripla {a,b,c}    → [ab, ac, bc]                 (3 pares curados)
+//   quádrupla {a..d}  → [abc, abd, acd, bcd]         (4 triplas enumeradas)
+//
+// Elementos com `cascata.pais` declarado (os especiais de receita ampla) usam
+// a declaração — exceção no registro, nunca `if` por id aqui.
+// ---------------------------------------------------------------------------
+
+/** chave "a+b" ordenada → id do par curado (os 136 vivem em ELEMENTOS). */
+const PAR_POR_CHAVE = new Map<string, ElementoId>(
+  Object.values(ELEMENTOS)
+    .filter((d) => d.receita?.length === 2)
+    .map((d) => [chaveCombinacao(d.receita!.map((c) => c.elemento)), d.id]),
+);
+
+const CACHE_PAIS = new Map<ElementoId, ElementoId[]>();
+
+/** Sub-combinações de tamanho N−1 de uma lista ordenada de componentes. */
+function subCombinacoes(comps: ElementoBaseId[]): ElementoBaseId[][] {
+  return comps.map((_, i) => comps.filter((__, j) => j !== i));
+}
+
+/**
+ * Pais de cascata de QUALQUER elemento (base → [], par → bases, tripla →
+ * pares, quádrupla → triplas; especiais → a declaração do registro).
+ * Cacheado por id; devolve sempre ids de aridade estritamente menor.
+ */
+export function paisDeCascata(id: ElementoId): ElementoId[] {
+  const cache = CACHE_PAIS.get(id);
+  if (cache) return cache;
+
+  const def = elementoDef(id);
+  const declarados = def?.cascata?.pais;
+  const receita = def?.receita?.map((c) => c.elemento) ?? [];
+  let pais: ElementoId[];
+  if (declarados) {
+    pais = [...declarados];
+  } else if (receita.length <= 1) {
+    pais = [];
+  } else if (receita.length === 2) {
+    pais = [...receita];
+  } else {
+    const comps = ordenarComponentes(receita);
+    pais = subCombinacoes(comps).map((sub) => {
+      if (sub.length === 2) return PAR_POR_CHAVE.get(chaveCombinacao(sub))!;
+      return combinacaoInfoPorComponentes(sub)!.id;
+    });
+  }
+  CACHE_PAIS.set(id, pais);
+  return pais;
+}

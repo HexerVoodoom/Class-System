@@ -323,3 +323,74 @@ profissões) e a seção "Para programas e agentes". Simulador regenerado.
 | Testes | 162 | **201** |
 | Bugs de correção encontrados e corrigidos | — | **6** |
 | Talentos alcançáveis pela interface | 42 | **65** |
+
+---
+
+## Rodada 3 — Alocação geracional (ago/2026)
+
+Pedido do dono: ponto direto nasce restrito aos 17 elementos base; investir nos
+dois pais de um par rende pontos PASSIVOS no par (5 fogo + 5 água → 1 vapor);
+um derivado com 10 passivos DESTRAVA a alocação direta; triplas e quádruplas
+seguem a mesma escada com os pais de aridade N−1; gerações altas pesam mais.
+
+Decisões de arquitetura (plano do arquiteto-de-sistema, implementado na íntegra):
+
+- **Duas contabilidades, não uma.** `niveisEfetivos` continua medindo o que a
+  ficha expressa (skills/arquétipos/evocação intocados); a CASCATA
+  (`engine/cascata.ts`) mede o que virou parte da ficha — e é ela que decide
+  destrave e alimento da geração seguinte. Substituir uma pela outra derrubava
+  Lava de nível 12 para 2 e recalibrava o sistema inteiro.
+- **Peso de geração é CUSTO, não multiplicador.** A potência por aridade já
+  existia (`fatorPotencia` + compensação de aridade nas skills);
+  `CUSTO_PONTO_ALOCACAO` {1,3,10,30} redistribui o orçamento em vez de
+  multiplicá-lo. `pesoDiretoNaCascata = custo/custoCascataEquivalente` fecha a
+  arbitragem de "destravar e despejar" por construção — 1 ponto de orçamento
+  compra o MESMO progresso de cascata onde for gasto (teste de não-arbitragem).
+- **Exceção no registro, não no motor**: os especiais (primordial/ciclo/nulo)
+  declaram `cascata: { pais, divisor: 20, destravavel: false }` no próprio
+  `ElementoDef`.
+- Ponto direto em derivado só EXPRESSA com a receita atendida (impossível na
+  prática — o destrave exige 5× o mínimo — mas o invariante "derivado nunca
+  existe abaixo do piso" continua verdadeiro e testado).
+- Constantes em `registry/geracoes.ts`; parentesco (`paisDeCascata`, DAG
+  estrito por aridade) em `combinacoes.ts`; gancho de talento
+  `cascata_divisor_reducao` declarado (nenhum talento usa ainda).
+- UI: o detalhe do elemento derivado ganhou o ledger (passivos + diretos,
+  barra de destrave, custo por ponto) e controles que só aparecem destravados.
+  A UI LÊ `prog.cascata`/`prog.alocaveis` — nunca recalcula a regra.
+
+Marcos de custo (travados em `tests/cascata.test.ts`): 1 ponto gen-2 por
+cascata = 10 de orçamento · destravar gen-2 = 100 · gen-3 = 60/360 · gen-4 =
+240/960 · com 1200 pontos não existem duas quádruplas destravadas disjuntas.
+
+Testes: 204 → 225 (21 novos de cascata; 1 antigo atualizado para a regra nova).
+
+### Rodada 3.1 — Auditoria adversarial da cascata (mesmo dia)
+
+O supervisor-de-balanceamento devolveu 9 achados verificados; correções:
+
+- **Crítico**: o medidor de orçamento da UI somava pontos crus — build
+  degenerada de 1,77× via pontos diretos "grátis". `pontosAtributosGastos`
+  agora cobra `custoDeAlocacao`; orçamento default sai de `ORCAMENTO_POR_TIER`.
+- **Dominância estrita**: com custo {1,3,10,30} o ponto direto era sempre a
+  pior compra (1,5×/3,3×/7,5× vs subir os pais) — prêmio de destrave morto.
+  Custo agora em PARIDADE com os pais {1,2,3,4}; o peso econômico da geração
+  vive no marco do destrave (100/360/960).
+- **Invariante de aridade**: `FRACAO_BONUS_ARIDADE` 0.3→0.38 — a razão
+  especializar/combinar fecha ≤1,20 em toda a curva de orçamento (antes
+  estourava a 1,28–1,34 nos tiers 4–7).
+- **Pressa do tempo**: `BONUS_PRESSA_TETO` 0.35→0.12 (spread real entre
+  builds era 1,79× contra o 1,35× declarado).
+- **Teste de não-arbitragem** era identidade algébrica (passava com qualquer
+  constante); substituído por marco MEDIDO (rota "pares+diretos" ≥ bases).
+- **Alvo das quádruplas** reescrito para a verdade medida: a 1200, duas
+  disjuntas são impossíveis; a família de 5 bases destrava as 5 irmãs.
+- Gancho `cascata_divisor_reducao` restrito à gen-2 (compunha pela cadeia:
+  1 rank derrubava o marco da quádrupla em 60%).
+- Ledger: destrave agora explica que transbordo/receita não contam e mostra
+  o custo do marco em orçamento.
+
+E o **taxonomy.json virou v2**: além de elementos/famílias, exporta
+geracoes (diais da cascata), fatorPotencia, escolas, recursos, profissões,
+talentos e criaturas — o contrato de máquina único que o Soulmon e o
+laboratório consumiam via extração tsx ad-hoc.

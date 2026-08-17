@@ -15,6 +15,7 @@ import {
   type ElementoId,
 } from '../registry/elementos';
 import { TODAS_COMBINACOES, type CombinacaoInfo } from '../registry/combinacoes';
+import { calcularCascata, elementosAlocaveis, type Cascata } from './cascata';
 import { ARQUETIPOS, type ArquetipoDef } from '../registry/arquetipos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
 import type { Personagem } from './personagem';
@@ -47,6 +48,14 @@ export interface Progressao {
    * 3.060 possíveis. Só o que a ficha realmente alcançou é materializado.
    */
   combinacoesLiberadas: CombinacaoInfo[];
+  /**
+   * A contabilidade da ALOCAÇÃO GERACIONAL: pontos passivos por cascata,
+   * destravamentos e o que alimenta a geração seguinte. NÃO substitui
+   * `niveisEfetivos` — mede outra coisa (ver `engine/cascata.ts`).
+   */
+  cascata: Cascata;
+  /** Atalho para a UI: ids que aceitam ponto direto AGORA. */
+  alocaveis: ElementoId[];
   arquetipos: ArquetipoDef[];
   capacidades: Set<string>;
   /**
@@ -85,9 +94,14 @@ export function calcularProgressao(p: Personagem): Progressao {
     e.tipo === 'propriedade' && e.chave === 'transbordo_bonus' ? e.valorPorRank * r : 0,
   );
 
-  // 1) pontos diretos
+  // 1) pontos diretos — SÓ as bases entram direto em `niveis`. Diretos em
+  //    derivados (alocação geracional destravada) somam nos passos 3/4,
+  //    ATRÁS da receita atendida; escrever aqui quebraria a guarda do passo 4
+  //    e deixaria derivado existir sem os componentes.
+  const diretosDerivados: Partial<Record<ElementoId, number>> = {};
   for (const [id, pontos] of Object.entries(p.elementos) as [ElementoId, number][]) {
-    niveis[id] += pontos;
+    if (ELEMENTOS[id]?.tipo === 'base') niveis[id] += pontos;
+    else diretosDerivados[id] = pontos;
   }
 
   // 2) transbordo de sinergias (a partir dos pontos diretos)
@@ -110,7 +124,7 @@ export function calcularProgressao(p: Personagem): Progressao {
       (c) => niveis[c.elemento] >= Math.max(1, c.nivelMinimo - reducaoMinimoReceita),
     );
     niveis[def.id] = atendeMinimos
-      ? Math.min(...niveisComponentes) + bonusNivelDerivado
+      ? Math.min(...niveisComponentes) + bonusNivelDerivado + (diretosDerivados[def.id] ?? 0)
       : 0;
   }
 
@@ -132,9 +146,17 @@ export function calcularProgressao(p: Personagem): Progressao {
       if (n < menor) menor = n;
     }
     if (!atende) continue;
-    niveis[info.id] = menor + bonusNivelDerivado;
+    niveis[info.id] = menor + bonusNivelDerivado + (diretosDerivados[info.id] ?? 0);
     combinacoesLiberadas.push(info);
   }
+
+  // 4b) cascata geracional — a segunda contabilidade (destraves e alimento
+  //     da geração seguinte). Puro, podado, sem realimentação.
+  const reducaoDivisor = somaEfeitos(p, (e, r) =>
+    e.tipo === 'cascata_divisor_reducao' ? e.valorPorRank * r : 0,
+  );
+  const cascata = calcularCascata(p.elementos, { reducaoDivisor });
+  const alocaveis = elementosAlocaveis(cascata);
 
   // 5) arquétipos
   const arquetipos: ArquetipoDef[] = [];
@@ -203,6 +225,8 @@ export function calcularProgressao(p: Personagem): Progressao {
     bonusNivelDerivado,
     elementosDisponiveis,
     combinacoesLiberadas,
+    cascata,
+    alocaveis,
     arquetipos,
     capacidades,
     capacidadesDiluidas,
