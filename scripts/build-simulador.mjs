@@ -15,7 +15,10 @@ const resultado = await build({
   entryPoints: [join(raiz, 'src/ui/app.ts')],
   bundle: true,
   format: 'iife',
-  minify: true,
+  // CS_DEBUG=1 gera bundle legível: sem isso, uma pilha de erro no navegador
+  // vira "at ea (simulador.html:937:511416)" e não aponta nada.
+  minify: !process.env.CS_DEBUG,
+  sourcemap: process.env.CS_DEBUG ? 'inline' : false,
   write: false,
   target: 'es2020',
 });

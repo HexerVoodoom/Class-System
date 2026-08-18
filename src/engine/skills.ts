@@ -26,12 +26,21 @@
 
 import { type ElementoBaseId, type ElementoId, type PerfilPesos } from '../registry/elementos';
 import {
+  ARIDADE_MAXIMA,
   aridadeDe,
   baseDominanteDe,
+  ehTemporal,
   efetividadeDe,
   elementoDef,
 } from '../registry/combinacoes';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
+import type {
+  AreaConfig,
+  EntregaConfig,
+  EvocacaoSkill,
+  FonteEnergia,
+  SkillConfig,
+} from '../registry/formatos';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
 import { CRIATURAS } from '../registry/criaturas';
@@ -53,58 +62,17 @@ import type { Personagem } from './personagem';
 import { PENALIDADE_CAPACIDADE_DILUIDA, type Progressao } from './progressao';
 
 /**
- * Fonte da evocação, usada só em skills de escola Evocação:
- *  - elemental: um elemental do próprio elemento da skill (padrão).
- *  - aleatoria: criatura qualquer; escala com Evocação, sem preparo.
- *  - capturada: uma criatura do bestiário, imbuída do elemento da skill.
+ * As formas de configuração moram em `registry/formatos.ts` — descrever uma
+ * skill é vocabulário de conteúdo, não de cálculo. Reexportadas aqui para
+ * quem já importava daqui não precisar mudar nada.
  */
-export interface EvocacaoSkill {
-  modo: ModoEvocacao;
-  criaturaId?: string;
-}
-
-export type AreaConfig =
-  | { tipo: 'unico' }
-  | { tipo: 'circulo'; raioMetros: number };
-
-export type EntregaConfig =
-  | { tipo: 'instantaneo' }
-  | { tipo: 'continuo'; duracaoSegundos: number };
-
-/** Uma fonte de energia da skill; proporções são relativas (normalizadas). */
-export interface FonteEnergia {
-  recurso: RecursoId;
-  proporcao: number;
-}
-
-export interface SkillConfig {
-  nome: string;
-  elemento: ElementoId;
-  escola: EscolaId;
-  /** Fontes de energia combinadas em proporções livres. */
-  fontes: FonteEnergia[];
-  /** Quanto de energia é investido; mais energia = mais resultado. */
-  energia: number;
-  /** Mais tempo de conjuração = mais resultado. */
-  tempoConjuracaoSegundos: number;
-  /** Distância de lançamento; limitada por talentos, encarece de leve. */
-  alcanceMetros: number;
-  area: AreaConfig;
-  entrega: EntregaConfig;
-  /** Capacidade de arquétipo exigida (ex.: 'evocar_demonios_mortos'). */
-  capacidadeExigida?: string;
-  /** Fonte da evocação (só relevante em escola Evocação; padrão: elemental). */
-  evocacao?: EvocacaoSkill;
-  /** Criatura montável usada como veículo desta skill (requer talento Montaria). */
-  montariaId?: string;
-  /** Afinidade elemental do alvo, para calcular efetividade (opcional). */
-  alvoElemento?: ElementoBaseId;
-  /**
-   * Modificadores de 2ª geração aplicados sobre esta skill (support gems).
-   * Cada um multiplica o custo e exige compatibilidade de tag.
-   */
-  modificadores?: ModificadorId[];
-}
+export type {
+  AreaConfig,
+  EntregaConfig,
+  EvocacaoSkill,
+  FonteEnergia,
+  SkillConfig,
+} from '../registry/formatos';
 
 export interface LimitesSkill {
   energiaMaxima: number;
@@ -189,6 +157,14 @@ const BONUS_POR_NIVEL_ELEMENTO = 0.04;
  * paga em largura — mais elementos disponíveis, mais arquétipos, mais fusões.
  * Com 0.30, uma quádrupla entrega ~95% do poder bruto da especialização pura
  * pelo mesmo investimento, e compra a largura com os 5% restantes.
+ *
+ * A compensação SATURA em `ARIDADE_MAXIMA`. Ela foi calibrada contra pares,
+ * triplas e quádruplas, que é onde o jogador constrói; extrapolá-la linearmente
+ * quebra nas receitas amplas escritas à mão. Medido no Nulo (17 componentes,
+ * nível 8): sem o teto, o bônus por nível ia a 0.232, o multiplicador de nível
+ * a 4.0, e a skill entregava ~2× a eficiência de qualquer preset de mesmo tempo
+ * de conjuração — com o MENOR nível efetivo da lista. Largura não pode comprar
+ * altura, que é a regra que o sistema inteiro sustenta.
  */
 // 0.3→0.38 (auditoria da cascata): com 0.3, a razão especializar/combinar
 // estourava o invariante de 25% exatamente nos orçamentos da curva nova
@@ -323,7 +299,7 @@ export function tagsDaSkill(cfg: SkillConfig): TagSkill[] {
   else tags.add('dano');
   // projétil: dano lançado à distância, seja flecha ou bola de fogo
   if (escola.entregaPadrao === 'dano' && cfg.alcanceMetros > 0) tags.add('projetil');
-  if (baseDominanteDe(cfg.elemento) === 'tempo') tags.add('temporal');
+  if (ehTemporal(cfg.elemento)) tags.add('temporal');
   if ((elementoDef(cfg.elemento)?.receita?.length ?? 0) > 0) tags.add('derivado');
   return [...tags];
 }
@@ -592,9 +568,11 @@ export function calcularSkill(
   }
   const multTempo = Math.sqrt(tempo); // 1s = 1.0; 4s = 2.0
   // cada nível de um derivado de N componentes representa N elementos no
-  // mesmo patamar — o bônus por nível escala com a aridade para compensar
+  // mesmo patamar — o bônus por nível escala com a aridade para compensar,
+  // saturando na aridade máxima construível (ver a nota em FRACAO_BONUS_ARIDADE)
+  const aridadeCompensada = Math.min(aridadeElemento, ARIDADE_MAXIMA);
   const bonusPorNivelElemento =
-    BONUS_POR_NIVEL_ELEMENTO * (1 + FRACAO_BONUS_ARIDADE * (aridadeElemento - 1));
+    BONUS_POR_NIVEL_ELEMENTO * (1 + FRACAO_BONUS_ARIDADE * (aridadeCompensada - 1));
   const multNivel =
     fatorPotencia *
     (1 + bonusPorNivelElemento * nivelElemento) *
@@ -614,8 +592,8 @@ export function calcularSkill(
   const multProficiencia = 1 + BONUS_IMPACTO_POR_PROFICIENCIA * prof;
   // pressa do Cronomante: elementos temporais aceleram a conjuração,
   // rendendo mais poder por segundo de cast (escala com o nível do elemento)
-  const ehTemporal = baseDominanteDe(cfg.elemento) === 'tempo';
-  const multPressa = ehTemporal
+  const temporal = ehTemporal(cfg.elemento);
+  const multPressa = temporal
     ? 1 + Math.min(BONUS_PRESSA_TETO, BONUS_PRESSA_POR_NIVEL * nivelElemento)
     : 1;
   const orcamento =
@@ -794,7 +772,7 @@ export function calcularSkill(
       valor: mods.multCusto,
     });
   }
-  if (ehTemporal && multPressa > 1) {
+  if (temporal && multPressa > 1) {
     propriedades.push({
       chave: 'pressa',
       rotulo: 'Pressa (Cronomante): conjuração acelerada',

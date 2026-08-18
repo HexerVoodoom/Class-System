@@ -5,7 +5,7 @@
  *
  * Cada elemento base declara contra quais elementos é FORTE (dano
  * amplificado) e FRACO (dano reduzido). Elementos derivados herdam a tabela
- * do primeiro componente da sua receita. Físico (vigor/marcial) é neutro.
+ * do primeiro componente da sua receita. Marcial é quase neutro: quem paga o preço de não ter elemento.
  */
 
 import { ELEMENTOS, type ElementoBaseId, type ElementoDef, type ElementoId } from './elementos';
@@ -23,26 +23,24 @@ export interface AfinidadeDef {
 export const AFINIDADES: Record<ElementoBaseId, AfinidadeDef> = {
   fogo: { forteContra: ['vida', 'terra'], fracoContra: ['agua'] },
   agua: { forteContra: ['fogo'], fracoContra: ['eletricidade', 'vida'] },
-  terra: { forteContra: ['eletricidade', 'som'], fracoContra: ['ar', 'fogo'] },
+  terra: { forteContra: ['eletricidade'], fracoContra: ['ar', 'fogo'] },
   ar: { forteContra: ['terra'], fracoContra: ['eletricidade'] },
   eletricidade: { forteContra: ['agua', 'ar'], fracoContra: ['terra'] },
-  arcano: { forteContra: ['vigor', 'marcial', 'tempo', 'espaco'], fracoContra: ['sombra'] },
+  // O arcano domina o físico e a própria trama; a sombra o engole.
+  arcano: { forteContra: ['marcial', 'vida', 'gravidade'], fracoContra: ['sombra'] },
   sombra: { forteContra: ['luz', 'arcano'], fracoContra: ['luz'] },
   luz: { forteContra: ['sombra', 'morte', 'vileza'], fracoContra: [] },
   vileza: { forteContra: ['vida'], fracoContra: ['luz'] },
   morte: { forteContra: ['vida'], fracoContra: ['luz'] },
-  vida: { forteContra: ['morte', 'vileza'], fracoContra: ['fogo', 'morte'] },
-  vigor: { forteContra: [], fracoContra: ['arcano', 'tempo'] },
-  marcial: { forteContra: [], fracoContra: ['arcano', 'tempo'] },
-  // Tempo desgasta a vida e supera o físico; o arcano o domina.
-  tempo: { forteContra: ['vida', 'vigor', 'marcial'], fracoContra: ['arcano', 'espaco'] },
-  // Som ressoa e estilhaça; a terra o absorve.
-  som: { forteContra: ['arcano', 'ar'], fracoContra: ['terra'] },
-  // Gravidade esmaga o físico e o voo; o espaço a curva.
-  gravidade: { forteContra: ['ar', 'vigor', 'marcial'], fracoContra: ['espaco'] },
-  // Espaço supera gravidade e tempo; o arcano o mapeia.
-  espaco: { forteContra: ['gravidade', 'tempo'], fracoContra: ['arcano'] },
+  // Vida absorveu o Vigor: continua forte contra o que apodrece, e agora
+  // carrega a fraqueza física ao arcano que era do Vigor.
+  vida: { forteContra: ['morte', 'vileza'], fracoContra: ['fogo', 'morte', 'arcano'] },
+  marcial: { forteContra: [], fracoContra: ['arcano', 'gravidade'] },
+  // Gravidade absorveu Espaço e Tempo: esmaga o físico e desgasta o vivo,
+  // e é o arcano que a dobra.
+  gravidade: { forteContra: ['marcial', 'vida'], fracoContra: ['arcano'] },
 };
+
 
 /**
  * Reduz uma DEFINIÇÃO de elemento ao seu base dominante. Trabalhar sobre a

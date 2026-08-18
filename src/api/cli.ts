@@ -23,9 +23,11 @@ import {
   diagnosticarFusao,
   diagnosticarSkill,
   explicarElemento,
+  explicarPreset,
   listarArquetipos,
   listarCombinacoes,
   listarModificadores,
+  listarPresets,
   listarTalentos,
   modificadoresPara,
   panorama,
@@ -96,7 +98,8 @@ CONSULTAS DO SISTEMA (não precisam de ficha)
   buscar <termo>                Busca em tudo: elementos, talentos, arquétipos…
   explicar <elemento>           Ficha técnica de um elemento (inclusive procedurais)
   integridade                   Verifica consistência interna do conteúdo
-  listar <o-que>                arquetipos | talentos | modificadores | combinacoes
+  listar <o-que>                arquetipos | talentos | modificadores | combinacoes | presets
+  preset <id>                   Ficha completa de uma classe pronta, já materializada
 
 CONSULTAS SOBRE UMA FICHA (--ficha arquivo.json, ou - para stdin)
   analisar                      O que esta ficha é hoje
@@ -203,6 +206,19 @@ export function executar(argv: string[]): number {
           case 'arquetipos': emitir(listarArquetipos(limite, offset), o); return 0;
           case 'talentos': emitir(listarTalentos(limite, offset), o); return 0;
           case 'modificadores': emitir(listarModificadores(limite, offset), o); return 0;
+          case 'presets':
+            emitir(
+              listarPresets(
+                {
+                  papel: o.papel ? String(o.papel) : undefined,
+                  complexidade: o.complexidade ? num(o, 'complexidade', 0) : undefined,
+                },
+                limite,
+                offset,
+              ),
+              o,
+            );
+            return 0;
           case 'combinacoes':
             emitir(
               listarCombinacoes({
@@ -219,6 +235,19 @@ export function executar(argv: string[]): number {
               'Liste um destes: arquetipos, talentos, modificadores, combinacoes.',
             );
         }
+      }
+
+      case 'preset': {
+        const id = resto[0];
+        if (!id) throw new Error('Informe a classe: `preset <id>`. Use `listar presets`.');
+        const r = explicarPreset(id);
+        if (!r) {
+          throw new Error(
+            `Preset "${id}" não existe. Use \`listar presets\` para ver os ids.`,
+          );
+        }
+        emitir(r, o);
+        return 0;
       }
 
       case 'analisar':

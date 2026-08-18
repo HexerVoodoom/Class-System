@@ -204,7 +204,8 @@ describe('sinergia de combate e montaria', () => {
   function domador(): ReturnType<typeof criarPersonagem> {
     const p = criarPersonagem('dom');
     investirElemento(p, 'vida', 12);
-    investirElemento(p, 'vigor', 12);
+    investirElemento(p, 'vida', 12);
+    investirElemento(p, 'marcial', 12);
     investirEscola(p, 'evocacao', 12);
     investirEscola(p, 'combate_fisico', 8);
     investirTalento(p, 'vinculo_primal', 1);
@@ -324,7 +325,8 @@ describe('evocação como skill (custo + cast + fonte)', () => {
 
   it('lançar montado amplifica a skill; só aceita fera montável', () => {
     const p = criarPersonagem('cavaleiro');
-    investirElemento(p, 'vigor', 12);
+    investirElemento(p, 'vida', 12);
+    investirElemento(p, 'marcial', 12);
     investirEscola(p, 'combate_fisico', 12);
     investirEscola(p, 'evocacao', 10);
     investirRecurso(p, 'furia', 6);

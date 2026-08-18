@@ -18,6 +18,8 @@ npm run cs -- panorama                       # o tamanho do sistema
 npm run cs -- buscar "vulcao"                # acha qualquer coisa por nome
 npm run cs -- explicar lava                  # ficha técnica de um elemento
 npm run cs -- listar arquetipos --limite 10
+npm run cs -- listar presets --papel suporte # classes prontas, filtráveis
+npm run cs -- preset necromante              # a ficha inteira de uma classe
 npm run cs -- integridade                    # consistência do conteúdo
 ```
 
@@ -48,7 +50,7 @@ Em TypeScript, o mesmo está em `src/api/consultas.ts` — importe de lá, não 
    capacidades, propriedades de item.
 3. Um **elemento derivado** existe quando todos os componentes da sua receita
    atingem o nível mínimo; o nível dele é o **menor** entre os componentes.
-4. Há **3.215 elementos alcançáveis**: 17 base, 136 pares, 680 triplas, 2.380
+4. Há **1.094 elementos alcançáveis**: 13 base, 78 pares, 286 triplas, 715
    quádruplas. Os pares são nomeados à mão; triplas e quádruplas são 64 curadas
    e ~3.000 **geradas sob demanda**.
 5. Uma **skill** é elemento + escola + fontes de energia + forma (energia,
@@ -98,6 +100,18 @@ Arquivos por assunto:
 | Quero mexer em | Arquivo |
 |---|---|
 | Elementos base, pares, sinergias | `registry/elementos.ts` |
+
+> **Vigor, Tempo, Espaço e Som não são bases.** Foram REBAIXADOS a pares de 2ª
+> geração — `vigor` = vida+marcial, `tempo` = gravidade+arcano, `espaco` =
+> gravidade+ar, `som` = ar+vida — quando a base caiu de 17 para 13. Continuam
+> existindo, com nível efetivo, arquétipos e skills próprios; só não aceitam
+> ponto direto. Uma ficha que quer Vigor 15 investe 15 em vida **e** 15 em
+> marcial. Os ids `maestria`, `vitalidade`, `lamina_viva`, `cronomancia`,
+> `singularidade`, `dilatacao`, `vacuo`, `estratosfera`, `dobra`, `alento`,
+> `estampido` e `melodia` **não existem mais**: diziam a mesma coisa que o
+> elemento que os engoliu.
+| Classes prontas (presets) | `registry/presets.ts` |
+| Formas de skill/fusão (tipos) | `registry/formatos.ts` |
 | Triplas e quádruplas | `registry/combinacoes.ts` (`CURADAS`) |
 | Modificadores de skill | `registry/modificadores.ts` |
 | Talentos | `registry/talentos.ts` |
@@ -109,6 +123,7 @@ Arquivos por assunto:
 | Cálculo de skill e constantes de balanceamento | `engine/skills.ts` |
 | Fusão | `engine/fusao.ts` |
 | Progressão, transbordo, arquétipos | `engine/progressao.ts` |
+| Montar e verificar uma classe pronta | `engine/presets.ts` |
 | Posição das estrelas no céu | `ui/ceu-layout.ts` |
 
 ---
@@ -178,10 +193,55 @@ aviso em `avisos`.
 
 ---
 
+### Classe pronta (`PresetDef`)
+
+Um preset é uma ficha inteira já distribuída, e o antídoto à tela em branco
+diante de 1.094 elementos. Mora em `registry/presets.ts` como **dado puro** —
+sem chamar `investir*`, sem importar do motor. Quem monta é
+`engine/presets.ts`.
+
+O campo `promete` é **contrato verificado**, não documentação:
+
+```ts
+{
+  id: 'vulcanologo',
+  nome: 'Vulcanólogo',
+  personagem: 'Ígnea, a Vulcanóloga',
+  descricao: 'Faz o terreno entrar em erupção e escurece o céu. Fogo + Terra + Ar.',
+  ensina: 'TRÊS elementos formam uma combinação — mais largura, não mais altura.',
+  papel: 'area', complexidade: 2,
+  elementos: { fogo: 18, terra: 18, ar: 18 },
+  escolas: { conjuracao: 14 },
+  recursos: { mana: 10 },
+  talentos: { area_ampliada: 3, sintonia_de_receita: 2 },
+  skill: { /* SkillConfig completo */ },
+  promete: { arquetipos: ['vulcanologo'], elementos: ['vulcao', 'lava', 'incendio'] },
+}
+```
+
+`verificarPreset` monta a ficha e confere: os arquétipos abrem mesmo? o elemento
+prometido existe? a skill é lançável por esta ficha? a fusão roda? Um preset que
+mente **falha `npm run cs -- integridade` e a suíte**. É isso que permite a lista
+crescer sem virar folclore.
+
+Ao adicionar um preset, o que costuma reprovar:
+
+- **Raio acima do teto.** `raioMaximo = 4 + 2 × ranks(area_ampliada)`. Uma skill
+  de raio 10 exige 3 ranks; sem eles a skill é inválida.
+- **Alcance acima do teto.** `alcanceMaximo = 20 + 5 × ranks(alcance_estendido)`.
+- **Promessa de elemento cujo mínimo de receita não é atingido.** Um par exige 10
+  em cada componente, uma tripla ~14–18, uma quádrupla ~18–22. Prometer
+  `singularidade` com arcano 10 falha: a receita pede 12.
+- **Fusão que degrada.** Se a combinação resultante não estiver desbloqueada, a
+  fusão cai para um elemento menor e avisa. Um preset que existe para ensinar
+  fusão não pode ensinar o caso degradado.
+
+---
+
 ## 6. Erros que agentes cometem neste sistema
 
 1. **Investir pontos num elemento derivado.** `investirElemento(p, 'lava', 12)`
-   lança erro. Derivados emergem; só os 17 base aceitam pontos.
+   lança erro. Derivados emergem; só os 13 base aceitam pontos.
 2. **Esquecer que o nível efetivo ≠ pontos diretos.** As sinergias de transbordo
    fazem investir em `vida` elevar `fogo`, `agua`, `terra`, `ar` e
    `eletricidade`. Use `calcularProgressao` ou `analisarFicha`, nunca leia

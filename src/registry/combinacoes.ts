@@ -116,13 +116,9 @@ export const LEXICO: Record<ElementoBaseId, LexicoElemento> = {
   luz: { adjetivo: { m: 'Radiante', f: 'Radiante' }, dominio: 'Aurora', genero: 'f' },
   vileza: { adjetivo: { m: 'Profano', f: 'Profana' }, dominio: 'Pacto', genero: 'f' },
   morte: { adjetivo: { m: 'Fúnebre', f: 'Fúnebre' }, dominio: 'Sepulcro', genero: 'f' },
-  vida: { adjetivo: { m: 'Vivaz', f: 'Vivaz' }, dominio: 'Seiva', genero: 'f' },
-  vigor: { adjetivo: { m: 'Bruto', f: 'Bruta' }, dominio: 'Ímpeto', genero: 'm' },
+  vida: { adjetivo: { m: 'Vivaz', f: 'Vivaz' }, dominio: 'Carne', genero: 'f' },
   marcial: { adjetivo: { m: 'Marcial', f: 'Marcial' }, dominio: 'Arte da Lâmina', genero: 'm' },
-  tempo: { adjetivo: { m: 'Eterno', f: 'Eterna' }, dominio: 'Era', genero: 'm' },
-  som: { adjetivo: { m: 'Sonoro', f: 'Sonora' }, dominio: 'Eco', genero: 'm' },
-  gravidade: { adjetivo: { m: 'Denso', f: 'Densa' }, dominio: 'Peso', genero: 'f' },
-  espaco: { adjetivo: { m: 'Sideral', f: 'Sideral' }, dominio: 'Vazio', genero: 'm' },
+  gravidade: { adjetivo: { m: 'Denso', f: 'Densa' }, dominio: 'Trama', genero: 'f' },
 };
 
 /**
@@ -364,83 +360,81 @@ const c = (
  */
 export const CURADAS: CombinacaoCurada[] = [
   // ---------------- triplas: os primais e o clima ----------------
-  c('vulcao', 'Vulcão', ['fogo', 'terra', 'ar'], 'A montanha que cospe fogo: erupção, cinza e céu escurecido.'),
-  c('geiser', 'Gêiser', ['fogo', 'agua', 'terra'], 'Pressão subterrânea: jatos escaldantes que irrompem do chão.'),
+  c('vulcao', 'Vulcão', ['ar', 'fogo', 'terra'], 'A montanha que cospe fogo: erupção, cinza e céu escurecido.'),
+  c('geiser', 'Gêiser', ['agua', 'fogo', 'terra'], 'Pressão subterrânea: jatos escaldantes que irrompem do chão.'),
   c('nevasca', 'Nevasca', ['agua', 'ar', 'terra'], 'Tempestade branca: congela, cega e enterra sob a neve.'),
   c('monsoes', 'Monção', ['agua', 'ar', 'vida'], 'A chuva que traz a estação: dilúvio que faz tudo brotar.'),
-  c('deserto', 'Deserto', ['fogo', 'terra', 'tempo'], 'A paciência da areia: tudo que entra seca e vira pó.'),
+  c('deserto', 'Deserto', ['arcano', 'fogo', 'gravidade', 'terra'], 'A paciência da areia: tudo que entra seca e vira pó.'),
   c('aurora_boreal', 'Aurora Boreal', ['ar', 'eletricidade', 'luz'], 'Cortina viva no céu: hipnotiza e recarrega quem olha.'),
-  c('relampago_seco', 'Relâmpago Seco', ['fogo', 'ar', 'eletricidade'], 'A tempestade sem chuva: incendeia o que atinge.'),
-  c('permafrost', 'Permafrost', ['agua', 'terra', 'tempo'], 'Gelo que nunca derreteu: prende o que toca em eras de imobilidade.'),
+  c('relampago_seco', 'Relâmpago Seco', ['ar', 'eletricidade', 'fogo'], 'A tempestade sem chuva: incendeia o que atinge.'),
+  c('permafrost', 'Permafrost', ['agua', 'arcano', 'gravidade', 'terra'], 'Gelo que nunca derreteu: prende o que toca em eras de imobilidade.'),
 
   // ---------------- triplas: o corpo e a lâmina ----------------
-  c('gladiador', 'Gladiador', ['marcial', 'vigor', 'som'], 'A arena encarnada: cada golpe é aplaudido e ecoa mais forte.'),
-  c('lamina_do_juizo', 'Lâmina do Juízo', ['marcial', 'luz', 'morte'], 'A espada que sentencia: corta o que já foi julgado culpado.'),
-  c('duelista_temporal', 'Duelista Temporal', ['marcial', 'tempo', 'ar'], 'O golpe que chega antes: aparar, prever e ferir fora de ordem.'),
-  c('punho_gravitico', 'Punho Gravítico', ['marcial', 'gravidade', 'vigor'], 'O soco que carrega um mundo: impacto que afunda o alvo no chão.'),
+  c('gladiador', 'Gladiador', ['marcial', 'vida', 'ar', 'terra'], 'A arena encarnada: cada golpe é aplaudido e ecoa mais forte.'),
+  c('lamina_do_juizo', 'Lâmina do Juízo', ['luz', 'marcial', 'morte'], 'A espada que sentencia: corta o que já foi julgado culpado.'),
+  c('duelista_temporal', 'Duelista Temporal', ['ar', 'arcano', 'gravidade', 'marcial'], 'O golpe que chega antes: aparar, prever e ferir fora de ordem.'),
+  c('punho_gravitico', 'Punho Gravítico', ['gravidade', 'marcial', 'vida'], 'O soco que carrega um mundo: impacto que afunda o alvo no chão.'),
   c('cacador_de_almas', 'Caçador de Almas', ['marcial', 'morte', 'sombra'], 'A lâmina que não corta a carne: colhe direto o que anima o corpo.'),
-  c('arauto', 'Arauto', ['marcial', 'som', 'luz'], 'Aquele que anuncia a batalha: o brado vale por um exército.'),
+  c('arauto', 'Arauto', ['ar', 'luz', 'marcial', 'vida'], 'Aquele que anuncia a batalha: o brado vale por um exército.'),
 
   // ---------------- triplas: as escolas do horror ----------------
-  c('peste_negra', 'Peste Negra', ['morte', 'vileza', 'agua'], 'A epidemia perfeita: viaja pela água e não deixa sobrevivente.'),
-  c('carniceiro', 'Carniceiro', ['vileza', 'vigor', 'morte'], 'Força sem freio: despedaça e se alimenta do que despedaçou.'),
-  c('ossario_vivo', 'Ossário Vivo', ['terra', 'morte', 'vida'], 'O cemitério que respira: os ossos brotam e caminham de novo.'),
-  c('coro_dos_afogados', 'Coro dos Afogados', ['agua', 'som', 'morte'], 'A canção que vem do fundo: quem escuta afunda junto.'),
-  c('sabbat', 'Sabá', ['vileza', 'arcano', 'sombra'], 'O círculo proibido: rituais que a realidade não deveria permitir.'),
+  c('peste_negra', 'Peste Negra', ['agua', 'morte', 'vileza'], 'A epidemia perfeita: viaja pela água e não deixa sobrevivente.'),
+  c('carniceiro', 'Carniceiro', ['marcial', 'morte', 'vida', 'vileza'], 'Força sem freio: despedaça e se alimenta do que despedaçou.'),
+  c('ossario_vivo', 'Ossário Vivo', ['morte', 'terra', 'vida'], 'O cemitério que respira: os ossos brotam e caminham de novo.'),
+  c('coro_dos_afogados', 'Coro dos Afogados', ['agua', 'ar', 'morte', 'vida'], 'A canção que vem do fundo: quem escuta afunda junto.'),
+  c('sabbat', 'Sabá', ['arcano', 'sombra', 'vileza'], 'O círculo proibido: rituais que a realidade não deveria permitir.'),
 
   // ---------------- triplas: a graça ----------------
-  c('milagre', 'Milagre', ['luz', 'vida', 'arcano'], 'O impossível concedido: reverte o que não deveria ter volta.'),
-  c('coral_celeste', 'Coral Celeste', ['som', 'luz', 'arcano'], 'Vozes em uníssono: bênção que se multiplica por quem canta.'),
-  c('jardim_eterno', 'Jardim Eterno', ['vida', 'tempo', 'terra'], 'O que foi plantado nunca murcha: cura que se recusa a expirar.'),
-  c('farol', 'Farol', ['luz', 'espaco', 'som'], 'O ponto fixo no caos: guia aliados de qualquer distância.'),
-  c('bencao_marcial', 'Bênção Marcial', ['luz', 'marcial', 'vigor'], 'Armas consagradas: a linha de frente que não recua.'),
+  c('milagre', 'Milagre', ['arcano', 'luz', 'vida'], 'O impossível concedido: reverte o que não deveria ter volta.'),
+  c('coral_celeste', 'Coral Celeste', ['ar', 'arcano', 'luz', 'vida'], 'Vozes em uníssono: bênção que se multiplica por quem canta.'),
+  c('jardim_eterno', 'Jardim Eterno', ['arcano', 'gravidade', 'terra', 'vida'], 'O que foi plantado nunca murcha: cura que se recusa a expirar.'),
+  c('farol', 'Farol', ['ar', 'gravidade', 'luz', 'vida'], 'O ponto fixo no caos: guia aliados de qualquer distância.'),
 
   // ---------------- triplas: o cosmos ----------------
-  c('supernova', 'Supernova', ['espaco', 'fogo', 'gravidade'], 'A morte de uma estrela: tudo num raio absurdo deixa de existir.'),
-  c('horizonte_de_eventos', 'Horizonte de Eventos', ['gravidade', 'espaco', 'sombra'], 'O ponto sem retorno: o que cruza não volta, nem a informação.'),
-  c('via_lactea', 'Via Láctea', ['espaco', 'luz', 'arcano'], 'O mapa das estrelas: poder retirado da própria posição do céu.'),
-  c('pulso_cosmico', 'Pulso Cósmico', ['espaco', 'som', 'eletricidade'], 'A batida do universo: onda que atravessa o vácuo e o corpo.'),
-  c('materia_escura', 'Matéria Escura', ['gravidade', 'sombra', 'arcano'], 'O que segura tudo e ninguém vê: massa invisível que puxa.'),
-  c('entropia_final', 'Entropia Final', ['tempo', 'morte', 'gravidade'], 'O fim marcado: tudo desacelera, esfria e para.'),
+  c('supernova', 'Supernova', ['ar', 'fogo', 'gravidade'], 'A morte de uma estrela: tudo num raio absurdo deixa de existir.'),
+  c('horizonte_de_eventos', 'Horizonte de Eventos', ['ar', 'gravidade', 'sombra'], 'O ponto sem retorno: o que cruza não volta, nem a informação.'),
+  c('via_lactea', 'Via Láctea', ['ar', 'arcano', 'gravidade', 'luz'], 'O mapa das estrelas: poder retirado da própria posição do céu.'),
+  c('pulso_cosmico', 'Pulso Cósmico', ['ar', 'eletricidade', 'gravidade', 'vida'], 'A batida do universo: onda que atravessa o vácuo e o corpo.'),
+  c('materia_escura', 'Matéria Escura', ['arcano', 'gravidade', 'sombra'], 'O que segura tudo e ninguém vê: massa invisível que puxa.'),
 
   // ---------------- triplas: mente e vontade ----------------
-  c('hipnose', 'Hipnose', ['som', 'arcano', 'sombra'], 'A voz que vira ordem: o alvo obedece achando que quis.'),
-  c('delirio', 'Delírio', ['vileza', 'som', 'arcano'], 'A realidade que não fecha: o alvo luta contra o que não existe.'),
-  c('memoria', 'Memória', ['tempo', 'arcano', 'luz'], 'O que já foi ainda é: recupera estados anteriores de aliados.'),
-  c('presagio', 'Presságio', ['tempo', 'sombra', 'espaco'], 'Ver o golpe antes dele partir: esquiva do que ainda não aconteceu.'),
+  c('hipnose', 'Hipnose', ['ar', 'arcano', 'sombra', 'vida'], 'A voz que vira ordem: o alvo obedece achando que quis.'),
+  c('delirio', 'Delírio', ['ar', 'arcano', 'vida', 'vileza'], 'A realidade que não fecha: o alvo luta contra o que não existe.'),
+  c('memoria', 'Memória', ['arcano', 'gravidade', 'luz'], 'O que já foi ainda é: recupera estados anteriores de aliados.'),
+  c('presagio', 'Presságio', ['ar', 'arcano', 'gravidade', 'sombra'], 'Ver o golpe antes dele partir: esquiva do que ainda não aconteceu.'),
 
   // ---------------- quádruplas: as grandes convergências ----------------
-  c('tempestade_perfeita', 'Tempestade Perfeita', ['agua', 'ar', 'eletricidade', 'som'],
+  c('tempestade_perfeita', 'Tempestade Perfeita', ['agua', 'ar', 'eletricidade', 'vida'],
     'Vento, água, raio e trovão na mesma frente: o clima vira arma de cerco.'),
-  c('cataclismo', 'Cataclismo', ['fogo', 'terra', 'gravidade', 'espaco'],
+  c('cataclismo', 'Cataclismo', ['ar', 'fogo', 'gravidade', 'terra'],
     'O impacto que reescreve o mapa: cratera, magma e céu partido.'),
-  c('juizo_final', 'Juízo Final', ['luz', 'morte', 'som', 'tempo'],
+  c('juizo_final', 'Juízo Final', ['luz', 'morte', 'gravidade', 'arcano'],
     'A trombeta e a sentença: o fim anunciado, cumprido no horário marcado.'),
-  c('senhor_da_praga', 'Senhor da Praga', ['agua', 'vileza', 'morte', 'vida'],
+  c('senhor_da_praga', 'Senhor da Praga', ['agua', 'morte', 'vida', 'vileza'],
     'A doença como jardim: o que mata também se reproduz e se espalha.'),
-  c('avatar_elemental', 'Avatar Elemental', ['fogo', 'agua', 'terra', 'ar'],
+  c('avatar_elemental', 'Avatar Elemental', ['agua', 'ar', 'fogo', 'terra'],
     'Os quatro clássicos num corpo só: o elementalista completo.', { fator: 1.55 }),
-  c('cavaleiro_absoluto', 'Cavaleiro Absoluto', ['marcial', 'vigor', 'luz', 'tempo'],
+  c('cavaleiro_absoluto', 'Cavaleiro Absoluto', ['marcial', 'vida', 'luz', 'gravidade'],
     'A técnica perfeita, consagrada e fora do tempo: nenhum golpe se perde.'),
-  c('arquiteto_da_realidade', 'Arquiteto da Realidade', ['arcano', 'espaco', 'tempo', 'gravidade'],
+  c('arquiteto_da_realidade', 'Arquiteto da Realidade', ['arcano', 'gravidade', 'ar', 'terra'],
     'As quatro alavancas da física: dobra o que existe onde e quando quiser.', { fator: 1.6, minimo: 20 }),
-  c('sinfonia_do_caos', 'Sinfonia do Caos', ['som', 'vileza', 'sombra', 'arcano'],
+  c('sinfonia_do_caos', 'Sinfonia do Caos', ['ar', 'vida', 'sombra', 'vileza'],
     'A orquestra errada de propósito: cada acorde desmonta uma certeza.'),
-  c('genesis', 'Gênese', ['vida', 'luz', 'terra', 'agua'],
+  c('genesis', 'Gênese', ['agua', 'luz', 'terra', 'vida'],
     'O primeiro dia: onde passa, o mundo começa de novo.'),
-  c('ragnarok', 'Ragnarök', ['fogo', 'morte', 'gravidade', 'tempo'],
+  c('ragnarok', 'Ragnarök', ['arcano', 'fogo', 'gravidade', 'morte'],
     'O crepúsculo dos deuses: fogo, fim, peso e a hora marcada.', { fator: 1.6, minimo: 20 }),
   c('leviata', 'Leviatã', ['agua', 'gravidade', 'morte', 'sombra'],
     'O que vive na fossa: pressão, escuridão e fome antigas.'),
-  c('titano_forjado', 'Titã Forjado', ['terra', 'fogo', 'marcial', 'vigor'],
+  c('titano_forjado', 'Titã Forjado', ['fogo', 'marcial', 'terra', 'vida'],
     'Nascido da bigorna: corpo de metal vivo que empunha a própria montanha.'),
-  c('sopro_do_dragao', 'Sopro do Dragão', ['fogo', 'ar', 'vigor', 'marcial'],
+  c('sopro_do_dragao', 'Sopro do Dragão', ['ar', 'fogo', 'marcial', 'vida'],
     'A herança dracônica: hálito incandescente e escamas que aparam lâminas.'),
-  c('ceifador_estelar', 'Ceifador Estelar', ['morte', 'espaco', 'marcial', 'sombra'],
+  c('ceifador_estelar', 'Ceifador Estelar', ['gravidade', 'marcial', 'morte', 'sombra'],
     'A foice que corta a distância: colhe do outro lado do vazio.'),
-  c('renascimento', 'Renascimento', ['vida', 'morte', 'tempo', 'luz'],
+  c('renascimento', 'Renascimento', ['gravidade', 'arcano', 'morte', 'vida'],
     'A roda completa e domada: morrer vira um passo do ciclo, não o fim.', { fator: 1.6 }),
-  c('vontade_absoluta', 'Vontade Absoluta', ['arcano', 'vigor', 'som', 'luz'],
+  c('vontade_absoluta', 'Vontade Absoluta', ['arcano', 'luz', 'marcial', 'vida'],
     'A convicção que se impõe ao real: o que você declara passa a valer.'),
 ];
 
@@ -561,6 +555,20 @@ export function elementoDef(id: ElementoId): ElementoDef | undefined {
  * `elementos.ts`, três e quatro passam pelo espaço enumerado aqui, e receitas
  * mais amplas (primordial, ciclo, nulo) caem no índice de curadas.
  */
+/**
+ * O elemento carrega TEMPO? Enquanto Tempo era base bastava comparar a base
+ * dominante; agora ele é o par Gravidade+Arcano, então a pergunta certa é se
+ * a receita contém os dois. Sem isto, a pressa do Cronomante e a tag
+ * `temporal` morreriam em silêncio na hora em que Tempo saiu da base.
+ */
+export function ehTemporal(id: ElementoId): boolean {
+  const def = elementoDef(id);
+  if (!def) return false;
+  if (def.id === 'tempo') return true;
+  const bases = new Set((def.receita ?? []).map((c) => c.elemento as string));
+  return bases.has('gravidade') && bases.has('arcano');
+}
+
 export function elementoDePorComponentes(comps: ElementoBaseId[]): ElementoDef | undefined {
   const unicos = ordenarComponentes([...new Set(comps)]);
   if (unicos.length === 0) return undefined;

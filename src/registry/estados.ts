@@ -66,7 +66,8 @@ export const ESTADOS_POR_ELEMENTO: Record<ElementoBaseId, EstadoId[]> = {
   fogo: ['queimadura'],
   agua: ['congelamento', 'lentidao'],
   terra: ['petrificacao', 'derrubada'],
-  ar: ['derrubada'],
+  // Ar herdou o atordoamento do Som, que virou o par Ar+Vida.
+  ar: ['derrubada', 'atordoamento'],
   eletricidade: ['choque'],
   arcano: ['silencio'],
   sombra: ['cegueira', 'medo'],
@@ -74,12 +75,9 @@ export const ESTADOS_POR_ELEMENTO: Record<ElementoBaseId, EstadoId[]> = {
   vileza: ['maldicao', 'medo'],
   morte: ['definhamento', 'medo'],
   vida: ['regeneracao'],
-  vigor: [],
   marcial: ['sangramento', 'atordoamento'],
-  tempo: ['lentidao', 'pressa'],
-  som: ['silencio', 'atordoamento'],
-  gravidade: ['derrubada', 'lentidao', 'atordoamento'],
-  espaco: ['derrubada', 'lentidao'],
+  // Gravidade absorveu Tempo e Espaço: herdou a pressa que era do Tempo.
+  gravidade: ['derrubada', 'lentidao', 'atordoamento', 'pressa'],
 };
 
 /** Estados que cada escola tende a aplicar, além do elemento. */

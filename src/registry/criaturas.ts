@@ -73,10 +73,10 @@ const c = (
 export const CRIATURAS: Record<string, CriaturaDef> = Object.fromEntries(
   [
     // bestas — vida/vigor
-    c('lobo', 'Lobo Cinzento', 'besta', ['vida', 'vigor'], 24, 'Caçador de matilha, rápido e leal.'),
-    c('urso', 'Urso das Cavernas', 'besta', ['vida', 'vigor'], 42, 'Força bruta e resistência.'),
+    c('lobo', 'Lobo Cinzento', 'besta', ['vida'], 24, 'Caçador de matilha, rápido e leal.'),
+    c('urso', 'Urso das Cavernas', 'besta', ['vida'], 42, 'Força bruta e resistência.'),
     c('felino', 'Pantera Sombria', 'besta', ['vida', 'sombra'], 38, 'Predador furtivo das florestas escuras.'),
-    c('javali', 'Javali de Presa', 'besta', ['vigor', 'terra'], 30, 'Investida imparável.'),
+    c('javali', 'Javali de Presa', 'besta', ['vida', 'terra'], 30, 'Investida imparável.'),
     // aves — ar/vida
     c('falcao', 'Falcão Real', 'ave', ['ar', 'vida'], 26, 'Olhos aguçados e mergulho veloz.'),
     c('coruja', 'Coruja Arcana', 'ave', ['ar', 'arcano'], 34, 'Voa em silêncio; sente magia.'),
@@ -110,13 +110,13 @@ export const CRIATURAS: Record<string, CriaturaDef> = Object.fromEntries(
     c('wyvern', 'Wyvern', 'draconico', ['ar', 'fogo'], 90, 'Primo alado dos dragões.'),
     c('dragao_jovem', 'Dragão Jovem', 'draconico', ['fogo', 'arcano'], 120, 'Ainda jovem — e já aterrador.'),
     // gigantes — vigor/terra, corpanzil e força bruta
-    c('troll_montanhes', 'Troll Montanhês', 'gigante', ['vigor', 'terra'], 56, 'Regenera o que perde em combate.'),
-    c('ciclope_forjador', 'Ciclope Forjador', 'gigante', ['vigor', 'fogo'], 74, 'Um olho só, martelo enorme.'),
+    c('troll_montanhes', 'Troll Montanhês', 'gigante', ['vida', 'terra'], 56, 'Regenera o que perde em combate.'),
+    c('ciclope_forjador', 'Ciclope Forjador', 'gigante', ['vida', 'fogo'], 74, 'Um olho só, martelo enorme.'),
     // geleias — água/vileza, massas amorfas
     c('gosma_acida', 'Gosma Ácida', 'geleia', ['agua', 'vileza'], 26, 'Dissolve o que toca aos poucos.'),
     c('slime_cristalino', 'Slime Cristalino', 'geleia', ['terra', 'agua'], 40, 'Núcleo mineral, corpo líquido.'),
     // humanoides — marcial/arcano, povos de fala e ferramenta
-    c('batedor_orc', 'Batedor Orc', 'humanoide', ['marcial', 'vigor'], 32, 'Rastreador implacável das fronteiras.'),
+    c('batedor_orc', 'Batedor Orc', 'humanoide', ['marcial', 'vida'], 32, 'Rastreador implacável das fronteiras.'),
     c('arauto_elfico', 'Arauto Élfico', 'humanoide', ['arcano', 'ar'], 46, 'Mensageiro de uma corte antiga.'),
   ].map((def) => [def.id, def]),
 );

@@ -216,22 +216,6 @@
       "cascata": null
     },
     {
-      "id": "vigor",
-      "nome": "Vigor",
-      "tipo": "base",
-      "descricao": "O espírito do corpo; potencializa o combate físico.",
-      "fatorPotencia": 1,
-      "pesos": {
-        "dano": 0.6,
-        "controle": 0,
-        "cura": 0,
-        "defesa": 0.3,
-        "suporte": 0.1
-      },
-      "receita": null,
-      "cascata": null
-    },
-    {
       "id": "marcial",
       "nome": "Marcial",
       "tipo": "base",
@@ -243,38 +227,6 @@
         "cura": 0,
         "defesa": 0.2,
         "suporte": 0
-      },
-      "receita": null,
-      "cascata": null
-    },
-    {
-      "id": "tempo",
-      "nome": "Tempo",
-      "tipo": "base",
-      "descricao": "A corrente do tempo: pressa, lentidão, decadência e reversão.",
-      "fatorPotencia": 1,
-      "pesos": {
-        "dano": 0.2,
-        "controle": 0.5,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.3
-      },
-      "receita": null,
-      "cascata": null
-    },
-    {
-      "id": "som",
-      "nome": "Som",
-      "tipo": "base",
-      "descricao": "Vibração e ressonância: brados, canções e ondas de choque.",
-      "fatorPotencia": 1,
-      "pesos": {
-        "dano": 0.4,
-        "controle": 0.3,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.3
       },
       "receita": null,
       "cascata": null
@@ -296,22 +248,6 @@
       "cascata": null
     },
     {
-      "id": "espaco",
-      "nome": "Espaço",
-      "tipo": "base",
-      "descricao": "A distância entre os pontos: portais, teleporte e o cosmos.",
-      "fatorPotencia": 1,
-      "pesos": {
-        "dano": 0.3,
-        "controle": 0.4,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.3
-      },
-      "receita": null,
-      "cascata": null
-    },
-    {
       "id": "vapor",
       "nome": "Vapor",
       "tipo": "derivado",
@@ -326,11 +262,11 @@
       },
       "receita": [
         {
-          "elemento": "fogo",
+          "elemento": "agua",
           "nivelMinimo": 10
         },
         {
-          "elemento": "agua",
+          "elemento": "fogo",
           "nivelMinimo": 10
         }
       ],
@@ -376,11 +312,11 @@
       },
       "receita": [
         {
-          "elemento": "fogo",
+          "elemento": "ar",
           "nivelMinimo": 10
         },
         {
-          "elemento": "ar",
+          "elemento": "fogo",
           "nivelMinimo": 10
         }
       ],
@@ -401,11 +337,11 @@
       },
       "receita": [
         {
-          "elemento": "fogo",
+          "elemento": "eletricidade",
           "nivelMinimo": 10
         },
         {
-          "elemento": "eletricidade",
+          "elemento": "fogo",
           "nivelMinimo": 10
         }
       ],
@@ -426,11 +362,11 @@
       },
       "receita": [
         {
-          "elemento": "fogo",
+          "elemento": "arcano",
           "nivelMinimo": 10
         },
         {
-          "elemento": "arcano",
+          "elemento": "fogo",
           "nivelMinimo": 10
         }
       ],
@@ -566,22 +502,26 @@
       "nome": "Fervor",
       "tipo": "derivado",
       "descricao": "Sangue fervente: golpes físicos incendiários.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.8,
-        "controle": 0,
-        "cura": 0,
-        "defesa": 0.15,
-        "suporte": 0.05
+        "dano": 0.5666666666666667,
+        "controle": 0.03333333333333333,
+        "cura": 0.19999999999999998,
+        "defesa": 0.13333333333333333,
+        "suporte": 0.06666666666666667
       },
       "receita": [
         {
           "elemento": "fogo",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "marcial",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -816,22 +756,26 @@
       "nome": "Correnteza",
       "tipo": "derivado",
       "descricao": "Fluidez marcial: golpes encadeados sem pausa.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.5,
-        "controle": 0.2,
-        "cura": 0.1,
-        "defesa": 0.15,
-        "suporte": 0.05
+        "dano": 0.36666666666666664,
+        "controle": 0.16666666666666666,
+        "cura": 0.26666666666666666,
+        "defesa": 0.13333333333333333,
+        "suporte": 0.06666666666666667
       },
       "receita": [
         {
           "elemento": "agua",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "marcial",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -851,11 +795,11 @@
       },
       "receita": [
         {
-          "elemento": "terra",
+          "elemento": "ar",
           "nivelMinimo": 10
         },
         {
-          "elemento": "ar",
+          "elemento": "terra",
           "nivelMinimo": 10
         }
       ],
@@ -876,11 +820,11 @@
       },
       "receita": [
         {
-          "elemento": "terra",
+          "elemento": "eletricidade",
           "nivelMinimo": 10
         },
         {
-          "elemento": "eletricidade",
+          "elemento": "terra",
           "nivelMinimo": 10
         }
       ],
@@ -901,11 +845,11 @@
       },
       "receita": [
         {
-          "elemento": "terra",
+          "elemento": "arcano",
           "nivelMinimo": 10
         },
         {
-          "elemento": "arcano",
+          "elemento": "terra",
           "nivelMinimo": 10
         }
       ],
@@ -926,11 +870,11 @@
       },
       "receita": [
         {
-          "elemento": "terra",
+          "elemento": "sombra",
           "nivelMinimo": 10
         },
         {
-          "elemento": "sombra",
+          "elemento": "terra",
           "nivelMinimo": 10
         }
       ],
@@ -951,11 +895,11 @@
       },
       "receita": [
         {
-          "elemento": "terra",
+          "elemento": "luz",
           "nivelMinimo": 10
         },
         {
-          "elemento": "luz",
+          "elemento": "terra",
           "nivelMinimo": 10
         }
       ],
@@ -1001,11 +945,11 @@
       },
       "receita": [
         {
-          "elemento": "terra",
+          "elemento": "morte",
           "nivelMinimo": 10
         },
         {
-          "elemento": "morte",
+          "elemento": "terra",
           "nivelMinimo": 10
         }
       ],
@@ -1041,22 +985,26 @@
       "nome": "Titã",
       "tipo": "derivado",
       "descricao": "Corpo de pedra: força colossal e pele impenetrável.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.44999999999999996,
+        "dano": 0.3333333333333333,
         "controle": 0.1,
-        "cura": 0,
-        "defesa": 0.4,
-        "suporte": 0.05
+        "cura": 0.19999999999999998,
+        "defesa": 0.3,
+        "suporte": 0.06666666666666667
       },
       "receita": [
         {
-          "elemento": "terra",
-          "nivelMinimo": 10
+          "elemento": "marcial",
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "terra",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -1212,56 +1160,6 @@
       "cascata": null
     },
     {
-      "id": "alento",
-      "nome": "Alento",
-      "tipo": "derivado",
-      "descricao": "Sopro vital: cura à distância e fôlego renovado.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.2,
-        "controle": 0.2,
-        "cura": 0.3,
-        "defesa": 0.1,
-        "suporte": 0.2
-      },
-      "receita": [
-        {
-          "elemento": "ar",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "vida",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "impeto",
-      "nome": "Ímpeto",
-      "tipo": "derivado",
-      "descricao": "Velocidade sobre-humana: investidas e esquivas relâmpago.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.5,
-        "controle": 0.2,
-        "cura": 0,
-        "defesa": 0.15,
-        "suporte": 0.15000000000000002
-      },
-      "receita": [
-        {
-          "elemento": "ar",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "vigor",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
       "id": "fluxo",
       "nome": "Fluxo",
       "tipo": "derivado",
@@ -1276,11 +1174,11 @@
       },
       "receita": [
         {
-          "elemento": "eletricidade",
+          "elemento": "arcano",
           "nivelMinimo": 10
         },
         {
-          "elemento": "arcano",
+          "elemento": "eletricidade",
           "nivelMinimo": 10
         }
       ],
@@ -1416,22 +1314,26 @@
       "nome": "Reflexo",
       "tipo": "derivado",
       "descricao": "Nervos elétricos: contra-ataques instantâneos.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.7,
+        "dano": 0.5,
         "controle": 0.1,
-        "cura": 0,
-        "defesa": 0.15,
-        "suporte": 0.05
+        "cura": 0.19999999999999998,
+        "defesa": 0.13333333333333333,
+        "suporte": 0.06666666666666667
       },
       "receita": [
         {
           "elemento": "eletricidade",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "marcial",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -1566,22 +1468,26 @@
       "nome": "Encantamento",
       "tipo": "derivado",
       "descricao": "Corpo como foco: armas e punhos imbuídos de magia.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.55,
+        "dano": 0.39999999999999997,
         "controle": 0.1,
-        "cura": 0,
-        "defesa": 0.15,
-        "suporte": 0.2
+        "cura": 0.19999999999999998,
+        "defesa": 0.13333333333333333,
+        "suporte": 0.16666666666666666
       },
       "receita": [
         {
           "elemento": "arcano",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "marcial",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -1601,11 +1507,11 @@
       },
       "receita": [
         {
-          "elemento": "sombra",
+          "elemento": "luz",
           "nivelMinimo": 15
         },
         {
-          "elemento": "luz",
+          "elemento": "sombra",
           "nivelMinimo": 15
         }
       ],
@@ -1651,11 +1557,11 @@
       },
       "receita": [
         {
-          "elemento": "sombra",
+          "elemento": "morte",
           "nivelMinimo": 10
         },
         {
-          "elemento": "morte",
+          "elemento": "sombra",
           "nivelMinimo": 10
         }
       ],
@@ -1691,22 +1597,26 @@
       "nome": "Assassínio",
       "tipo": "derivado",
       "descricao": "A arte do golpe único: dano massivo pelas costas.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.55,
-        "controle": 0.15,
-        "cura": 0,
-        "defesa": 0.15,
-        "suporte": 0.15000000000000002
+        "dano": 0.39999999999999997,
+        "controle": 0.13333333333333333,
+        "cura": 0.19999999999999998,
+        "defesa": 0.13333333333333333,
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
-          "elemento": "sombra",
-          "nivelMinimo": 10
+          "elemento": "marcial",
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "sombra",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -1791,22 +1701,26 @@
       "nome": "Bravura",
       "tipo": "derivado",
       "descricao": "Coragem radiante: aura que fortalece a linha de frente.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.44999999999999996,
-        "controle": 0,
-        "cura": 0.15,
-        "defesa": 0.25,
-        "suporte": 0.15000000000000002
+        "dano": 0.3333333333333333,
+        "controle": 0.03333333333333333,
+        "cura": 0.3,
+        "defesa": 0.2,
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
           "elemento": "luz",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "marcial",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -1826,11 +1740,11 @@
       },
       "receita": [
         {
-          "elemento": "vileza",
+          "elemento": "morte",
           "nivelMinimo": 12
         },
         {
-          "elemento": "morte",
+          "elemento": "vileza",
           "nivelMinimo": 12
         }
       ],
@@ -1851,11 +1765,11 @@
       },
       "receita": [
         {
-          "elemento": "vileza",
+          "elemento": "vida",
           "nivelMinimo": 10
         },
         {
-          "elemento": "vida",
+          "elemento": "vileza",
           "nivelMinimo": 10
         }
       ],
@@ -1866,22 +1780,26 @@
       "nome": "Carnificina",
       "tipo": "derivado",
       "descricao": "Sede de sangue: quanto mais fere, mais forte fica.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.6,
-        "controle": 0.15,
-        "cura": 0,
-        "defesa": 0.15,
+        "dano": 0.4333333333333333,
+        "controle": 0.13333333333333333,
+        "cura": 0.19999999999999998,
+        "defesa": 0.13333333333333333,
         "suporte": 0.1
       },
       "receita": [
         {
-          "elemento": "vileza",
-          "nivelMinimo": 10
+          "elemento": "marcial",
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "vida",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -1916,47 +1834,26 @@
       "nome": "Ceifa",
       "tipo": "derivado",
       "descricao": "A foice encarnada: golpes físicos que colhem almas.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.6,
-        "controle": 0.15,
-        "cura": 0,
-        "defesa": 0.15,
+        "dano": 0.4333333333333333,
+        "controle": 0.13333333333333333,
+        "cura": 0.19999999999999998,
+        "defesa": 0.13333333333333333,
         "suporte": 0.1
       },
       "receita": [
         {
-          "elemento": "morte",
-          "nivelMinimo": 10
+          "elemento": "marcial",
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "vitalidade",
-      "nome": "Vitalidade",
-      "tipo": "derivado",
-      "descricao": "Regeneração contínua: o corpo que não aceita cair.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.3,
-        "controle": 0,
-        "cura": 0.3,
-        "defesa": 0.25,
-        "suporte": 0.15000000000000002
-      },
-      "receita": [
+          "elemento": "morte",
+          "nivelMinimo": 15
+        },
         {
           "elemento": "vida",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -1976,11 +1873,11 @@
       },
       "receita": [
         {
-          "elemento": "marcial",
+          "elemento": "fogo",
           "nivelMinimo": 10
         },
         {
-          "elemento": "fogo",
+          "elemento": "marcial",
           "nivelMinimo": 10
         }
       ],
@@ -2001,11 +1898,11 @@
       },
       "receita": [
         {
-          "elemento": "marcial",
+          "elemento": "agua",
           "nivelMinimo": 10
         },
         {
-          "elemento": "agua",
+          "elemento": "marcial",
           "nivelMinimo": 10
         }
       ],
@@ -2051,11 +1948,11 @@
       },
       "receita": [
         {
-          "elemento": "marcial",
+          "elemento": "ar",
           "nivelMinimo": 10
         },
         {
-          "elemento": "ar",
+          "elemento": "marcial",
           "nivelMinimo": 10
         }
       ],
@@ -2076,11 +1973,11 @@
       },
       "receita": [
         {
-          "elemento": "marcial",
+          "elemento": "eletricidade",
           "nivelMinimo": 10
         },
         {
-          "elemento": "eletricidade",
+          "elemento": "marcial",
           "nivelMinimo": 10
         }
       ],
@@ -2101,11 +1998,11 @@
       },
       "receita": [
         {
-          "elemento": "marcial",
+          "elemento": "arcano",
           "nivelMinimo": 10
         },
         {
-          "elemento": "arcano",
+          "elemento": "marcial",
           "nivelMinimo": 10
         }
       ],
@@ -2151,11 +2048,11 @@
       },
       "receita": [
         {
-          "elemento": "marcial",
+          "elemento": "luz",
           "nivelMinimo": 10
         },
         {
-          "elemento": "luz",
+          "elemento": "marcial",
           "nivelMinimo": 10
         }
       ],
@@ -2212,76 +2109,30 @@
       "cascata": null
     },
     {
-      "id": "lamina_viva",
-      "nome": "Lâmina Viva",
-      "tipo": "derivado",
-      "descricao": "Armas que crescem: madeira viva, espinhos e seiva.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.35,
-        "controle": 0.05,
-        "cura": 0.3,
-        "defesa": 0.2,
-        "suporte": 0.1
-      },
-      "receita": [
-        {
-          "elemento": "marcial",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "vida",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "maestria",
-      "nome": "Maestria",
-      "tipo": "derivado",
-      "descricao": "Corpo e arma como um só: a técnica além da perfeição.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.6499999999999999,
-        "controle": 0.05,
-        "cura": 0,
-        "defesa": 0.25,
-        "suporte": 0.05
-      },
-      "receita": [
-        {
-          "elemento": "marcial",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "vigor",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
       "id": "pira_eterna",
       "nome": "Pira Eterna",
       "tipo": "derivado",
       "descricao": "Fogo que arde desde sempre: queima acelerada que nunca se apaga.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.6,
-        "controle": 0.25,
+        "dano": 0.6666666666666666,
+        "controle": 0.2,
         "cura": 0,
-        "defesa": 0,
-        "suporte": 0.15
+        "defesa": 0.03333333333333333,
+        "suporte": 0.09999999999999999
       },
       "receita": [
         {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "elemento": "arcano",
+          "nivelMinimo": 15
         },
         {
           "elemento": "fogo",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2291,22 +2142,26 @@
       "nome": "Erosão",
       "tipo": "derivado",
       "descricao": "A água que desgasta a montanha: dano que cresce com o tempo.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.30000000000000004,
-        "controle": 0.45,
-        "cura": 0.1,
-        "defesa": 0,
-        "suporte": 0.15
+        "dano": 0.4666666666666667,
+        "controle": 0.33333333333333337,
+        "cura": 0.06666666666666667,
+        "defesa": 0.03333333333333333,
+        "suporte": 0.09999999999999999
       },
       "receita": [
         {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "elemento": "agua",
+          "nivelMinimo": 15
         },
         {
-          "elemento": "agua",
-          "nivelMinimo": 10
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2316,47 +2171,26 @@
       "nome": "Fossilização",
       "tipo": "derivado",
       "descricao": "O peso das eras: petrifica e imobiliza lentamente.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.25,
-        "controle": 0.35,
+        "dano": 0.4333333333333333,
+        "controle": 0.26666666666666666,
         "cura": 0,
-        "defesa": 0.25,
-        "suporte": 0.15
+        "defesa": 0.19999999999999998,
+        "suporte": 0.09999999999999999
       },
       "receita": [
         {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "terra",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "aceleracao",
-      "nome": "Aceleração",
-      "tipo": "derivado",
-      "descricao": "O vento apressado: velocidade e reflexos sobre-humanos.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.30000000000000004,
-        "controle": 0.45,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.25
-      },
-      "receita": [
-        {
-          "elemento": "tempo",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "ar",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2366,97 +2200,26 @@
       "nome": "Instante",
       "tipo": "derivado",
       "descricao": "O relâmpago fora do tempo: golpe que acontece antes de ser visto.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.5,
-        "controle": 0.35,
+        "dano": 0.6,
+        "controle": 0.26666666666666666,
         "cura": 0,
-        "defesa": 0,
-        "suporte": 0.15
+        "defesa": 0.03333333333333333,
+        "suporte": 0.09999999999999999
       },
       "receita": [
         {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "elemento": "arcano",
+          "nivelMinimo": 15
         },
         {
           "elemento": "eletricidade",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "cronomancia",
-      "nome": "Cronomancia",
-      "tipo": "derivado",
-      "descricao": "A magia pura do tempo: pressa, lentidão e paradas temporais.",
-      "fatorPotencia": 1.2,
-      "pesos": {
-        "dano": 0.35,
-        "controle": 0.35,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.3
-      },
-      "receita": [
-        {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
-          "elemento": "arcano",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "entropia",
-      "nome": "Entropia",
-      "tipo": "derivado",
-      "descricao": "A desordem inevitável: tudo se desfaz e nada retorna.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.35,
-        "controle": 0.4,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.25
-      },
-      "receita": [
-        {
-          "elemento": "tempo",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "sombra",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "eon",
-      "nome": "Éon",
-      "tipo": "derivado",
-      "descricao": "A luz das eras: cura o que o tempo feriu e revela o que virá.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.25,
-        "controle": 0.25,
-        "cura": 0.15,
-        "defesa": 0.1,
-        "suporte": 0.25
-      },
-      "receita": [
-        {
-          "elemento": "tempo",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "luz",
-          "nivelMinimo": 10
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2466,47 +2229,26 @@
       "nome": "Ruína",
       "tipo": "derivado",
       "descricao": "A maldição da idade: corrói corpo e vontade lentamente.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.4,
-        "controle": 0.4,
+        "dano": 0.5333333333333333,
+        "controle": 0.3,
         "cura": 0,
-        "defesa": 0,
-        "suporte": 0.2
+        "defesa": 0.03333333333333333,
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "vileza",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "ocaso",
-      "nome": "Ocaso",
-      "tipo": "derivado",
-      "descricao": "O relógio que sempre para: acelera o fim de tudo que vive.",
-      "fatorPotencia": 1.2,
-      "pesos": {
-        "dano": 0.4,
-        "controle": 0.4,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.2
-      },
-      "receita": [
-        {
-          "elemento": "tempo",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "morte",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2516,22 +2258,26 @@
       "nome": "Florescer",
       "tipo": "derivado",
       "descricao": "O tempo a favor da vida: crescimento e rejuvenescimento acelerados.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.1,
-        "controle": 0.25,
-        "cura": 0.3,
+        "dano": 0.3333333333333333,
+        "controle": 0.2,
+        "cura": 0.19999999999999998,
         "defesa": 0.1,
-        "suporte": 0.25
+        "suporte": 0.16666666666666666
       },
       "receita": [
         {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "vida",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2541,22 +2287,30 @@
       "nome": "Frenesi",
       "tipo": "derivado",
       "descricao": "O corpo além do limite: cada segundo vale por dois.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.4,
-        "controle": 0.25,
-        "cura": 0,
-        "defesa": 0.15,
-        "suporte": 0.2
+        "dano": 0.425,
+        "controle": 0.17500000000000002,
+        "cura": 0.15,
+        "defesa": 0.125,
+        "suporte": 0.125
       },
       "receita": [
         {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "elemento": "arcano",
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "gravidade",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2566,22 +2320,26 @@
       "nome": "Contratempo",
       "tipo": "derivado",
       "descricao": "A lâmina no tempo certo: contragolpes e cortes preemptivos.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.44999999999999996,
-        "controle": 0.3,
+        "dano": 0.5666666666666667,
+        "controle": 0.23333333333333334,
         "cura": 0,
         "defesa": 0.1,
-        "suporte": 0.15
+        "suporte": 0.09999999999999999
       },
       "receita": [
         {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "marcial",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2591,47 +2349,26 @@
       "nome": "Estrondo",
       "tipo": "derivado",
       "descricao": "Explosão sonora: o estouro que ensurdece e queima.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.7,
-        "controle": 0.15,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.15
+        "dano": 0.4666666666666667,
+        "controle": 0.13333333333333333,
+        "cura": 0.19999999999999998,
+        "defesa": 0.06666666666666667,
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
           "elemento": "fogo",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "sonar",
-      "nome": "Sonar",
-      "tipo": "derivado",
-      "descricao": "Eco das profundezas: revela o oculto e esmaga sob a água.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.4,
-        "controle": 0.35,
-        "cura": 0.1,
-        "defesa": 0,
-        "suporte": 0.15
-      },
-      "receita": [
-        {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
-          "elemento": "agua",
-          "nivelMinimo": 10
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2641,47 +2378,26 @@
       "nome": "Terremoto",
       "tipo": "derivado",
       "descricao": "Ondas sísmicas: o chão treme e rasga em área.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.35,
-        "controle": 0.25,
-        "cura": 0,
-        "defesa": 0.25,
-        "suporte": 0.15
+        "dano": 0.23333333333333334,
+        "controle": 0.2,
+        "cura": 0.19999999999999998,
+        "defesa": 0.23333333333333334,
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
           "elemento": "terra",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "estampido",
-      "nome": "Estampido",
-      "tipo": "derivado",
-      "descricao": "Estrondo sônico: barreira de ar que empurra tudo.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.4,
-        "controle": 0.35,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.25
-      },
-      "receita": [
-        {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
-          "elemento": "ar",
-          "nivelMinimo": 10
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2691,22 +2407,26 @@
       "nome": "Trovão",
       "tipo": "derivado",
       "descricao": "O estouro do raio: choque e onda de choque juntos.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.6000000000000001,
-        "controle": 0.25,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.15
+        "dano": 0.4,
+        "controle": 0.2,
+        "cura": 0.19999999999999998,
+        "defesa": 0.06666666666666667,
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
           "elemento": "eletricidade",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2716,22 +2436,26 @@
       "nome": "Cântico",
       "tipo": "derivado",
       "descricao": "Palavra cantada de poder: encantamentos que ecoam.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.45,
-        "controle": 0.25,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.3
+        "dano": 0.3,
+        "controle": 0.2,
+        "cura": 0.19999999999999998,
+        "defesa": 0.06666666666666667,
+        "suporte": 0.23333333333333334
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
           "elemento": "arcano",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2741,22 +2465,26 @@
       "nome": "Sussurro",
       "tipo": "derivado",
       "descricao": "Vozes que enlouquecem: medo sussurrado ao ouvido.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.45,
-        "controle": 0.3,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.25
+        "dano": 0.3,
+        "controle": 0.23333333333333334,
+        "cura": 0.19999999999999998,
+        "defesa": 0.06666666666666667,
+        "suporte": 0.2
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
           "elemento": "sombra",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2766,22 +2494,26 @@
       "nome": "Harmonia",
       "tipo": "derivado",
       "descricao": "Acorde perfeito: cura e conforto que restauram a alma.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.35,
-        "controle": 0.15,
-        "cura": 0.15,
-        "defesa": 0.1,
-        "suporte": 0.25
+        "dano": 0.23333333333333334,
+        "controle": 0.13333333333333333,
+        "cura": 0.3,
+        "defesa": 0.13333333333333333,
+        "suporte": 0.2
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
           "elemento": "luz",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2791,22 +2523,26 @@
       "nome": "Dissonância",
       "tipo": "derivado",
       "descricao": "Acorde quebrado: dor que corrói a mente.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.5,
-        "controle": 0.3,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.2
+        "dano": 0.3333333333333333,
+        "controle": 0.23333333333333334,
+        "cura": 0.19999999999999998,
+        "defesa": 0.06666666666666667,
+        "suporte": 0.16666666666666666
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         },
         {
           "elemento": "vileza",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2816,72 +2552,26 @@
       "nome": "Réquiem",
       "tipo": "derivado",
       "descricao": "A canção fúnebre: paralisa os vivos e comanda os mortos.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.5,
-        "controle": 0.3,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.2
+        "dano": 0.3333333333333333,
+        "controle": 0.23333333333333334,
+        "cura": 0.19999999999999998,
+        "defesa": 0.06666666666666667,
+        "suporte": 0.16666666666666669
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
           "elemento": "morte",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "melodia",
-      "nome": "Melodia Vital",
-      "tipo": "derivado",
-      "descricao": "Canção de ninar: regeneração embalada em harmonia.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.2,
-        "controle": 0.15,
-        "cura": 0.3,
-        "defesa": 0.1,
-        "suporte": 0.25
-      },
-      "receita": [
-        {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
           "elemento": "vida",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "brado",
-      "nome": "Brado",
-      "tipo": "derivado",
-      "descricao": "Grito de guerra: inflama aliados e apavora inimigos.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.5,
-        "controle": 0.15,
-        "cura": 0,
-        "defesa": 0.15,
-        "suporte": 0.2
-      },
-      "receita": [
-        {
-          "elemento": "som",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2891,22 +2581,26 @@
       "nome": "Cadência",
       "tipo": "derivado",
       "descricao": "Ritmo de batalha: golpes no compasso perfeito.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.55,
-        "controle": 0.2,
-        "cura": 0,
-        "defesa": 0.1,
-        "suporte": 0.15
+        "dano": 0.36666666666666664,
+        "controle": 0.16666666666666666,
+        "cura": 0.19999999999999998,
+        "defesa": 0.13333333333333333,
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
           "elemento": "marcial",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2916,22 +2610,30 @@
       "nome": "Eco",
       "tipo": "derivado",
       "descricao": "O som que volta do passado: repete efeitos com atraso.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.30000000000000004,
-        "controle": 0.4,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.3
+        "dano": 0.35,
+        "controle": 0.25,
+        "cura": 0.15,
+        "defesa": 0.07500000000000001,
+        "suporte": 0.175
       },
       "receita": [
         {
-          "elemento": "som",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
-          "elemento": "tempo",
-          "nivelMinimo": 10
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -2951,11 +2653,11 @@
       },
       "receita": [
         {
-          "elemento": "gravidade",
+          "elemento": "fogo",
           "nivelMinimo": 10
         },
         {
-          "elemento": "fogo",
+          "elemento": "gravidade",
           "nivelMinimo": 10
         }
       ],
@@ -2976,11 +2678,11 @@
       },
       "receita": [
         {
-          "elemento": "gravidade",
+          "elemento": "agua",
           "nivelMinimo": 10
         },
         {
-          "elemento": "agua",
+          "elemento": "gravidade",
           "nivelMinimo": 10
         }
       ],
@@ -3012,31 +2714,6 @@
       "cascata": null
     },
     {
-      "id": "vacuo",
-      "nome": "Vácuo",
-      "tipo": "derivado",
-      "descricao": "Ausência de ar: sufoca e implode de dentro.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.45,
-        "controle": 0.4,
-        "cura": 0,
-        "defesa": 0.05,
-        "suporte": 0.1
-      },
-      "receita": [
-        {
-          "elemento": "gravidade",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "ar",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
       "id": "magnetar",
       "nome": "Magnetar",
       "tipo": "derivado",
@@ -3051,37 +2728,12 @@
       },
       "receita": [
         {
-          "elemento": "gravidade",
-          "nivelMinimo": 10
-        },
-        {
           "elemento": "eletricidade",
           "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "singularidade",
-      "nome": "Singularidade",
-      "tipo": "derivado",
-      "descricao": "Ponto de massa infinita: dobra as regras da realidade.",
-      "fatorPotencia": 1.25,
-      "pesos": {
-        "dano": 0.5,
-        "controle": 0.30000000000000004,
-        "cura": 0,
-        "defesa": 0.05,
-        "suporte": 0.15
-      },
-      "receita": [
-        {
-          "elemento": "gravidade",
-          "nivelMinimo": 12
         },
         {
-          "elemento": "arcano",
-          "nivelMinimo": 12
+          "elemento": "gravidade",
+          "nivelMinimo": 10
         }
       ],
       "cascata": null
@@ -3212,31 +2864,6 @@
       "cascata": null
     },
     {
-      "id": "peso_descomunal",
-      "nome": "Peso Descomunal",
-      "tipo": "derivado",
-      "descricao": "Força multiplicada: golpes que carregam toneladas.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.55,
-        "controle": 0.2,
-        "cura": 0,
-        "defesa": 0.2,
-        "suporte": 0.05
-      },
-      "receita": [
-        {
-          "elemento": "gravidade",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "vigor",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
       "id": "ariete",
       "nome": "Aríete",
       "tipo": "derivado",
@@ -3262,101 +2889,30 @@
       "cascata": null
     },
     {
-      "id": "dilatacao",
-      "nome": "Dilatação",
-      "tipo": "derivado",
-      "descricao": "O tempo curvado pela massa: retarda tudo num campo.",
-      "fatorPotencia": 1.25,
-      "pesos": {
-        "dano": 0.35,
-        "controle": 0.45,
-        "cura": 0,
-        "defesa": 0.05,
-        "suporte": 0.15
-      },
-      "receita": [
-        {
-          "elemento": "gravidade",
-          "nivelMinimo": 12
-        },
-        {
-          "elemento": "tempo",
-          "nivelMinimo": 12
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "onda_de_choque",
-      "nome": "Onda de Choque",
-      "tipo": "derivado",
-      "descricao": "Pulso gravitacional sonoro: empurra e atordoa em anel.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.45,
-        "controle": 0.35,
-        "cura": 0,
-        "defesa": 0.05,
-        "suporte": 0.15
-      },
-      "receita": [
-        {
-          "elemento": "gravidade",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "som",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "meteoro",
-      "nome": "Meteoro",
-      "tipo": "derivado",
-      "descricao": "Rocha em chamas do céu: impacto devastador em área.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.65,
-        "controle": 0.2,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.15
-      },
-      "receita": [
-        {
-          "elemento": "espaco",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "fogo",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
       "id": "cometa",
       "nome": "Cometa",
       "tipo": "derivado",
       "descricao": "Bola de gelo sideral: risca o céu e congela ao cair.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.35,
+        "dano": 0.43333333333333335,
         "controle": 0.4,
-        "cura": 0.1,
-        "defesa": 0,
-        "suporte": 0.15
+        "cura": 0.06666666666666667,
+        "defesa": 0.03333333333333333,
+        "suporte": 0.06666666666666667
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "elemento": "agua",
+          "nivelMinimo": 15
         },
         {
-          "elemento": "agua",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -3366,47 +2922,26 @@
       "nome": "Asteroide",
       "tipo": "derivado",
       "descricao": "Fragmento de mundo: bombardeio de rocha do espaço.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.3,
-        "controle": 0.30000000000000004,
+        "dano": 0.39999999999999997,
+        "controle": 0.3333333333333333,
         "cura": 0,
-        "defesa": 0.25,
-        "suporte": 0.15
+        "defesa": 0.19999999999999998,
+        "suporte": 0.06666666666666667
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "terra",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "estratosfera",
-      "nome": "Estratosfera",
-      "tipo": "derivado",
-      "descricao": "O ar rarefeito das alturas: levita e sufoca lá em cima.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.35,
-        "controle": 0.4,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.25
-      },
-      "receita": [
-        {
-          "elemento": "espaco",
-          "nivelMinimo": 10
-        },
-        {
-          "elemento": "ar",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -3416,72 +2951,26 @@
       "nome": "Pulsar",
       "tipo": "derivado",
       "descricao": "Farol estelar: pulsos de energia em intervalos precisos.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.55,
-        "controle": 0.30000000000000004,
+        "dano": 0.5666666666666667,
+        "controle": 0.33333333333333337,
         "cura": 0,
-        "defesa": 0,
-        "suporte": 0.15
+        "defesa": 0.03333333333333333,
+        "suporte": 0.06666666666666667
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
           "elemento": "eletricidade",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "portal",
-      "nome": "Portal",
-      "tipo": "derivado",
-      "descricao": "Dobra do espaço: teleporte, banimento e reposicionamento.",
-      "fatorPotencia": 1.15,
-      "pesos": {
-        "dano": 0.4,
-        "controle": 0.30000000000000004,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.3
-      },
-      "receita": [
-        {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         },
         {
-          "elemento": "arcano",
-          "nivelMinimo": 10
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "vazio",
-      "nome": "Vazio",
-      "tipo": "derivado",
-      "descricao": "O Nada entre estrelas: apaga o que toca.",
-      "fatorPotencia": 1.25,
-      "pesos": {
-        "dano": 0.4,
-        "controle": 0.35,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.25
-      },
-      "receita": [
-        {
-          "elemento": "espaco",
-          "nivelMinimo": 12
-        },
-        {
-          "elemento": "sombra",
-          "nivelMinimo": 12
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -3491,22 +2980,26 @@
       "nome": "Constelação",
       "tipo": "derivado",
       "descricao": "Mapa de estrelas: guia, abençoa e marca alvos.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.3,
-        "controle": 0.2,
-        "cura": 0.15,
+        "dano": 0.39999999999999997,
+        "controle": 0.26666666666666666,
+        "cura": 0.09999999999999999,
         "defesa": 0.1,
-        "suporte": 0.25
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "luz",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -3516,22 +3009,26 @@
       "nome": "Devorador",
       "tipo": "derivado",
       "descricao": "O que vem de além: horror cósmico que não deveria existir.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.44999999999999996,
-        "controle": 0.35,
+        "dano": 0.5,
+        "controle": 0.36666666666666664,
         "cura": 0,
-        "defesa": 0,
-        "suporte": 0.2
+        "defesa": 0.03333333333333333,
+        "suporte": 0.1
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "vileza",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -3541,22 +3038,26 @@
       "nome": "Nebulosa",
       "tipo": "derivado",
       "descricao": "Berço e túmulo de estrelas: névoa que mata e cria.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.44999999999999996,
-        "controle": 0.35,
+        "dano": 0.5,
+        "controle": 0.36666666666666664,
         "cura": 0,
-        "defesa": 0,
-        "suporte": 0.2
+        "defesa": 0.03333333333333333,
+        "suporte": 0.1
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "morte",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -3566,22 +3067,26 @@
       "nome": "Semente Estelar",
       "tipo": "derivado",
       "descricao": "Vida vinda do cosmos: brota onde nada deveria crescer.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.15,
-        "controle": 0.2,
-        "cura": 0.3,
+        "dano": 0.3,
+        "controle": 0.26666666666666666,
+        "cura": 0.19999999999999998,
         "defesa": 0.1,
-        "suporte": 0.25
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "vida",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -3591,22 +3096,30 @@
       "nome": "Gigante Estelar",
       "tipo": "derivado",
       "descricao": "Corpo de proporções cósmicas: força além da escala.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.44999999999999996,
-        "controle": 0.2,
-        "cura": 0,
-        "defesa": 0.15,
-        "suporte": 0.2
+        "dano": 0.4,
+        "controle": 0.225,
+        "cura": 0.15,
+        "defesa": 0.125,
+        "suporte": 0.1
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 10
+          "elemento": "gravidade",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -3616,22 +3129,26 @@
       "nome": "Lâmina Sideral",
       "tipo": "derivado",
       "descricao": "Corte que atravessa a distância: fende o próprio espaço.",
-      "fatorPotencia": 1.15,
+      "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.5,
-        "controle": 0.25,
+        "dano": 0.5333333333333333,
+        "controle": 0.3,
         "cura": 0,
         "defesa": 0.1,
-        "suporte": 0.15
+        "suporte": 0.06666666666666667
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 10
+          "elemento": "ar",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 15
         },
         {
           "elemento": "marcial",
-          "nivelMinimo": 10
+          "nivelMinimo": 15
         }
       ],
       "cascata": null
@@ -3643,70 +3160,124 @@
       "descricao": "Espaço-tempo dominado: mover-se por onde e quando quiser.",
       "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.25,
-        "controle": 0.45,
+        "dano": 0.4666666666666667,
+        "controle": 0.33333333333333337,
         "cura": 0,
-        "defesa": 0,
-        "suporte": 0.3
+        "defesa": 0.03333333333333333,
+        "suporte": 0.16666666666666666
       },
       "receita": [
         {
-          "elemento": "espaco",
+          "elemento": "ar",
           "nivelMinimo": 12
         },
         {
-          "elemento": "tempo",
+          "elemento": "arcano",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "gravidade",
           "nivelMinimo": 12
         }
       ],
       "cascata": null
     },
     {
-      "id": "silencio_cosmico",
-      "nome": "Silêncio Cósmico",
+      "id": "vigor",
+      "nome": "Vigor",
       "tipo": "derivado",
-      "descricao": "O vácuo não propaga som: sufoca canções e magias.",
+      "descricao": "O corpo treinado: força, fôlego e a resistência que sustenta o combate físico.",
       "fatorPotencia": 1.15,
       "pesos": {
         "dano": 0.35,
-        "controle": 0.35,
-        "cura": 0,
-        "defesa": 0,
-        "suporte": 0.3
+        "controle": 0.05,
+        "cura": 0.3,
+        "defesa": 0.2,
+        "suporte": 0.1
       },
       "receita": [
         {
-          "elemento": "espaco",
+          "elemento": "vida",
           "nivelMinimo": 10
         },
         {
-          "elemento": "som",
+          "elemento": "marcial",
           "nivelMinimo": 10
         }
       ],
       "cascata": null
     },
     {
-      "id": "dobra",
-      "nome": "Dobra",
+      "id": "tempo",
+      "nome": "Tempo",
       "tipo": "derivado",
-      "descricao": "O espaço curvado sobre si: encurta distâncias e esmaga.",
-      "fatorPotencia": 1.25,
+      "descricao": "A corrente do tempo: pressa, lentidão, decadência e reversão.",
+      "fatorPotencia": 1.15,
       "pesos": {
-        "dano": 0.4,
-        "controle": 0.4,
+        "dano": 0.5,
+        "controle": 0.30000000000000004,
         "cura": 0,
         "defesa": 0.05,
         "suporte": 0.15
       },
       "receita": [
         {
-          "elemento": "espaco",
-          "nivelMinimo": 12
+          "elemento": "gravidade",
+          "nivelMinimo": 10
         },
         {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "espaco",
+      "nome": "Espaço",
+      "tipo": "derivado",
+      "descricao": "A distância entre os pontos: portais, teleporte e o vazio entre as estrelas.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.4,
+        "cura": 0,
+        "defesa": 0.05,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
           "elemento": "gravidade",
-          "nivelMinimo": 12
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "som",
+      "nome": "Som",
+      "tipo": "derivado",
+      "descricao": "Vibração e ressonância: a voz, o brado, a canção e a onda de choque.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.2,
+        "cura": 0.3,
+        "defesa": 0.1,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
         }
       ],
       "cascata": null
@@ -3730,11 +3301,11 @@
           "nivelMinimo": 15
         },
         {
-          "elemento": "vileza",
+          "elemento": "morte",
           "nivelMinimo": 15
         },
         {
-          "elemento": "morte",
+          "elemento": "vileza",
           "nivelMinimo": 15
         }
       ],
@@ -3747,19 +3318,19 @@
       "descricao": "Vida e morte fora de ordem: desfaz causas e efeitos.",
       "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.43333333333333335,
-        "controle": 0.3333333333333333,
+        "dano": 0.5333333333333333,
+        "controle": 0.3,
         "cura": 0,
-        "defesa": 0,
-        "suporte": 0.2333333333333333
+        "defesa": 0.03333333333333333,
+        "suporte": 0.13333333333333333
       },
       "receita": [
         {
-          "elemento": "tempo",
+          "elemento": "arcano",
           "nivelMinimo": 15
         },
         {
-          "elemento": "arcano",
+          "elemento": "gravidade",
           "nivelMinimo": 15
         },
         {
@@ -3776,52 +3347,27 @@
       "descricao": "O início e o fim de tudo: a criação comprimida num instante.",
       "fatorPotencia": 1.35,
       "pesos": {
-        "dano": 0.3333333333333333,
-        "controle": 0.43333333333333335,
-        "cura": 0,
-        "defesa": 0.03333333333333333,
-        "suporte": 0.19999999999999998
+        "dano": 0.575,
+        "controle": 0.15000000000000002,
+        "cura": 0.075,
+        "defesa": 0.07500000000000001,
+        "suporte": 0.125
       },
       "receita": [
-        {
-          "elemento": "espaco",
-          "nivelMinimo": 15
-        },
         {
           "elemento": "gravidade",
           "nivelMinimo": 15
         },
         {
-          "elemento": "tempo",
+          "elemento": "arcano",
           "nivelMinimo": 15
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "sinfonia",
-      "nome": "Sinfonia",
-      "tipo": "derivado",
-      "descricao": "A canção da criação: aura que cura, protege e inspira em grande área.",
-      "fatorPotencia": 1.3,
-      "pesos": {
-        "dano": 0.23333333333333334,
-        "controle": 0.09999999999999999,
-        "cura": 0.3,
-        "defesa": 0.13333333333333333,
-        "suporte": 0.23333333333333334
-      },
-      "receita": [
+        },
         {
-          "elemento": "som",
+          "elemento": "fogo",
           "nivelMinimo": 15
         },
         {
           "elemento": "luz",
-          "nivelMinimo": 15
-        },
-        {
-          "elemento": "vida",
           "nivelMinimo": 15
         }
       ],
@@ -3900,11 +3446,11 @@
       },
       "receita": [
         {
-          "elemento": "sombra",
+          "elemento": "morte",
           "nivelMinimo": 15
         },
         {
-          "elemento": "morte",
+          "elemento": "sombra",
           "nivelMinimo": 15
         },
         {
@@ -3929,15 +3475,15 @@
       },
       "receita": [
         {
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
           "elemento": "luz",
           "nivelMinimo": 15
         },
         {
           "elemento": "sombra",
-          "nivelMinimo": 15
-        },
-        {
-          "elemento": "arcano",
           "nivelMinimo": 15
         }
       ],
@@ -3958,7 +3504,7 @@
       },
       "receita": [
         {
-          "elemento": "vida",
+          "elemento": "arcano",
           "nivelMinimo": 15
         },
         {
@@ -3966,7 +3512,7 @@
           "nivelMinimo": 15
         },
         {
-          "elemento": "arcano",
+          "elemento": "vida",
           "nivelMinimo": 15
         }
       ],
@@ -3979,52 +3525,27 @@
       "descricao": "Corpo-condutor: velocidade e poder além do limite seguro.",
       "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.6333333333333333,
-        "controle": 0.13333333333333333,
-        "cura": 0,
-        "defesa": 0.09999999999999999,
-        "suporte": 0.13333333333333333
+        "dano": 0.5,
+        "controle": 0.125,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.125
       },
       "receita": [
-        {
-          "elemento": "eletricidade",
-          "nivelMinimo": 15
-        },
         {
           "elemento": "arcano",
           "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
+          "elemento": "eletricidade",
           "nivelMinimo": 15
-        }
-      ],
-      "cascata": null
-    },
-    {
-      "id": "ascensao",
-      "nome": "Ascensão",
-      "tipo": "derivado",
-      "descricao": "Forma exaltada: transcende brevemente a condição mortal.",
-      "fatorPotencia": 1.3,
-      "pesos": {
-        "dano": 0.3,
-        "controle": 0,
-        "cura": 0.3,
-        "defesa": 0.23333333333333334,
-        "suporte": 0.16666666666666666
-      },
-      "receita": [
+        },
         {
-          "elemento": "luz",
+          "elemento": "marcial",
           "nivelMinimo": 15
         },
         {
           "elemento": "vida",
-          "nivelMinimo": 15
-        },
-        {
-          "elemento": "vigor",
           "nivelMinimo": 15
         }
       ],
@@ -4045,15 +3566,15 @@
       },
       "receita": [
         {
+          "elemento": "eletricidade",
+          "nivelMinimo": 15
+        },
+        {
           "elemento": "fogo",
           "nivelMinimo": 15
         },
         {
           "elemento": "terra",
-          "nivelMinimo": 15
-        },
-        {
-          "elemento": "eletricidade",
           "nivelMinimo": 15
         }
       ],
@@ -4066,11 +3587,11 @@
       "descricao": "A guerra encarnada: cem armas orbitando um corpo perfeito.",
       "fatorPotencia": 1.3,
       "pesos": {
-        "dano": 0.6,
-        "controle": 0.1,
-        "cura": 0,
-        "defesa": 0.16666666666666666,
-        "suporte": 0.13333333333333333
+        "dano": 0.55,
+        "controle": 0.07500000000000001,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.125
       },
       "receita": [
         {
@@ -4078,11 +3599,15 @@
           "nivelMinimo": 15
         },
         {
-          "elemento": "vigor",
+          "elemento": "vida",
           "nivelMinimo": 15
         },
         {
           "elemento": "arcano",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "fogo",
           "nivelMinimo": 15
         }
       ],
@@ -4184,11 +3709,11 @@
       "descricao": "O elemento de quem dominou todos: nega, absorve e devolve qualquer coisa.",
       "fatorPotencia": 1.4,
       "pesos": {
-        "dano": 0.47647058823529415,
-        "controle": 0.23529411764705882,
-        "cura": 0.06470588235294117,
-        "defesa": 0.08823529411764705,
-        "suporte": 0.1352941176470588
+        "dano": 0.5076923076923077,
+        "controle": 0.2153846153846154,
+        "cura": 0.08461538461538462,
+        "defesa": 0.09230769230769231,
+        "suporte": 0.1
       },
       "receita": [
         {
@@ -4236,27 +3761,11 @@
           "nivelMinimo": 8
         },
         {
-          "elemento": "vigor",
-          "nivelMinimo": 8
-        },
-        {
           "elemento": "marcial",
           "nivelMinimo": 8
         },
         {
-          "elemento": "tempo",
-          "nivelMinimo": 8
-        },
-        {
-          "elemento": "som",
-          "nivelMinimo": 8
-        },
-        {
           "elemento": "gravidade",
-          "nivelMinimo": 8
-        },
-        {
-          "elemento": "espaco",
           "nivelMinimo": 8
         }
       ],
@@ -4273,12 +3782,8 @@
           "vileza",
           "morte",
           "vida",
-          "vigor",
           "marcial",
-          "tempo",
-          "som",
-          "gravidade",
-          "espaco"
+          "gravidade"
         ],
         "divisor": 20,
         "destravavel": false
@@ -5038,8 +4543,7 @@
       "nome": "Lobo Cinzento",
       "familia": "besta",
       "afinidades": [
-        "vida",
-        "vigor"
+        "vida"
       ],
       "poderBase": 24
     },
@@ -5047,8 +4551,7 @@
       "nome": "Urso das Cavernas",
       "familia": "besta",
       "afinidades": [
-        "vida",
-        "vigor"
+        "vida"
       ],
       "poderBase": 42
     },
@@ -5065,7 +4568,7 @@
       "nome": "Javali de Presa",
       "familia": "besta",
       "afinidades": [
-        "vigor",
+        "vida",
         "terra"
       ],
       "poderBase": 30
@@ -5265,7 +4768,7 @@
       "nome": "Troll Montanhês",
       "familia": "gigante",
       "afinidades": [
-        "vigor",
+        "vida",
         "terra"
       ],
       "poderBase": 56
@@ -5274,7 +4777,7 @@
       "nome": "Ciclope Forjador",
       "familia": "gigante",
       "afinidades": [
-        "vigor",
+        "vida",
         "fogo"
       ],
       "poderBase": 74
@@ -5302,7 +4805,7 @@
       "familia": "humanoide",
       "afinidades": [
         "marcial",
-        "vigor"
+        "vida"
       ],
       "poderBase": 32
     },

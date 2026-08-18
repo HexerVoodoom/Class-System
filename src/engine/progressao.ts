@@ -14,7 +14,11 @@ import {
   SINERGIAS,
   type ElementoId,
 } from '../registry/elementos';
-import { TODAS_COMBINACOES, type CombinacaoInfo } from '../registry/combinacoes';
+import {
+  ARIDADE_MAXIMA,
+  TODAS_COMBINACOES,
+  type CombinacaoInfo,
+} from '../registry/combinacoes';
 import { calcularCascata, elementosAlocaveis, type Cascata } from './cascata';
 import { ARQUETIPOS, type ArquetipoDef } from '../registry/arquetipos';
 import { TALENTOS, type EfeitoTalento, type TalentoId } from '../registry/talentos';
@@ -104,15 +108,26 @@ export function calcularProgressao(p: Personagem): Progressao {
     else diretosDerivados[id] = pontos;
   }
 
-  // 2) transbordo de sinergias (a partir dos pontos diretos)
+  // 2) transbordo de sinergias (a partir dos pontos diretos).
+  //
+  //    SOMA PRIMEIRO, ARREDONDA DEPOIS. Arredondar cada seta isolada fazia as
+  //    contribuições pequenas evaporarem: com quatro laços de 0.25 apontando
+  //    para Vida, 1 ponto em cada um dos quatro clássicos rendia ZERO, quando
+  //    a regra do jogo diz que rende 1. Acumular a fração e arredondar uma vez
+  //    só no alvo é o que faz "1 em cada um dos quatro = 1 de vida" fechar, e
+  //    é o que torna a volta dos laços jogável em vez de decorativa.
+  const bruto: Partial<Record<ElementoId, number>> = {};
   for (const s of SINERGIAS) {
     const origem = p.elementos[s.de] ?? 0;
-    const bonus = Math.floor(origem * s.razao * (1 + bonusTransbordo));
+    if (origem <= 0) continue;
+    const contribuicao = origem * s.razao * (1 + bonusTransbordo);
+    for (const alvo of s.para) bruto[alvo] = (bruto[alvo] ?? 0) + contribuicao;
+  }
+  for (const [alvo, acumulado] of Object.entries(bruto) as [ElementoId, number][]) {
+    const bonus = Math.floor(acumulado);
     if (bonus <= 0) continue;
-    for (const alvo of s.para) {
-      niveis[alvo] += bonus;
-      transbordo[alvo] = (transbordo[alvo] ?? 0) + bonus;
-    }
+    niveis[alvo] += bonus;
+    transbordo[alvo] = (transbordo[alvo] ?? 0) + bonus;
   }
 
   // 2b) cascata geracional — a segunda contabilidade (destraves e alimento da
@@ -197,7 +212,16 @@ export function calcularProgressao(p: Personagem): Progressao {
   const receitasAmplas: ElementoId[][] = [];
   for (const info of combinacoesLiberadas) receitasAmplas.push(info.componentes);
   for (const def of Object.values(ELEMENTOS)) {
-    if ((def.receita?.length ?? 0) >= 3 && (niveis[def.id] ?? 0) > 0) {
+    const n = def.receita?.length ?? 0;
+    // A faixa 3..ARIDADE_MAXIMA não é arbitrária. A meia-identidade paga por
+    // COMBINAR, e "combinar" no sistema significa 3 ou 4 componentes. As
+    // receitas amplas escritas à mão (Primordial com 5, Ciclo com 4, Nulo com
+    // os 17) escapavam por cima: a do Nulo contém, por construção, a exigência
+    // elemental de quase todo arquétipo do registro — medido, 53 arquétipos e
+    // 76 capacidades diluídas de uma vez, 61% do catálogo. Isso invertia a
+    // regra que a mecânica existe para sustentar: o generalista passava a ter
+    // meia versão de tudo, inclusive de coisas que nunca combinou.
+    if (n >= 3 && n <= ARIDADE_MAXIMA && (niveis[def.id] ?? 0) > 0) {
       receitasAmplas.push(def.receita!.map((c) => c.elemento));
     }
   }

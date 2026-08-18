@@ -23,7 +23,7 @@ import { calcularFusao } from '../src/engine/fusao';
 import { ARQUETIPOS } from '../src/registry/arquetipos';
 import { TALENTOS, type TalentoId } from '../src/registry/talentos';
 import { elementoDef, elementoDePorComponentes } from '../src/registry/combinacoes';
-import { ELEMENTOS } from '../src/registry/elementos';
+import { ELEMENTOS, elementosBase } from '../src/registry/elementos';
 import type { ElementoBaseId, ElementoId } from '../src/registry/elementos';
 
 const skill = (elemento: string, over: Partial<SkillConfig> = {}): SkillConfig => ({
@@ -187,6 +187,65 @@ describe('a interface precisa alcançar todo o conteúdo', () => {
   });
 });
 
+describe('largura não pode comprar altura', () => {
+  it('a compensação de aridade satura na aridade máxima construível', () => {
+    // O Nulo tem 13 componentes. Sem o teto, o bônus por nível ia a 0.232 e
+    // ele entregava ~2× a eficiência de qualquer preset de mesmo tempo de
+    // conjuração — com o MENOR nível efetivo da lista.
+    const p = criarPersonagem('t');
+    for (const def of Object.values(ELEMENTOS)) {
+      if (def.tipo === 'base') investirElemento(p, def.id as ElementoBaseId, 8);
+    }
+    investirEscola(p, 'conjuracao', 10);
+    investirRecurso(p, 'mana', 10);
+    const prog = calcularProgressao(p);
+    const nulo = calcularSkill(p, prog, skill('nulo', { energia: 30, tempoConjuracaoSegundos: 2 }));
+    const orcamento = custoDeAlocacao(p.elementos).total;
+
+    // A comparação tem de ser no MESMO ORÇAMENTO. Comparar o Nulo (13 bases a
+    // 8) com um par de 28 pontos media nível, não eficiência de investimento —
+    // e passava só porque o Nulo era fraco, não porque a regra valia.
+    const esp = criarPersonagem('t');
+    investirElemento(esp, 'fogo', orcamento);
+    investirEscola(esp, 'conjuracao', 10);
+    investirRecurso(esp, 'mana', 10);
+    const especialista = calcularSkill(
+      esp,
+      calcularProgressao(esp),
+      skill('fogo', { energia: 30, tempoConjuracaoSegundos: 2 }),
+    );
+
+    expect(nulo.valida).toBe(true);
+    // largura não compra altura: o especialista continua entregando bem mais
+    expect(especialista.impactoTotal).toBeGreaterThan(nulo.impactoTotal * 1.5);
+  });
+
+  it('a meia-identidade não é concedida por receitas acima da aridade máxima', () => {
+    // a receita do Nulo contém, por construção, a exigência elemental de quase
+    // todo arquétipo do registro: 53 arquétipos e 76 capacidades diluídas de
+    // uma vez, 61% do catálogo, sem ter combinado nada
+    // 6 em cada base: com o transbordo a ficha chega a ~9 efetivos — acima do
+    // mínimo 8 do Nulo, abaixo do mínimo 10 de qualquer par. É a janela em que
+    // SÓ a receita de 13 componentes existe, que é exatamente o que o teste
+    // precisa isolar.
+    const p = criarPersonagem('t');
+    for (const def of Object.values(ELEMENTOS)) {
+      if (def.tipo === 'base') investirElemento(p, def.id as ElementoBaseId, 6);
+    }
+    const prog = calcularProgressao(p);
+    expect(prog.niveisEfetivos.nulo).toBeGreaterThan(0);
+    expect(prog.arquetiposDiluidos).toEqual([]);
+    expect(prog.capacidadesDiluidas.size).toBe(0);
+  });
+
+  it('mas a meia-identidade continua valendo para triplas e quádruplas', () => {
+    const p = ficha([['fogo', 18], ['terra', 18], ['ar', 18]], 14);
+    const prog = calcularProgressao(p);
+    expect(prog.combinacoesLiberadas.length).toBeGreaterThan(0);
+    expect(prog.arquetiposDiluidos.length).toBeGreaterThan(0);
+  });
+});
+
 describe('devolver ponto NUNCA pode depender do destrave', () => {
   // QA rodada 2: com lava destravada (50 fogo + 50 terra) o jogador põe ponto
   // direto nela; ao remover pontos do fogo a lava RETRANCA. O ponto direto
@@ -247,7 +306,7 @@ describe('devolver ponto NUNCA pode depender do destrave', () => {
 });
 
 describe('o Nulo continua exigindo TODOS os elementos base', () => {
-  it('a receita do Nulo cobre os 17 elementos base', () => {
+  it('a receita do Nulo cobre os 13 elementos base', () => {
     const bases = Object.values(ELEMENTOS)
       .filter((d) => d.tipo === 'base')
       .map((d) => d.id)
@@ -267,5 +326,49 @@ describe('lista de investimento mostra elementos EM PROGRESSO (pedido do dono)',
       fonteUI.indexOf('function renderDetalheElemento'),
     );
     expect(painel).toContain('prog.cascata.progressoDestravamento');
+  });
+});
+
+describe('o invariante de balanceamento vale na CURVA, não num ponto', () => {
+  it('especializar fica entre 1.0× e 1.25× de combinar, em toda a faixa de orçamento', () => {
+    // Medir num orçamento só escondia a inclinação: a razão sobe com o
+    // orçamento (1.11× em 60, 1.24× em 800) porque o especialista aproveita
+    // melhor os níveis altos. O que precisa valer é que ela nunca inverta
+    // (combinar melhor que especializar, tornando a base decorativa) nem passe
+    // de 25% (especializar dominante, tornando a combinação decorativa).
+    const impacto = (els: [ElementoBaseId, number][], elemento: string): number => {
+      const p = criarPersonagem('t');
+      for (const [e, n] of els) investirElemento(p, e, n);
+      investirEscola(p, 'conjuracao', 14);
+      investirRecurso(p, 'mana', 10);
+      const r = calcularSkill(p, calcularProgressao(p), skill(elemento, { energia: 30 }));
+      return r.valida ? r.impactoTotal : 0;
+    };
+    for (const orcamento of [100, 200, 400, 800]) {
+      const meio = orcamento / 2;
+      const terco = Math.floor(orcamento / 3);
+      const puro = impacto([['fogo', orcamento]], 'fogo');
+      const par = impacto([['fogo', meio], ['terra', meio]], 'lava');
+      const tripla = impacto([['fogo', terco], ['terra', terco], ['ar', terco]], 'vulcao');
+      for (const [nome, combinado] of [['par', par], ['tripla', tripla]] as const) {
+        const razao = puro / combinado;
+        expect(razao, `${nome} em ${orcamento}: combinar passou a dominar`).toBeGreaterThan(1);
+        expect(razao, `${nome} em ${orcamento}: especializar domina demais`).toBeLessThanOrEqual(1.25);
+      }
+    }
+  });
+
+  it('nenhuma base base é mais forte que outra em poder bruto', () => {
+    // A teia de sinergias é assimétrica de propósito (Vida é hub). Isso pode
+    // mudar o que uma base ABRE, nunca quanto ela BATE.
+    const impactos = elementosBase().map((def) => {
+      const p = criarPersonagem('t');
+      investirElemento(p, def.id as ElementoBaseId, 60);
+      investirEscola(p, 'conjuracao', 14);
+      investirRecurso(p, 'mana', 10);
+      const r = calcularSkill(p, calcularProgressao(p), skill(def.id, { energia: 30 }));
+      return r.impactoTotal;
+    });
+    expect(Math.max(...impactos) / Math.min(...impactos)).toBeCloseTo(1, 5);
   });
 });

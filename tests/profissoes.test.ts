@@ -14,7 +14,8 @@ import { itensDaProfissao } from '../src/registry/profissoes';
 function ferreiro(nivel = 10): ReturnType<typeof criarPersonagem> {
   const p = criarPersonagem('Durin');
   investirProfissao(p, 'ferreiro', nivel);
-  investirElemento(p, 'vigor', 12);
+  investirElemento(p, 'vida', 12);
+  investirElemento(p, 'marcial', 12);
   investirElemento(p, 'marcial', 10);
   return p;
 }
@@ -96,8 +97,9 @@ describe('propriedades emergentes (a ficha molda o item)', () => {
   });
 
   it('imbuir sem maestria é rejeitado', () => {
+    // sem UM ponto sequer em fogo: mesmo o transbordo da ficha do ferreiro
+    // (vida+marcial) não chega ao limiar de maestria
     const p = ferreiro();
-    investirElemento(p, 'fogo', 3); // abaixo do limiar
     const prog = calcularProgressao(p);
     const r = craftar(p, prog, { profissao: 'ferreiro', itemId: 'espada', elementosImbuidos: ['fogo'] });
     expect(r.valida).toBe(false);
@@ -133,7 +135,8 @@ describe('ponte bestiário → curtidor (peles de criatura)', () => {
     const p = criarPersonagem('Peleiro');
     investirProfissao(p, 'curtidor', 10);
     investirElemento(p, 'vida', 12);
-    investirElemento(p, 'vigor', 12);
+    investirElemento(p, 'vida', 12);
+    investirElemento(p, 'marcial', 12);
     return p;
   }
 

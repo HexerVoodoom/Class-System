@@ -71,11 +71,11 @@ describe('integridade do conteúdo', () => {
 describe('panorama', () => {
   it('reporta o tamanho real do sistema', () => {
     const p = panorama();
-    expect(p.elementosBase).toBe(17);
-    expect(p.pares).toBe(136);
-    expect(p.triplas).toBe(680);
-    expect(p.quadruplas).toBe(2380);
-    expect(p.elementosAlcancaveis).toBe(3215);
+    expect(p.elementosBase).toBe(13);
+    expect(p.pares).toBe(78);
+    expect(p.triplas).toBe(286);
+    expect(p.quadruplas).toBe(715);
+    expect(p.elementosAlcancaveis).toBe(1094);
   });
 });
 
@@ -99,7 +99,7 @@ describe('requisitos e planejamento', () => {
     const alvo = { vida: 20 as number, fogo: 10 as number };
     const direto = pontosDiretosPara(alvo);
     expect(direto.vida).toBe(20);
-    expect(direto.fogo!).toBeLessThan(10);
+    expect(direto.fogo ?? 0).toBeLessThanOrEqual(10);
     // e o plano é verificado: a ficha resultante realmente atinge o alvo
     const p = criarPersonagem('v');
     p.elementos = direto;
@@ -323,8 +323,8 @@ describe('determinismo — o contrato mais importante para automação', () => {
     const p2 = listarCombinacoes({ aridade: 3, limite: 10, offset: 10 });
     const tudo = listarCombinacoes({ aridade: 3, limite: 20, offset: 0 });
     expect([...p1.itens, ...p2.itens].map((x) => x.id)).toEqual(tudo.itens.map((x) => x.id));
-    expect(p1.total).toBe(680);
-    expect(p1.restantes).toBe(670);
+    expect(p1.total).toBe(286);
+    expect(p1.restantes).toBe(276);
   });
 });
 
