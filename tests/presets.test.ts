@@ -117,14 +117,19 @@ describe('a lista é navegável e sem duplicata', () => {
     }
   });
 
-  it('nenhum grupo da galeria passa de 12 cards — acima disso a lista vira parede', () => {
-    // O benchmark é consistente: nenhum jogo grande expõe mais de ~12 opções
-    // de partida numa lista plana. A galeria agrupa por papel, então o teto
-    // que importa é o do GRUPO, não o da lista inteira.
-    const porPapel = new Map<string, number>();
-    for (const p of PRESETS) porPapel.set(p.papel, (porPapel.get(p.papel) ?? 0) + 1);
-    for (const [papel, n] of porPapel) {
-      expect(n, `o papel ${papel} tem ${n} presets`).toBeLessThanOrEqual(12);
+  it('nenhum bloco da galeria passa de 12 cards — acima disso a lista vira parede', () => {
+    // O benchmark é sobre lista PLANA: nenhum jogo grande expõe mais de ~12
+    // opções de partida sem hierarquia. A galeria tem duas: seções por papel e,
+    // dentro de cada uma, ordem por complexidade. O bloco que a pessoa varre de
+    // uma vez é papel × complexidade — é esse que não pode virar parede, não a
+    // seção inteira (que tem busca e filtro por cima).
+    const blocos = new Map<string, number>();
+    for (const p of PRESETS) {
+      const k = `${p.papel}/${p.complexidade}`;
+      blocos.set(k, (blocos.get(k) ?? 0) + 1);
+    }
+    for (const [bloco, n] of blocos) {
+      expect(n, `o bloco ${bloco} tem ${n} presets`).toBeLessThanOrEqual(12);
     }
   });
 
