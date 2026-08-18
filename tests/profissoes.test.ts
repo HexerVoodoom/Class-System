@@ -97,8 +97,9 @@ describe('propriedades emergentes (a ficha molda o item)', () => {
   });
 
   it('imbuir sem maestria é rejeitado', () => {
+    // sem UM ponto sequer em fogo: mesmo o transbordo da ficha do ferreiro
+    // (vida+marcial) não chega ao limiar de maestria
     const p = ferreiro();
-    investirElemento(p, 'fogo', 3); // abaixo do limiar
     const prog = calcularProgressao(p);
     const r = craftar(p, prog, { profissao: 'ferreiro', itemId: 'espada', elementosImbuidos: ['fogo'] });
     expect(r.valida).toBe(false);

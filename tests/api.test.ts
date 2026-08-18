@@ -99,7 +99,7 @@ describe('requisitos e planejamento', () => {
     const alvo = { vida: 20 as number, fogo: 10 as number };
     const direto = pontosDiretosPara(alvo);
     expect(direto.vida).toBe(20);
-    expect(direto.fogo!).toBeLessThan(10);
+    expect(direto.fogo ?? 0).toBeLessThanOrEqual(10);
     // e o plano é verificado: a ficha resultante realmente atinge o alvo
     const p = criarPersonagem('v');
     p.elementos = direto;

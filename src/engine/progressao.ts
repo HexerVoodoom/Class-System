@@ -108,15 +108,26 @@ export function calcularProgressao(p: Personagem): Progressao {
     else diretosDerivados[id] = pontos;
   }
 
-  // 2) transbordo de sinergias (a partir dos pontos diretos)
+  // 2) transbordo de sinergias (a partir dos pontos diretos).
+  //
+  //    SOMA PRIMEIRO, ARREDONDA DEPOIS. Arredondar cada seta isolada fazia as
+  //    contribuições pequenas evaporarem: com quatro laços de 0.25 apontando
+  //    para Vida, 1 ponto em cada um dos quatro clássicos rendia ZERO, quando
+  //    a regra do jogo diz que rende 1. Acumular a fração e arredondar uma vez
+  //    só no alvo é o que faz "1 em cada um dos quatro = 1 de vida" fechar, e
+  //    é o que torna a volta dos laços jogável em vez de decorativa.
+  const bruto: Partial<Record<ElementoId, number>> = {};
   for (const s of SINERGIAS) {
     const origem = p.elementos[s.de] ?? 0;
-    const bonus = Math.floor(origem * s.razao * (1 + bonusTransbordo));
+    if (origem <= 0) continue;
+    const contribuicao = origem * s.razao * (1 + bonusTransbordo);
+    for (const alvo of s.para) bruto[alvo] = (bruto[alvo] ?? 0) + contribuicao;
+  }
+  for (const [alvo, acumulado] of Object.entries(bruto) as [ElementoId, number][]) {
+    const bonus = Math.floor(acumulado);
     if (bonus <= 0) continue;
-    for (const alvo of s.para) {
-      niveis[alvo] += bonus;
-      transbordo[alvo] = (transbordo[alvo] ?? 0) + bonus;
-    }
+    niveis[alvo] += bonus;
+    transbordo[alvo] = (transbordo[alvo] ?? 0) + bonus;
   }
 
   // 2b) cascata geracional — a segunda contabilidade (destraves e alimento da

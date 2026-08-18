@@ -471,29 +471,95 @@ export interface Sinergia {
   razao: number;
 }
 
-export const SINERGIAS: Sinergia[] = [
-  { de: 'vida', para: [...ELEMENTOS_PRIMAIS], razao: 0.2 },
-  { de: 'fogo', para: ['vileza'], razao: 0.1 },
-  { de: 'vileza', para: ['fogo'], razao: 0.1 },
-  { de: 'sombra', para: ['morte'], razao: 0.1 },
-  { de: 'morte', para: ['sombra'], razao: 0.1 },
-  { de: 'luz', para: ['vida'], razao: 0.1 },
-  { de: 'vida', para: ['luz'], razao: 0.1 },
-  // Vida e Marcial se alimentam: o corpo treinado é o que sobrou do Vigor,
-  // que virou justamente o par dos dois.
-  { de: 'marcial', para: ['vida'], razao: 0.1 },
-  { de: 'vida', para: ['marcial'], razao: 0.1 },
-  { de: 'terra', para: ['vida'], razao: 0.05 },
-  // Arcano e Gravidade se alimentam: Tempo e Espaço saíram da base e viraram
-  // pares da Gravidade, então o transbordo aponta para a raiz, não para eles.
-  { de: 'arcano', para: ['gravidade'], razao: 0.08 },
-  { de: 'gravidade', para: ['arcano'], razao: 0.08 },
-  { de: 'eletricidade', para: ['ar'], razao: 0.05 },
-  { de: 'ar', para: ['vida'], razao: 0.05 },
-  // Arcano é magia pura: alimenta de leve tudo que não é físico.
+/**
+ * LAÇO DE SINERGIA — a relação, não a seta.
+ *
+ * Sinergia é de MÃO DUPLA por definição do jogo: se investir em Fogo fortalece
+ * a Vida, investir em Vida fortalece o Fogo. Declarar as duas direções à mão
+ * deixava metade delas se perder numa refatoração — foi o que aconteceu quando
+ * a base caiu de 17 para 13 e sobraram setas apontando para elementos que
+ * tinham virado derivados. Aqui a volta é gerada, não escrita: **não existe
+ * como declarar uma sinergia de mão única por descuido**.
+ *
+ * As duas taxas são diferentes de propósito, porque os lados têm cardinalidade
+ * diferente. No laço Vida ↔ os quatro clássicos:
+ *
+ *   ida  0.20 → 5 de Vida rendem 1 ponto em CADA um dos quatro;
+ *   volta 0.25 → 1 ponto em CADA um dos quatro rende 1 de Vida.
+ *
+ * A conta da volta só fecha porque o transbordo SOMA antes de arredondar
+ * (ver `calcularProgressao`): quatro contribuições de 0.25 viram 1, enquanto
+ * arredondar cada uma isolada daria zero.
+ */
+export interface LacoSinergia {
+  a: ElementoBaseId;
+  b: ElementoBaseId[];
+  /** Quanto 1 ponto em `a` rende em CADA elemento de `b`. */
+  ida: number;
+  /** Quanto 1 ponto em CADA elemento de `b` rende em `a`. */
+  volta: number;
+  /** Por que estes elementos se alimentam. */
+  motivo: string;
+}
+
+/** Os quatro clássicos. Eletricidade é primal mas não entra no laço da Vida. */
+const CLASSICOS: ElementoBaseId[] = ['fogo', 'agua', 'terra', 'ar'];
+
+export const LACOS_SINERGIA: LacoSinergia[] = [
+  // --- o laço da Vida, a regra do dono do projeto ---
   {
-    de: 'arcano',
-    para: ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'sombra', 'luz'],
-    razao: 0.05,
+    a: 'vida',
+    b: CLASSICOS,
+    ida: 0.2,
+    volta: 0.25,
+    motivo: 'O corpo é feito dos quatro; e o que vive alimenta os quatro de volta.',
   },
+  { a: 'vida', b: ['luz'], ida: 0.12, volta: 0.12, motivo: 'Cura sagrada é o encontro das duas.' },
+  {
+    a: 'vida',
+    b: ['marcial'],
+    ida: 0.12,
+    volta: 0.12,
+    motivo: 'O corpo treinado é o par das duas — absorveu o antigo Vigor.',
+  },
+
+  // --- os quatro clássicos entre si e com o que os cerca ---
+  { a: 'fogo', b: ['vileza'], ida: 0.14, volta: 0.14, motivo: 'A fornalha dos pactos queima a carne e a vontade.' },
+  { a: 'fogo', b: ['marcial'], ida: 0.12, volta: 0.12, motivo: 'A forja: o metal só cede ao calor.' },
+  { a: 'agua', b: ['morte'], ida: 0.14, volta: 0.14, motivo: 'O afogamento e a toxina: a água paciente corrói.' },
+  { a: 'agua', b: ['ar'], ida: 0.12, volta: 0.12, motivo: 'Névoa e gelo nascem do encontro dos dois.' },
+  { a: 'terra', b: ['marcial'], ida: 0.14, volta: 0.14, motivo: 'O minério vira lâmina; a lâmina volta ao minério.' },
+  { a: 'terra', b: ['gravidade'], ida: 0.14, volta: 0.14, motivo: 'Matéria e peso são a mesma pergunta vista de dois lados.' },
+  { a: 'ar', b: ['eletricidade'], ida: 0.16, volta: 0.16, motivo: 'A descarga precisa do meio, e o vento carrega a carga.' },
+  { a: 'ar', b: ['luz'], ida: 0.12, volta: 0.12, motivo: 'A aurora: a luz só se vê porque o ar a espalha.' },
+
+  // --- o eixo escuro ---
+  { a: 'sombra', b: ['morte'], ida: 0.16, volta: 0.16, motivo: 'O que se esconde e o que termina caminham juntos.' },
+  { a: 'sombra', b: ['vileza'], ida: 0.14, volta: 0.14, motivo: 'A corrupção precisa do escuro para crescer.' },
+  { a: 'sombra', b: ['gravidade'], ida: 0.12, volta: 0.12, motivo: 'Nem a luz escapa do que é denso demais.' },
+  { a: 'morte', b: ['vileza'], ida: 0.14, volta: 0.14, motivo: 'A putrefação é o encontro das duas.' },
+
+  // --- o eixo luminoso ---
+  { a: 'luz', b: ['eletricidade'], ida: 0.12, volta: 0.12, motivo: 'O fulgor: o raio é luz que se ouve.' },
+  { a: 'eletricidade', b: ['terra'], ida: 0.12, volta: 0.12, motivo: 'Magnetismo: a carga procura o solo.' },
+
+  // --- a trama ---
+  { a: 'gravidade', b: ['arcano'], ida: 0.16, volta: 0.16, motivo: 'Tempo e Espaço são pares dos dois: a trama responde à magia pura.' },
+  { a: 'gravidade', b: ['morte'], ida: 0.12, volta: 0.12, motivo: 'O que cai fundo o bastante não volta.' },
+  {
+    a: 'arcano',
+    b: ['fogo', 'agua', 'terra', 'eletricidade', 'sombra', 'luz'],
+    ida: 0.05,
+    volta: 0.05,
+    motivo: 'Magia pura alimenta de leve tudo que não é físico — e é alimentada de volta.',
+  },
+  { a: 'arcano', b: ['marcial'], ida: 0.08, volta: 0.08, motivo: 'A lâmina encantada exige as duas mãos.' },
 ];
+
+/**
+ * As setas, geradas dos laços. É isto que o motor lê; ninguém escreve à mão.
+ */
+export const SINERGIAS: Sinergia[] = LACOS_SINERGIA.flatMap((l) => [
+  { de: l.a, para: [...l.b], razao: l.ida },
+  ...l.b.map((alvo) => ({ de: alvo, para: [l.a], razao: l.volta })),
+]);

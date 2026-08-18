@@ -168,13 +168,20 @@ export function calcularCascata(
   // Transbordo de sinergias de alvo único — mesma fórmula de progressao.ts,
   // mas só a fatia segura de alimentar a cascata (ver docstring acima).
   const transbordoSimples = new Map<ElementoBaseId, number>();
-  for (const s of SINERGIAS_ALVO_UNICO) {
-    const origem = diretos.get(s.de) ?? 0;
-    if (origem <= 0) continue;
-    const bonus = Math.floor(origem * s.razao * (1 + bonusTransbordo));
-    if (bonus <= 0) continue;
-    const alvo = s.para[0];
-    transbordoSimples.set(alvo, (transbordoSimples.get(alvo) ?? 0) + bonus);
+  {
+    // mesma regra de `progressao.ts`: acumula a fração de todas as setas que
+    // apontam para o alvo e arredonda uma vez só
+    const acumulado = new Map<ElementoBaseId, number>();
+    for (const s of SINERGIAS_ALVO_UNICO) {
+      const origem = diretos.get(s.de) ?? 0;
+      if (origem <= 0) continue;
+      const alvo = s.para[0];
+      acumulado.set(alvo, (acumulado.get(alvo) ?? 0) + origem * s.razao * (1 + bonusTransbordo));
+    }
+    for (const [alvo, valor] of acumulado) {
+      const bonus = Math.floor(valor);
+      if (bonus > 0) transbordoSimples.set(alvo, bonus);
+    }
   }
 
   // Bases semente: as investidas diretamente + as das receitas de qualquer
