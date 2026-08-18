@@ -219,7 +219,7 @@ export const ARQUETIPOS: Record<string, ArquetipoDef> = Object.fromEntries(
     a('executor', 'Executor', 'Lâmina do Juízo (marcial+luz+morte) + Combate Físico: corta apenas o já sentenciado.',
       { elementos: { lamina_do_juizo: 15 }, escolas: { combate_fisico: 12 } },
       ['sentenca_marcial', 'corte_do_veredito']),
-    a('epidemiologista', 'Epidemiologista', 'Peste Negra (morte+vileza+água) + Maldição: a doença perfeita, desenhada.',
+    a('doutor_da_praga', 'Doutor da Praga', 'Peste Negra (morte+vileza+água) + Maldição: a doença perfeita, desenhada — e quem a desenhou usa máscara.',
       { elementos: { peste_negra: 14 }, escolas: { maldicao: 12 } },
       ['epidemia', 'vetor_de_contagio']),
     a('taumaturgo', 'Taumaturgo', 'Milagre (luz+vida+arcano) + Bênção: reverte o que não deveria ter volta.',
