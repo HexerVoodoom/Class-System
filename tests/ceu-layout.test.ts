@@ -65,7 +65,7 @@ describe('posicionamento', () => {
         total++;
       }
     }
-    expect(total).toBe(136 + 680 + 2380);
+    expect(total).toBe(78 + 286 + 715);
     expect(chaves.size).toBe(total);
   });
 

@@ -158,11 +158,11 @@ describe('cascata — estrutura e contratos', () => {
       expect(sim.destravados.has(especial)).toBe(false);
       expect(ELEMENTOS[especial].cascata?.destravavel).toBe(false);
     }
-    // nulo (17 bases a 100, divisor 20) rende floor(100/20)=5 passivos
+    // nulo (13 bases a 100, divisor 20) rende floor(100/20)=5 passivos
     expect(sim.passivos.get('nulo')).toBe(5);
   });
 
-  it('ficha nova: alocáveis = exatamente os 17 base', () => {
+  it('ficha nova: alocáveis = exatamente os 13 base', () => {
     const sim = calcularCascata({});
     expect(elementosAlocaveis(sim)).toEqual(elementosBase().map((d) => d.id));
   });
@@ -178,15 +178,15 @@ describe('cascata — estrutura e contratos', () => {
     }
   });
 
-  it('escala: 17 bases a 100 pontos resolve rápido e sem inflar o mapa', () => {
+  it('escala: 13 bases a 100 pontos resolve rápido e sem inflar o mapa', () => {
     const bases: Partial<Record<ElementoId, number>> = {};
     for (const def of elementosBase()) bases[def.id] = 100;
     const inicio = performance.now();
     const sim = calcularCascata(bases);
     const duracao = performance.now() - inicio;
     expect(duracao).toBeLessThan(500);
-    // o pior caso toca o espaço inteiro (17+136+680+2380+especiais)
-    expect(sim.paraCascata.size).toBeGreaterThan(3000);
+    // o pior caso toca o espaço inteiro (13+78+286+715+especiais)
+    expect(sim.paraCascata.size).toBeGreaterThan(1000);
     // ...mas uma ficha típica toca DEZENAS
     const tipica = calcularCascata({ fogo: 30, agua: 20, vida: 10 });
     expect(tipica.paraCascata.size).toBeLessThan(20);
@@ -230,7 +230,7 @@ describe('a UI não reimplementa a regra (camadas)', () => {
 
   it('o painel de investir LÊ prog.alocaveis — não lista as bases por conta própria', () => {
     // Regressão real: a tabela lateral nasceu com `elementosBase()` fixo e o
-    // comentário "só os 17 base aceitam pontos diretos". Com isso, um par
+    // comentário "só os 13 base aceitam pontos diretos". Com isso, um par
     // destravado não tinha onde receber o ponto direto que a regra concede —
     // a regra existia no motor e era inalcançável pela interface.
     const painel = fonteUI.slice(
@@ -278,8 +278,8 @@ describe('integração com o personagem e a progressão', () => {
     expect(podeInvestir(quase, 'vapor').ok).toBe(true);
     expect(() => investirElemento(quase, 'vapor', 1)).not.toThrow();
 
-    // E a regra vale para TODOS os 136 pares, não só para o vapor: numa ficha
-    // nova, nenhum derivado aceita ponto direto (só as 17 bases).
+    // E a regra vale para TODOS os 78 pares, não só para o vapor: numa ficha
+    // nova, nenhum derivado aceita ponto direto (só as 13 bases).
     const novo = criarPersonagem('novo');
     const alocaveisIniciais = calcularProgressao(novo).alocaveis;
     expect(alocaveisIniciais).toEqual(elementosBase().map((d) => d.id));

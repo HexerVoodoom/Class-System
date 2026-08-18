@@ -50,7 +50,7 @@ Em TypeScript, o mesmo está em `src/api/consultas.ts` — importe de lá, não 
    capacidades, propriedades de item.
 3. Um **elemento derivado** existe quando todos os componentes da sua receita
    atingem o nível mínimo; o nível dele é o **menor** entre os componentes.
-4. Há **3.215 elementos alcançáveis**: 17 base, 136 pares, 680 triplas, 2.380
+4. Há **1.094 elementos alcançáveis**: 13 base, 78 pares, 286 triplas, 715
    quádruplas. Os pares são nomeados à mão; triplas e quádruplas são 64 curadas
    e ~3.000 **geradas sob demanda**.
 5. Uma **skill** é elemento + escola + fontes de energia + forma (energia,
@@ -100,6 +100,16 @@ Arquivos por assunto:
 | Quero mexer em | Arquivo |
 |---|---|
 | Elementos base, pares, sinergias | `registry/elementos.ts` |
+
+> **Vigor, Tempo, Espaço e Som não são bases.** Foram REBAIXADOS a pares de 2ª
+> geração — `vigor` = vida+marcial, `tempo` = gravidade+arcano, `espaco` =
+> gravidade+ar, `som` = ar+vida — quando a base caiu de 17 para 13. Continuam
+> existindo, com nível efetivo, arquétipos e skills próprios; só não aceitam
+> ponto direto. Uma ficha que quer Vigor 15 investe 15 em vida **e** 15 em
+> marcial. Os ids `maestria`, `vitalidade`, `lamina_viva`, `cronomancia`,
+> `singularidade`, `dilatacao`, `vacuo`, `estratosfera`, `dobra`, `alento`,
+> `estampido` e `melodia` **não existem mais**: diziam a mesma coisa que o
+> elemento que os engoliu.
 | Classes prontas (presets) | `registry/presets.ts` |
 | Formas de skill/fusão (tipos) | `registry/formatos.ts` |
 | Triplas e quádruplas | `registry/combinacoes.ts` (`CURADAS`) |
@@ -186,7 +196,7 @@ aviso em `avisos`.
 ### Classe pronta (`PresetDef`)
 
 Um preset é uma ficha inteira já distribuída, e o antídoto à tela em branco
-diante de 3.215 elementos. Mora em `registry/presets.ts` como **dado puro** —
+diante de 1.094 elementos. Mora em `registry/presets.ts` como **dado puro** —
 sem chamar `investir*`, sem importar do motor. Quem monta é
 `engine/presets.ts`.
 
@@ -231,7 +241,7 @@ Ao adicionar um preset, o que costuma reprovar:
 ## 6. Erros que agentes cometem neste sistema
 
 1. **Investir pontos num elemento derivado.** `investirElemento(p, 'lava', 12)`
-   lança erro. Derivados emergem; só os 17 base aceitam pontos.
+   lança erro. Derivados emergem; só os 13 base aceitam pontos.
 2. **Esquecer que o nível efetivo ≠ pontos diretos.** As sinergias de transbordo
    fazem investir em `vida` elevar `fogo`, `agua`, `terra`, `ar` e
    `eletricidade`. Use `calcularProgressao` ou `analisarFicha`, nunca leia

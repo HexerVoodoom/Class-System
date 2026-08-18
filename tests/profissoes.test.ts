@@ -14,7 +14,8 @@ import { itensDaProfissao } from '../src/registry/profissoes';
 function ferreiro(nivel = 10): ReturnType<typeof criarPersonagem> {
   const p = criarPersonagem('Durin');
   investirProfissao(p, 'ferreiro', nivel);
-  investirElemento(p, 'vigor', 12);
+  investirElemento(p, 'vida', 12);
+  investirElemento(p, 'marcial', 12);
   investirElemento(p, 'marcial', 10);
   return p;
 }
@@ -133,7 +134,8 @@ describe('ponte bestiário → curtidor (peles de criatura)', () => {
     const p = criarPersonagem('Peleiro');
     investirProfissao(p, 'curtidor', 10);
     investirElemento(p, 'vida', 12);
-    investirElemento(p, 'vigor', 12);
+    investirElemento(p, 'vida', 12);
+    investirElemento(p, 'marcial', 12);
     return p;
   }
 

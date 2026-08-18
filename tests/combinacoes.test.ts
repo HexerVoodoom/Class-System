@@ -16,7 +16,7 @@ import { calcularProgressao } from '../src/engine/progressao';
 import { calcularSkill, type SkillConfig } from '../src/engine/skills';
 
 describe('matriz completa de combinações', () => {
-  it('TODOS os 136 pares de elementos base têm um derivado registrado', () => {
+  it('TODOS os 78 pares de elementos base têm um derivado registrado', () => {
     const bases = elementosBase().map((e) => e.id as ElementoBaseId);
     const paresRegistrados = new Set(
       elementosDerivados()
@@ -36,7 +36,7 @@ describe('matriz completa de combinações', () => {
       }
     }
     expect(faltando).toEqual([]);
-    expect(paresRegistrados.size).toBe(136); // C(17,2): +tempo, som, gravidade, espaço
+    expect(paresRegistrados.size).toBe(78); // C(13,2)
   });
 
   it('derivados herdam perfil como média dos componentes', () => {
@@ -51,20 +51,31 @@ describe('matriz completa de combinações', () => {
     expect(ELEMENTOS.chama_demoniaca.receita).toHaveLength(3);
     expect(ELEMENTOS.primordial.receita).toHaveLength(5);
     expect(ELEMENTOS.ciclo.receita).toHaveLength(4);
-    expect(ELEMENTOS.nulo.receita).toHaveLength(17);
+    expect(ELEMENTOS.nulo.receita).toHaveLength(13);
   });
 
-  it('tempo (14º base) fecha a matriz: pira eterna e cronomancia existem', () => {
-    expect(ELEMENTOS.tempo.tipo).toBe('base');
-    expect(ELEMENTOS.pira_eterna.receita!.map((c) => c.elemento).sort()).toEqual(['fogo', 'tempo']);
-    expect(ELEMENTOS.cronomancia.receita!.map((c) => c.elemento).sort()).toEqual(['arcano', 'tempo']);
+  it('Tempo saiu da base e virou o par Gravidade+Arcano', () => {
+    // Rebaixado, não apagado: continua existindo, com nível efetivo e
+    // arquétipos próprios — só deixou de aceitar ponto direto.
+    expect(ELEMENTOS.tempo.tipo).toBe('derivado');
+    expect(ELEMENTOS.tempo.receita!.map((c) => c.elemento).sort()).toEqual([
+      'arcano',
+      'gravidade',
+    ]);
+    // e o que era par de Tempo virou receita de três bases
+    expect(ELEMENTOS.pira_eterna.receita!.map((c) => c.elemento).sort()).toEqual([
+      'arcano',
+      'fogo',
+      'gravidade',
+    ]);
   });
 
-  it('tempo + arcano libera cronomancia', () => {
+  it('gravidade + arcano libera Tempo, e ponto direto nele é recusado', () => {
     const p = criarPersonagem('t');
-    investirElemento(p, 'tempo', 12);
+    investirElemento(p, 'gravidade', 12);
     investirElemento(p, 'arcano', 12);
-    expect(calcularProgressao(p).niveisEfetivos.cronomancia).toBe(12);
+    expect(calcularProgressao(p).niveisEfetivos.tempo).toBe(12);
+    expect(() => investirElemento(p, 'tempo', 1)).toThrow();
   });
 
   it('primordial: 12+ em todos os primais libera o elemento', () => {
@@ -104,14 +115,19 @@ describe('arquétipos por elemento derivado', () => {
 });
 
 describe('elemento marcial', () => {
-  it('marcial + vigor → maestria, com sinergia mútua', () => {
+  it('marcial + vida → Vigor, com sinergia mútua', () => {
+    // Vigor deixou de ser base e virou exatamente este par. Maestria,
+    // Vitalidade e Lâmina Viva diziam a mesma coisa e foram absorvidas por ele.
     const p = criarPersonagem('t');
     investirElemento(p, 'marcial', 12);
-    investirElemento(p, 'vigor', 10);
+    investirElemento(p, 'vida', 10);
     const prog = calcularProgressao(p);
-    // vigor efetivo 10 + floor(12*0.1) = 11; maestria = min(12, 11)
+    // cada um transborda 10% no outro: vida 10+1=11, marcial 12+1=13
+    expect(prog.niveisEfetivos.vida).toBe(11);
+    expect(prog.niveisEfetivos.marcial).toBe(13);
+    // o derivado vale o MENOR dos componentes
     expect(prog.niveisEfetivos.vigor).toBe(11);
-    expect(prog.niveisEfetivos.maestria).toBe(11);
+    expect(ELEMENTOS.maestria).toBeUndefined();
   });
 
   it('marcial + combate físico → mestre de armas', () => {

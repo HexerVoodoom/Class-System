@@ -1,7 +1,7 @@
 /**
  * Constantes da ALOCAÇÃO GERACIONAL — os diais da cascata num lugar só.
  *
- * A regra (pedida pelo dono do projeto): ponto direto nasce restrito aos 17
+ * A regra (pedida pelo dono do projeto): ponto direto nasce restrito aos 13
  * elementos base; investir nos DOIS pais de um par faz o par acumular pontos
  * PASSIVOS (a cada `DIVISOR_CASCATA` pontos efetivos em CADA pai, 1 ponto
  * passivo no filho — 5 fogo + 5 água → 1 vapor); um derivado que acumula

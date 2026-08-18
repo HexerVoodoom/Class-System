@@ -189,7 +189,7 @@ describe('a interface precisa alcançar todo o conteúdo', () => {
 
 describe('largura não pode comprar altura', () => {
   it('a compensação de aridade satura na aridade máxima construível', () => {
-    // O Nulo tem 17 componentes. Sem o teto, o bônus por nível ia a 0.232 e
+    // O Nulo tem 13 componentes. Sem o teto, o bônus por nível ia a 0.232 e
     // ele entregava ~2× a eficiência de qualquer preset de mesmo tempo de
     // conjuração — com o MENOR nível efetivo da lista.
     const p = criarPersonagem('t');
@@ -292,7 +292,7 @@ describe('devolver ponto NUNCA pode depender do destrave', () => {
 });
 
 describe('o Nulo continua exigindo TODOS os elementos base', () => {
-  it('a receita do Nulo cobre os 17 elementos base', () => {
+  it('a receita do Nulo cobre os 13 elementos base', () => {
     const bases = Object.values(ELEMENTOS)
       .filter((d) => d.tipo === 'base')
       .map((d) => d.id)

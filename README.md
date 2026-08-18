@@ -13,7 +13,7 @@ npm run build:sim  # regenera o simulador interativo (simulador.html)
 
 Abra **`simulador.html`** no navegador (arquivo único, auto-contido — o motor real é empacotado dentro dele). Está organizado em **abas**, no espírito do License Board do FFXII:
 
-- **Elementos — o Céu dos Elementos**: um tabuleiro celeste onde os 17 elementos base formam o anel externo e **3.196 combinações de 2 a 4 elementos** orbitam rumo ao centro em faixas por aridade — pares, triplas, quádruplas — com o **Nulo no coração do céu**. Cada combinação tem um **endereço permanente**: a direção diz de quais elementos ela nasce, a profundidade diz quão dispersos eles são, e a faixa diz quantos são. Uma estrela nunca se move porque outra apareceu. Controles de **profundidade (2/3/4)**, **lente**, **zoom** e **busca** decidem o que vira desenho; o **foco de linhagem** acende ancestrais e descendentes do que você selecionou e apaga o resto.
+- **Elementos — o Céu dos Elementos**: um tabuleiro celeste onde os 13 elementos base formam o anel externo e **1.079 combinações de 2 a 4 elementos** orbitam rumo ao centro em faixas por aridade — pares, triplas, quádruplas — com o **Nulo no coração do céu**. Cada combinação tem um **endereço permanente**: a direção diz de quais elementos ela nasce, a profundidade diz quão dispersos eles são, e a faixa diz quantos são. Uma estrela nunca se move porque outra apareceu. Controles de **profundidade (2/3/4)**, **lente**, **zoom** e **busca** decidem o que vira desenho; o **foco de linhagem** acende ancestrais e descendentes do que você selecionou e apaga o resto.
 - **Escolas**: pontos por escola + os arquétipos que emergem da combinação.
 - **Recursos**: proficiência nas cinco fontes de energia (mana, fé, fúria, soullink, ressonância). Cada ponto reduz custo, aumenta regeneração/impacto e encurta a conjuração — e a bancada simula as fontes da skill atual em tempo real.
 - **Talentos**: em **árvore** (trilhas e tiers) ou **cartas**.
@@ -26,7 +26,7 @@ O estado persiste no `localStorage` entre visitas; dá para **exportar/importar*
 ```
 src/
   registry/     ← DADOS: o conteúdo do jogo, editável sem tocar no motor
-    elementos.ts   17 elementos base, os 136 pares nomeados, sinergias
+    elementos.ts   13 elementos base, os 78 pares nomeados, sinergias
     combinacoes.ts as 680 triplas + 2.380 quádruplas: curadas onde importa,
                    procedurais no resto, resolvidas sob demanda
     modificadores.ts modificadores de skill (2ª geração), com tags e custo
@@ -53,7 +53,9 @@ A separação é deliberada: **adicionar um elemento, uma receita, uma sinergia 
 
 ## Camada 1 — Elementos
 
-**Base** (recebem pontos diretos): fogo, água, terra, ar, eletricidade, arcano, sombra, luz, vileza, morte, vida, vigor, **marcial** (armas), **tempo** (pressa/lentidão — Cronomancer), **som** (canções, ondas de choque — Bardo), **gravidade** (peso, colapso — FF Demi), **espaço** (portais, meteoros — Sage/Astromante). São **17 elementos base**.
+**Base** (recebem pontos diretos): fogo, água, terra, ar, eletricidade, arcano, sombra, luz, vileza, morte, **vida** (cura e o corpo — absorveu o antigo Vigor), **marcial** (armas) e **gravidade** (peso, distância e duração — absorveu Espaço e Tempo). São **13 elementos base**.
+
+**Rebaixados, não apagados.** Vigor, Tempo, Espaço e Som saíram da base e voltaram como pares de 2ª geração — `vigor` = vida+marcial, `tempo` = gravidade+arcano, `espaco` = gravidade+ar, `som` = ar+vida. Continuam com nível, arquétipos e skills próprios; só não aceitam ponto direto. Berserker, Cronomante, Astromante e Menestrel seguem jogáveis, pagando por dois componentes em vez de um.
 
 **Sinergias de transbordo** — investir num elemento vaza para os vizinhos:
 
@@ -72,9 +74,9 @@ Cada elemento (e escola) tem um **perfil mecânico** — pesos de dano/controle/
 
 **Derivados** (não aceitam ponto direto; nível = **menor** nível efetivo entre os componentes, exigindo o mínimo da receita — ou seja, evoluem quando os componentes evoluem *juntos*):
 
-- **Todos os 136 pares** dos 17 elementos base existem — incluindo Trovão (som+eletricidade), Terremoto (som+terra), Réquiem (som+morte), Buraco Negro (gravidade+sombra), Singularidade (gravidade+arcano), Implosão (gravidade+morte), Meteoro (espaço+fogo), Portal (espaço+arcano), Constelação (espaço+luz), Continuum (espaço+tempo)… — incluindo os de **Tempo**: Pira Eterna (tempo+fogo), Erosão (tempo+água), Fossilização (tempo+terra), Aceleração (tempo+ar), Instante (tempo+eletricidade), **Cronomancia** (tempo+arcano), Entropia (tempo+sombra), Éon (tempo+luz), Ruína (tempo+vileza), Ocaso (tempo+morte), Florescer (tempo+vida), Frenesi (tempo+vigor), Contratempo (tempo+marcial) — além de Vapor (fogo+água), Lava (fogo+terra), Plasma (fogo+eletricidade), Fênix (fogo+vida), Pântano (água+terra), Gelo (água+ar), Veneno (água+morte), Ácido (água+vileza), Abismo (água+sombra), Areia (terra+ar), Magnetismo (terra+eletricidade), Flora (terra+vida), Titã (terra+vigor), Tempestade (ar+eletricidade), Éter (ar+arcano), Miasma (ar+morte), Galvanismo (eletricidade+morte), Runa (arcano+luz), Pacto (arcano+vileza), Alma (arcano+morte), Espectro (sombra+morte), Parasita (sombra+vida), Assassínio (sombra+vigor), Julgamento (luz+morte), Santidade (luz+vida), Praga (vileza+morte), Mutação (vileza+vida), Carnificina (vileza+vigor), Equilíbrio (morte+vida), Ceifa (morte+vigor)… — a lista completa (com descrição de cada um) está em `src/registry/elementos.ts`, e um teste garante que nenhum par falte.
+- **Todos os 78 pares** dos 13 elementos base existem — incluindo Trovão (som+eletricidade), Terremoto (som+terra), Réquiem (som+morte), Buraco Negro (gravidade+sombra), Singularidade (gravidade+arcano), Implosão (gravidade+morte), Meteoro (espaço+fogo), Portal (espaço+arcano), Constelação (espaço+luz), Continuum (espaço+tempo)… — incluindo os de **Tempo**: Pira Eterna (tempo+fogo), Erosão (tempo+água), Fossilização (tempo+terra), Aceleração (tempo+ar), Instante (tempo+eletricidade), **Cronomancia** (tempo+arcano), Entropia (tempo+sombra), Éon (tempo+luz), Ruína (tempo+vileza), Ocaso (tempo+morte), Florescer (tempo+vida), Frenesi (tempo+vigor), Contratempo (tempo+marcial) — além de Vapor (fogo+água), Lava (fogo+terra), Plasma (fogo+eletricidade), Fênix (fogo+vida), Pântano (água+terra), Gelo (água+ar), Veneno (água+morte), Ácido (água+vileza), Abismo (água+sombra), Areia (terra+ar), Magnetismo (terra+eletricidade), Flora (terra+vida), Titã (terra+vigor), Tempestade (ar+eletricidade), Éter (ar+arcano), Miasma (ar+morte), Galvanismo (eletricidade+morte), Runa (arcano+luz), Pacto (arcano+vileza), Alma (arcano+morte), Espectro (sombra+morte), Parasita (sombra+vida), Assassínio (sombra+vigor), Julgamento (luz+morte), Santidade (luz+vida), Praga (vileza+morte), Mutação (vileza+vida), Carnificina (vileza+vigor), Equilíbrio (morte+vida), Ceifa (morte+vigor)… — a lista completa (com descrição de cada um) está em `src/registry/elementos.ts`, e um teste garante que nenhum par falte.
 - **Triplas**: Chama Demoníaca (fogo+vileza+morte), Paradoxo (tempo+arcano+morte), Furacão (água+ar+eletricidade), Selva (água+terra+vida), Abominação (sombra+morte+vileza), Eclipse (luz+sombra+arcano), Reencarnação (vida+morte+arcano), Sobrecarga (eletricidade+arcano+vigor), Ascensão (luz+vida+vigor), Núcleo (fogo+terra+eletricidade) — fator 1.30.
-- **Amplas**: Primordial (os 5 primais, fator 1.35), Ciclo (vida+morte+luz+sombra, fator 1.35) e **Nulo** (nível 8+ em **todos** os 17 base, fator 1.40). Amplas cósmicas: **Big Bang** (espaço+gravidade+tempo) e **Sinfonia** (som+luz+vida).
+- **Amplas**: Primordial (os 5 primais, fator 1.35), Ciclo (vida+morte+luz+sombra, fator 1.35) e **Nulo** (nível 8+ em **todos** os 13 base, fator 1.40). Amplas cósmicas: **Big Bang** (espaço+gravidade+tempo) e **Sinfonia** (som+luz+vida).
 
 Pares têm fator de potência 1.15 (opostos como Equilíbrio e Crepúsculo, 1.20–1.25). O *fator de potência* compensa o custo de investir em vários componentes: derivados rendem mais por nível, mas o balanceamento se mantém porque exigem o dobro (ou mais) de pontos.
 

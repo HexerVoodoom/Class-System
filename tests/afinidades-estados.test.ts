@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { AFINIDADES } from '../src/registry/afinidades';
+import { elementosBase, type ElementoBaseId } from '../src/registry/elementos';
 import {
   criarPersonagem,
   investirElemento,
@@ -27,19 +29,24 @@ describe('afinidade elemental (Ragnarok/FF/D&D)', () => {
     expect(efetividade('arcano', 'marcial')).toBe(MULT_FORTE); // arcano penetra físico
   });
 
-  it('tempo desgasta a vida e o físico; o arcano domina o tempo', () => {
-    expect(efetividade('tempo', 'vida')).toBe(MULT_FORTE);
-    expect(efetividade('tempo', 'vigor')).toBe(MULT_FORTE);
-    expect(efetividade('arcano', 'tempo')).toBe(MULT_FORTE);
-    expect(efetividade('tempo', 'arcano')).toBe(MULT_FRACO);
+  it('a gravidade esmaga o físico e desgasta o vivo; o arcano a dobra', () => {
+    // Gravidade absorveu Espaço e Tempo: herdou o que os dois faziam.
+    expect(efetividade('gravidade', 'marcial')).toBe(MULT_FORTE);
+    expect(efetividade('gravidade', 'vida')).toBe(MULT_FORTE);
+    expect(efetividade('arcano', 'gravidade')).toBe(MULT_FORTE);
+    expect(efetividade('gravidade', 'arcano')).toBe(MULT_FRACO);
   });
 
-  it('espaço supera gravidade e tempo; som é absorvido pela terra', () => {
-    expect(efetividade('espaco', 'gravidade')).toBe(MULT_FORTE);
-    expect(efetividade('espaco', 'tempo')).toBe(MULT_FORTE);
-    expect(efetividade('gravidade', 'espaco')).toBe(MULT_FRACO);
-    expect(efetividade('som', 'terra')).toBe(MULT_FRACO);
-    expect(efetividade('terra', 'som')).toBe(MULT_FORTE);
+  it('o ciclo elemental não degenerou: todo base tem força e fraqueza', () => {
+    // Com 13 bases em vez de 17, a matriz podia virar uma cadeia sem ciclo —
+    // um pedra-papel-tesoura em que alguém nunca perde.
+    const sem: string[] = [];
+    for (const def of elementosBase()) {
+      const a = AFINIDADES[def.id as ElementoBaseId];
+      if (!a.forteContra.length && def.id !== 'marcial') sem.push(`${def.id}: sem força`);
+      if (!a.fracoContra.length && def.id !== 'luz') sem.push(`${def.id}: sem fraqueza`);
+    }
+    expect(sem).toEqual([]);
   });
 
   it('a skill reporta a efetividade sem alterar o impacto base', () => {
@@ -147,8 +154,11 @@ describe('novas classes (ToS/FF/Ragnarok/WoW/D&D)', () => {
 
 describe('pressa do Cronomante (Camada 7)', () => {
   it('skill de elemento temporal acelera a conjuração (mais poder que a mesma skill não-temporal)', () => {
+    // Tempo virou o par Gravidade+Arcano; a pressa passou a ser detectada
+    // pela RECEITA conter os dois, não pela base dominante.
     const p = criarPersonagem('crono');
-    investirElemento(p, 'tempo', 20);
+    investirElemento(p, 'gravidade', 20);
+    investirElemento(p, 'arcano', 20);
     investirElemento(p, 'fogo', 20);
     investirEscola(p, 'conjuracao', 10);
     investirRecurso(p, 'mana', 5);

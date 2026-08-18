@@ -29,12 +29,8 @@ export type ElementoBaseId =
   | 'vileza'
   | 'morte'
   | 'vida'
-  | 'vigor'
   | 'marcial'
-  | 'tempo'
-  | 'som'
-  | 'gravidade'
-  | 'espaco';
+  | 'gravidade';
 
 export interface PerfilPesos {
   dano: number;
@@ -184,14 +180,6 @@ const ELEMENTOS_BASE: Record<ElementoBaseId, ElementoDef> = {
     pesos: pesos(0, 0, 0.6, 0.2, 0.2),
     descricao: 'Cura e crescimento; alimenta os elementos primais.',
   },
-  vigor: {
-    id: 'vigor',
-    nome: 'Vigor',
-    tipo: 'base',
-    fatorPotencia: 1.0,
-    pesos: pesos(0.6, 0, 0, 0.3, 0.1),
-    descricao: 'O espírito do corpo; potencializa o combate físico.',
-  },
   marcial: {
     id: 'marcial',
     nome: 'Marcial',
@@ -200,22 +188,6 @@ const ELEMENTOS_BASE: Record<ElementoBaseId, ElementoDef> = {
     pesos: pesos(0.7, 0.1, 0, 0.2, 0),
     descricao: 'A arte das armas: maestria, técnica e armas evocadas.',
   },
-  tempo: {
-    id: 'tempo',
-    nome: 'Tempo',
-    tipo: 'base',
-    fatorPotencia: 1.0,
-    pesos: pesos(0.2, 0.5, 0, 0, 0.3),
-    descricao: 'A corrente do tempo: pressa, lentidão, decadência e reversão.',
-  },
-  som: {
-    id: 'som',
-    nome: 'Som',
-    tipo: 'base',
-    fatorPotencia: 1.0,
-    pesos: pesos(0.4, 0.3, 0, 0, 0.3),
-    descricao: 'Vibração e ressonância: brados, canções e ondas de choque.',
-  },
   gravidade: {
     id: 'gravidade',
     nome: 'Gravidade',
@@ -223,14 +195,6 @@ const ELEMENTOS_BASE: Record<ElementoBaseId, ElementoDef> = {
     fatorPotencia: 1.0,
     pesos: pesos(0.5, 0.4, 0, 0.1, 0),
     descricao: 'A força que puxa e esmaga: peso, atração e colapso.',
-  },
-  espaco: {
-    id: 'espaco',
-    nome: 'Espaço',
-    tipo: 'base',
-    fatorPotencia: 1.0,
-    pesos: pesos(0.3, 0.4, 0, 0, 0.3),
-    descricao: 'A distância entre os pontos: portais, teleporte e o cosmos.',
   },
 };
 
@@ -285,17 +249,17 @@ function derivado(
  */
 const DERIVADOS_LISTA: ElementoDef[] = [
   // ---- fogo + X ----
-  derivado('vapor', 'Vapor', ['fogo', 'agua'], 'Névoa escaldante: queima, oculta e sufoca em área.', { fator: 1.2 }),
+  derivado('vapor', 'Vapor', ['agua', 'fogo'], 'Névoa escaldante: queima, oculta e sufoca em área.', { fator: 1.2 }),
   derivado('lava', 'Lava', ['fogo', 'terra'], 'Fogo que adere: impacto pesado + queimadura persistente.'),
-  derivado('incendio', 'Incêndio', ['fogo', 'ar'], 'Fogo alimentado pelo vento: espalha-se sozinho de alvo em alvo.'),
-  derivado('plasma', 'Plasma', ['fogo', 'eletricidade'], 'Matéria ionizada: o dano mais cru do sistema, difícil de resistir.'),
-  derivado('fogo_feiticeiro', 'Fogo Feiticeiro', ['fogo', 'arcano'], 'Chama programável: explosões com atraso, formas e gatilhos.'),
+  derivado('incendio', 'Incêndio', ['ar', 'fogo'], 'Fogo alimentado pelo vento: espalha-se sozinho de alvo em alvo.'),
+  derivado('plasma', 'Plasma', ['eletricidade', 'fogo'], 'Matéria ionizada: o dano mais cru do sistema, difícil de resistir.'),
+  derivado('fogo_feiticeiro', 'Fogo Feiticeiro', ['arcano', 'fogo'], 'Chama programável: explosões com atraso, formas e gatilhos.'),
   derivado('fogo_negro', 'Fogo Negro', ['fogo', 'sombra'], 'Chama que não ilumina: queima e drena ao mesmo tempo.'),
   derivado('chama_solar', 'Chama Solar', ['fogo', 'luz'], 'Fogo purificador: dano que também abençoa aliados próximos.'),
   derivado('fogo_infernal', 'Fogo Infernal', ['fogo', 'vileza'], 'A fornalha dos pactos: queima a carne e a vontade.'),
   derivado('chama_azul', 'Chama Azul', ['fogo', 'morte'], 'Fogo que queima a alma; ignora parte da defesa.', { fator: 1.2, minimo: 12 }),
   derivado('fenix', 'Fênix', ['fogo', 'vida'], 'Fogo que renasce: dano que retorna como cura.'),
-  derivado('fervor', 'Fervor', ['fogo', 'vigor'], 'Sangue fervente: golpes físicos incendiários.'),
+  derivado('fervor', 'Fervor', ['fogo', 'marcial', 'vida'], 'Sangue fervente: golpes físicos incendiários.'),
 
   // ---- agua + X ----
   derivado('pantano', 'Pântano', ['agua', 'terra'], 'Lama viva: prende, afunda e engole os inimigos.'),
@@ -307,18 +271,18 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado('acido', 'Ácido', ['agua', 'vileza'], 'Corrosão: derrete armadura e derrete defesas.'),
   derivado('veneno', 'Veneno', ['agua', 'morte'], 'Toxina paciente: dano contínuo que se recusa a sair.'),
   derivado('nascente', 'Nascente', ['agua', 'vida'], 'Fonte restauradora: cura em área que persiste no chão.'),
-  derivado('correnteza', 'Correnteza', ['agua', 'vigor'], 'Fluidez marcial: golpes encadeados sem pausa.'),
+  derivado('correnteza', 'Correnteza', ['agua', 'marcial', 'vida'], 'Fluidez marcial: golpes encadeados sem pausa.'),
 
   // ---- terra + X ----
-  derivado('areia', 'Areia', ['terra', 'ar'], 'Tempestade de areia: cega, corrói e desloca.'),
-  derivado('magnetismo', 'Magnetismo', ['terra', 'eletricidade'], 'Atração e repulsão: desarma, puxa e prende metais.'),
-  derivado('cristal', 'Cristal', ['terra', 'arcano'], 'Terra lapidada pelo arcano: barreiras e foco amplificador.'),
-  derivado('obsidiana', 'Obsidiana', ['terra', 'sombra'], 'Vidro vulcânico: lâminas defensivas que cortam quem ataca.'),
-  derivado('ouro_vivo', 'Ouro Vivo', ['terra', 'luz'], 'Metal sagrado: armaduras e armas conjuradas brilhantes.'),
+  derivado('areia', 'Areia', ['ar', 'terra'], 'Tempestade de areia: cega, corrói e desloca.'),
+  derivado('magnetismo', 'Magnetismo', ['eletricidade', 'terra'], 'Atração e repulsão: desarma, puxa e prende metais.'),
+  derivado('cristal', 'Cristal', ['arcano', 'terra'], 'Terra lapidada pelo arcano: barreiras e foco amplificador.'),
+  derivado('obsidiana', 'Obsidiana', ['sombra', 'terra'], 'Vidro vulcânico: lâminas defensivas que cortam quem ataca.'),
+  derivado('ouro_vivo', 'Ouro Vivo', ['luz', 'terra'], 'Metal sagrado: armaduras e armas conjuradas brilhantes.'),
   derivado('solo_profano', 'Solo Profano', ['terra', 'vileza'], 'Chão corrompido: território que enfraquece quem pisa.'),
-  derivado('ossuario', 'Ossuário', ['terra', 'morte'], 'Os ossos da terra: muralhas e lanças de osso.'),
+  derivado('ossuario', 'Ossuário', ['morte', 'terra'], 'Os ossos da terra: muralhas e lanças de osso.'),
   derivado('flora', 'Flora', ['terra', 'vida'], 'Natureza desperta: vinhas, raízes e crescimento selvagem.'),
-  derivado('tita', 'Titã', ['terra', 'vigor'], 'Corpo de pedra: força colossal e pele impenetrável.'),
+  derivado('tita', 'Titã', ['marcial', 'terra', 'vida'], 'Corpo de pedra: força colossal e pele impenetrável.'),
 
   // ---- ar + X ----
   derivado('tempestade', 'Tempestade', ['ar', 'eletricidade'], 'Céu em fúria: área enorme e relâmpagos encadeados.'),
@@ -327,17 +291,15 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado('aurora', 'Aurora', ['ar', 'luz'], 'Véu celeste: proteção em área e clareza mental.'),
   derivado('enxofre', 'Enxofre', ['ar', 'vileza'], 'Fumaça infernal: nuvens tóxicas que corrompem o fôlego.'),
   derivado('miasma', 'Miasma', ['ar', 'morte'], 'Ar pútrido: praga aerotransportada de longo alcance.'),
-  derivado('alento', 'Alento', ['ar', 'vida'], 'Sopro vital: cura à distância e fôlego renovado.'),
-  derivado('impeto', 'Ímpeto', ['ar', 'vigor'], 'Velocidade sobre-humana: investidas e esquivas relâmpago.'),
 
   // ---- eletricidade + X ----
-  derivado('fluxo', 'Fluxo', ['eletricidade', 'arcano'], 'Corrente de mana: sobrecarrega magias e dispositivos.'),
+  derivado('fluxo', 'Fluxo', ['arcano', 'eletricidade'], 'Corrente de mana: sobrecarrega magias e dispositivos.'),
   derivado('trovao_negro', 'Trovão Negro', ['eletricidade', 'sombra'], 'Relâmpago silencioso: atinge sem aviso e sem som.'),
   derivado('fulgor', 'Fulgor', ['eletricidade', 'luz'], 'Clarão ofuscante: cega em área e pune quem ataca.'),
   derivado('tormento', 'Tormento', ['eletricidade', 'vileza'], 'Choque cruel: dor que interrompe e desespera.'),
   derivado('galvanismo', 'Galvanismo', ['eletricidade', 'morte'], 'A centelha que reanima: constructos de carne e raio.'),
   derivado('sinapse', 'Sinapse', ['eletricidade', 'vida'], 'Sistema nervoso: acelera aliados e trava reflexos inimigos.'),
-  derivado('reflexo', 'Reflexo', ['eletricidade', 'vigor'], 'Nervos elétricos: contra-ataques instantâneos.'),
+  derivado('reflexo', 'Reflexo', ['eletricidade', 'marcial', 'vida'], 'Nervos elétricos: contra-ataques instantâneos.'),
 
   // ---- arcano + X ----
   derivado('ocultismo', 'Ocultismo', ['arcano', 'sombra'], 'Saber proibido: magias que o alvo não vê chegar.'),
@@ -345,127 +307,116 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado('pacto', 'Pacto', ['arcano', 'vileza'], 'Contrato de poder: sacrifica recurso por efeito ampliado.'),
   derivado('alma', 'Alma', ['arcano', 'morte'], 'A moeda dos mortos: manipula espíritos e essências.'),
   derivado('essencia', 'Essência', ['arcano', 'vida'], 'A matéria-prima da vida: transmutação e restauração profunda.'),
-  derivado('encantamento', 'Encantamento', ['arcano', 'vigor'], 'Corpo como foco: armas e punhos imbuídos de magia.'),
+  derivado('encantamento', 'Encantamento', ['arcano', 'marcial', 'vida'], 'Corpo como foco: armas e punhos imbuídos de magia.'),
 
   // ---- sombra + X ----
-  derivado('crepusculo', 'Crepúsculo', ['sombra', 'luz'], 'A fronteira: revela e oculta ao mesmo tempo.', { fator: 1.25, minimo: 15 }),
+  derivado('crepusculo', 'Crepúsculo', ['luz', 'sombra'], 'A fronteira: revela e oculta ao mesmo tempo.', { fator: 1.25, minimo: 15 }),
   derivado('terror', 'Terror', ['sombra', 'vileza'], 'Medo encarnado: inimigos fogem ou congelam.'),
-  derivado('espectro', 'Espectro', ['sombra', 'morte'], 'Forma incorpórea: atravessa paredes e ignora armadura.'),
+  derivado('espectro', 'Espectro', ['morte', 'sombra'], 'Forma incorpórea: atravessa paredes e ignora armadura.'),
   derivado('parasita', 'Parasita', ['sombra', 'vida'], 'Vida roubada: drena o inimigo para curar você.'),
-  derivado('assassinio', 'Assassínio', ['sombra', 'vigor'], 'A arte do golpe único: dano massivo pelas costas.'),
+  derivado('assassinio', 'Assassínio', ['marcial', 'sombra', 'vida'], 'A arte do golpe único: dano massivo pelas costas.'),
 
   // ---- luz + X ----
   derivado('heresia', 'Heresia', ['luz', 'vileza'], 'Luz falsa: ilusões sagradas e milagres corrompidos.'),
   derivado('julgamento', 'Julgamento', ['luz', 'morte'], 'O veredito final: executa alvos enfraquecidos.'),
   derivado('santidade', 'Santidade', ['luz', 'vida'], 'Graça plena: a cura mais pura do sistema.'),
-  derivado('bravura', 'Bravura', ['luz', 'vigor'], 'Coragem radiante: aura que fortalece a linha de frente.'),
+  derivado('bravura', 'Bravura', ['luz', 'marcial', 'vida'], 'Coragem radiante: aura que fortalece a linha de frente.'),
 
   // ---- vileza + X ----
-  derivado('praga', 'Praga', ['vileza', 'morte'], 'Corrupção contagiosa: veneno e maldição se espalham.', { fator: 1.2, minimo: 12 }),
-  derivado('mutacao', 'Mutação', ['vileza', 'vida'], 'Carne moldável: transforma o próprio corpo em arma.'),
-  derivado('carnificina', 'Carnificina', ['vileza', 'vigor'], 'Sede de sangue: quanto mais fere, mais forte fica.'),
+  derivado('praga', 'Praga', ['morte', 'vileza'], 'Corrupção contagiosa: veneno e maldição se espalham.', { fator: 1.2, minimo: 12 }),
+  derivado('mutacao', 'Mutação', ['vida', 'vileza'], 'Carne moldável: transforma o próprio corpo em arma.'),
+  derivado('carnificina', 'Carnificina', ['marcial', 'vida', 'vileza'], 'Sede de sangue: quanto mais fere, mais forte fica.'),
 
   // ---- morte + X ----
   derivado('equilibrio', 'Equilíbrio', ['morte', 'vida'], 'Vida e morte na mesma mão: converte dano em cura e cura em dano.', { fator: 1.25, minimo: 15 }),
-  derivado('ceifa', 'Ceifa', ['morte', 'vigor'], 'A foice encarnada: golpes físicos que colhem almas.'),
+  derivado('ceifa', 'Ceifa', ['marcial', 'morte', 'vida'], 'A foice encarnada: golpes físicos que colhem almas.'),
 
   // ---- vida + X ----
-  derivado('vitalidade', 'Vitalidade', ['vida', 'vigor'], 'Regeneração contínua: o corpo que não aceita cair.'),
 
   // ---- marcial + X ----
-  derivado('forja', 'Forja', ['marcial', 'fogo'], 'Armas nascidas do fogo: lâminas incandescentes e martelos de brasa.'),
-  derivado('tempera', 'Têmpera', ['marcial', 'agua'], 'O fio perfeito: lâminas temperadas que nunca perdem o corte.'),
+  derivado('forja', 'Forja', ['fogo', 'marcial'], 'Armas nascidas do fogo: lâminas incandescentes e martelos de brasa.'),
+  derivado('tempera', 'Têmpera', ['agua', 'marcial'], 'O fio perfeito: lâminas temperadas que nunca perdem o corte.'),
   derivado('aco', 'Aço', ['marcial', 'terra'], 'Metal da terra: armas pesadas e armaduras vivas.'),
-  derivado('esgrima', 'Esgrima', ['marcial', 'ar'], 'A dança da lâmina leve: estocadas rápidas como o vento.'),
-  derivado('aco_voltaico', 'Aço Voltaico', ['marcial', 'eletricidade'], 'Armas condutoras: cada golpe descarrega um relâmpago.'),
-  derivado('arsenal', 'Arsenal', ['marcial', 'arcano'], 'Armas conjuradas do nada: um arsenal etéreo ao seu dispor.'),
+  derivado('esgrima', 'Esgrima', ['ar', 'marcial'], 'A dança da lâmina leve: estocadas rápidas como o vento.'),
+  derivado('aco_voltaico', 'Aço Voltaico', ['eletricidade', 'marcial'], 'Armas condutoras: cada golpe descarrega um relâmpago.'),
+  derivado('arsenal', 'Arsenal', ['arcano', 'marcial'], 'Armas conjuradas do nada: um arsenal etéreo ao seu dispor.'),
   derivado('lamina_oculta', 'Lâmina Oculta', ['marcial', 'sombra'], 'A arma que ninguém vê: golpes das sombras.'),
-  derivado('lamina_radiante', 'Lâmina Radiante', ['marcial', 'luz'], 'A espada-voto: arde contra o profano e protege o portador.'),
+  derivado('lamina_radiante', 'Lâmina Radiante', ['luz', 'marcial'], 'A espada-voto: arde contra o profano e protege o portador.'),
   derivado('serrilha', 'Serrilha', ['marcial', 'vileza'], 'Armas cruéis: feridas que não fecham.'),
   derivado('fio_funebre', 'Fio Fúnebre', ['marcial', 'morte'], 'A lâmina que colhe: cada abate fortalece o próximo golpe.'),
-  derivado('lamina_viva', 'Lâmina Viva', ['marcial', 'vida'], 'Armas que crescem: madeira viva, espinhos e seiva.'),
-  derivado('maestria', 'Maestria', ['marcial', 'vigor'], 'Corpo e arma como um só: a técnica além da perfeição.'),
 
   // ---- tempo + X (o 14º elemento base fecha a matriz) ----
-  derivado('pira_eterna', 'Pira Eterna', ['tempo', 'fogo'], 'Fogo que arde desde sempre: queima acelerada que nunca se apaga.'),
-  derivado('erosao', 'Erosão', ['tempo', 'agua'], 'A água que desgasta a montanha: dano que cresce com o tempo.'),
-  derivado('fossil', 'Fossilização', ['tempo', 'terra'], 'O peso das eras: petrifica e imobiliza lentamente.'),
-  derivado('aceleracao', 'Aceleração', ['tempo', 'ar'], 'O vento apressado: velocidade e reflexos sobre-humanos.'),
-  derivado('instante', 'Instante', ['tempo', 'eletricidade'], 'O relâmpago fora do tempo: golpe que acontece antes de ser visto.'),
-  derivado('cronomancia', 'Cronomancia', ['tempo', 'arcano'], 'A magia pura do tempo: pressa, lentidão e paradas temporais.', { fator: 1.2 }),
-  derivado('entropia', 'Entropia', ['tempo', 'sombra'], 'A desordem inevitável: tudo se desfaz e nada retorna.'),
-  derivado('eon', 'Éon', ['tempo', 'luz'], 'A luz das eras: cura o que o tempo feriu e revela o que virá.'),
-  derivado('ruina', 'Ruína', ['tempo', 'vileza'], 'A maldição da idade: corrói corpo e vontade lentamente.'),
-  derivado('ocaso', 'Ocaso', ['tempo', 'morte'], 'O relógio que sempre para: acelera o fim de tudo que vive.', { fator: 1.2 }),
-  derivado('florescer', 'Florescer', ['tempo', 'vida'], 'O tempo a favor da vida: crescimento e rejuvenescimento acelerados.'),
-  derivado('frenesi', 'Frenesi', ['tempo', 'vigor'], 'O corpo além do limite: cada segundo vale por dois.'),
-  derivado('contratempo', 'Contratempo', ['tempo', 'marcial'], 'A lâmina no tempo certo: contragolpes e cortes preemptivos.'),
+  derivado('pira_eterna', 'Pira Eterna', ['arcano', 'fogo', 'gravidade'], 'Fogo que arde desde sempre: queima acelerada que nunca se apaga.'),
+  derivado('erosao', 'Erosão', ['agua', 'arcano', 'gravidade'], 'A água que desgasta a montanha: dano que cresce com o tempo.'),
+  derivado('fossil', 'Fossilização', ['arcano', 'gravidade', 'terra'], 'O peso das eras: petrifica e imobiliza lentamente.'),
+  derivado('instante', 'Instante', ['arcano', 'eletricidade', 'gravidade'], 'O relâmpago fora do tempo: golpe que acontece antes de ser visto.'),
+  derivado('ruina', 'Ruína', ['arcano', 'gravidade', 'vileza'], 'A maldição da idade: corrói corpo e vontade lentamente.'),
+  derivado('florescer', 'Florescer', ['arcano', 'gravidade', 'vida'], 'O tempo a favor da vida: crescimento e rejuvenescimento acelerados.'),
+  derivado('frenesi', 'Frenesi', ['arcano', 'gravidade', 'marcial', 'vida'], 'O corpo além do limite: cada segundo vale por dois.'),
+  derivado('contratempo', 'Contratempo', ['arcano', 'gravidade', 'marcial'], 'A lâmina no tempo certo: contragolpes e cortes preemptivos.'),
 
   // ---- som + X ----
-  derivado('estrondo', 'Estrondo', ['som', 'fogo'], 'Explosão sonora: o estouro que ensurdece e queima.'),
-  derivado('sonar', 'Sonar', ['som', 'agua'], 'Eco das profundezas: revela o oculto e esmaga sob a água.'),
-  derivado('terremoto', 'Terremoto', ['som', 'terra'], 'Ondas sísmicas: o chão treme e rasga em área.'),
-  derivado('estampido', 'Estampido', ['som', 'ar'], 'Estrondo sônico: barreira de ar que empurra tudo.'),
-  derivado('trovao', 'Trovão', ['som', 'eletricidade'], 'O estouro do raio: choque e onda de choque juntos.'),
-  derivado('cantico', 'Cântico', ['som', 'arcano'], 'Palavra cantada de poder: encantamentos que ecoam.'),
-  derivado('sussurro', 'Sussurro', ['som', 'sombra'], 'Vozes que enlouquecem: medo sussurrado ao ouvido.'),
-  derivado('harmonia', 'Harmonia', ['som', 'luz'], 'Acorde perfeito: cura e conforto que restauram a alma.'),
-  derivado('dissonancia', 'Dissonância', ['som', 'vileza'], 'Acorde quebrado: dor que corrói a mente.'),
-  derivado('requiem', 'Réquiem', ['som', 'morte'], 'A canção fúnebre: paralisa os vivos e comanda os mortos.'),
-  derivado('melodia', 'Melodia Vital', ['som', 'vida'], 'Canção de ninar: regeneração embalada em harmonia.'),
-  derivado('brado', 'Brado', ['som', 'vigor'], 'Grito de guerra: inflama aliados e apavora inimigos.'),
-  derivado('cadencia', 'Cadência', ['som', 'marcial'], 'Ritmo de batalha: golpes no compasso perfeito.'),
-  derivado('eco', 'Eco', ['som', 'tempo'], 'O som que volta do passado: repete efeitos com atraso.'),
+  derivado('estrondo', 'Estrondo', ['ar', 'fogo', 'vida'], 'Explosão sonora: o estouro que ensurdece e queima.'),
+  derivado('terremoto', 'Terremoto', ['ar', 'terra', 'vida'], 'Ondas sísmicas: o chão treme e rasga em área.'),
+  derivado('trovao', 'Trovão', ['ar', 'eletricidade', 'vida'], 'O estouro do raio: choque e onda de choque juntos.'),
+  derivado('cantico', 'Cântico', ['ar', 'arcano', 'vida'], 'Palavra cantada de poder: encantamentos que ecoam.'),
+  derivado('sussurro', 'Sussurro', ['ar', 'sombra', 'vida'], 'Vozes que enlouquecem: medo sussurrado ao ouvido.'),
+  derivado('harmonia', 'Harmonia', ['ar', 'luz', 'vida'], 'Acorde perfeito: cura e conforto que restauram a alma.'),
+  derivado('dissonancia', 'Dissonância', ['ar', 'vida', 'vileza'], 'Acorde quebrado: dor que corrói a mente.'),
+  derivado('requiem', 'Réquiem', ['ar', 'morte', 'vida'], 'A canção fúnebre: paralisa os vivos e comanda os mortos.'),
+  derivado('cadencia', 'Cadência', ['ar', 'marcial', 'vida'], 'Ritmo de batalha: golpes no compasso perfeito.'),
+  derivado('eco', 'Eco', ['ar', 'arcano', 'gravidade', 'vida'], 'O som que volta do passado: repete efeitos com atraso.'),
 
   // ---- gravidade + X ----
-  derivado('fornalha_estelar', 'Fornalha Estelar', ['gravidade', 'fogo'], 'O coração de uma estrela: fusão que consome tudo por perto.'),
-  derivado('voragem', 'Voragem', ['gravidade', 'agua'], 'Redemoinho colossal: engole e afoga em espiral.'),
+  derivado('fornalha_estelar', 'Fornalha Estelar', ['fogo', 'gravidade'], 'O coração de uma estrela: fusão que consome tudo por perto.'),
+  derivado('voragem', 'Voragem', ['agua', 'gravidade'], 'Redemoinho colossal: engole e afoga em espiral.'),
   derivado('colapso', 'Colapso', ['gravidade', 'terra'], 'Desabamento: o terreno afunda sobre os inimigos.'),
-  derivado('vacuo', 'Vácuo', ['gravidade', 'ar'], 'Ausência de ar: sufoca e implode de dentro.'),
-  derivado('magnetar', 'Magnetar', ['gravidade', 'eletricidade'], 'Campo magnético estelar: prende, atrai e eletrocuta.'),
-  derivado('singularidade', 'Singularidade', ['gravidade', 'arcano'], 'Ponto de massa infinita: dobra as regras da realidade.', { fator: 1.25, minimo: 12 }),
+  derivado('magnetar', 'Magnetar', ['eletricidade', 'gravidade'], 'Campo magnético estelar: prende, atrai e eletrocuta.'),
   derivado('buraco_negro', 'Buraco Negro', ['gravidade', 'sombra'], 'Nem a luz escapa: engole tudo num ponto de trevas.', { fator: 1.25, minimo: 12 }),
   derivado('halo_gravitacional', 'Halo Gravitacional', ['gravidade', 'luz'], 'Lente de luz curvada: cega e revela ao mesmo tempo.'),
   derivado('jugo', 'Jugo', ['gravidade', 'vileza'], 'O peso da opressão: prende o alvo esmagado ao solo.'),
   derivado('implosao', 'Implosão', ['gravidade', 'morte'], 'Colapso interno: comprime o alvo até o fim.'),
   derivado('ancora_vital', 'Âncora Vital', ['gravidade', 'vida'], 'Massa que fixa a alma: impede que os aliados caiam.'),
-  derivado('peso_descomunal', 'Peso Descomunal', ['gravidade', 'vigor'], 'Força multiplicada: golpes que carregam toneladas.'),
   derivado('ariete', 'Aríete', ['gravidade', 'marcial'], 'A arma que pesa mundos: impacto que atravessa muralhas.'),
-  derivado('dilatacao', 'Dilatação', ['gravidade', 'tempo'], 'O tempo curvado pela massa: retarda tudo num campo.', { fator: 1.25, minimo: 12 }),
-  derivado('onda_de_choque', 'Onda de Choque', ['gravidade', 'som'], 'Pulso gravitacional sonoro: empurra e atordoa em anel.'),
 
   // ---- espaço + X ----
-  derivado('meteoro', 'Meteoro', ['espaco', 'fogo'], 'Rocha em chamas do céu: impacto devastador em área.'),
-  derivado('cometa', 'Cometa', ['espaco', 'agua'], 'Bola de gelo sideral: risca o céu e congela ao cair.'),
-  derivado('asteroide', 'Asteroide', ['espaco', 'terra'], 'Fragmento de mundo: bombardeio de rocha do espaço.'),
-  derivado('estratosfera', 'Estratosfera', ['espaco', 'ar'], 'O ar rarefeito das alturas: levita e sufoca lá em cima.'),
-  derivado('pulsar', 'Pulsar', ['espaco', 'eletricidade'], 'Farol estelar: pulsos de energia em intervalos precisos.'),
-  derivado('portal', 'Portal', ['espaco', 'arcano'], 'Dobra do espaço: teleporte, banimento e reposicionamento.'),
-  derivado('vazio', 'Vazio', ['espaco', 'sombra'], 'O Nada entre estrelas: apaga o que toca.', { fator: 1.25, minimo: 12 }),
-  derivado('constelacao', 'Constelação', ['espaco', 'luz'], 'Mapa de estrelas: guia, abençoa e marca alvos.'),
-  derivado('devorador', 'Devorador', ['espaco', 'vileza'], 'O que vem de além: horror cósmico que não deveria existir.'),
-  derivado('nebulosa', 'Nebulosa', ['espaco', 'morte'], 'Berço e túmulo de estrelas: névoa que mata e cria.'),
-  derivado('semente_estelar', 'Semente Estelar', ['espaco', 'vida'], 'Vida vinda do cosmos: brota onde nada deveria crescer.'),
-  derivado('gigante_estelar', 'Gigante Estelar', ['espaco', 'vigor'], 'Corpo de proporções cósmicas: força além da escala.'),
-  derivado('lamina_sideral', 'Lâmina Sideral', ['espaco', 'marcial'], 'Corte que atravessa a distância: fende o próprio espaço.'),
-  derivado('continuum', 'Continuum', ['espaco', 'tempo'], 'Espaço-tempo dominado: mover-se por onde e quando quiser.', { fator: 1.3, minimo: 12 }),
-  derivado('silencio_cosmico', 'Silêncio Cósmico', ['espaco', 'som'], 'O vácuo não propaga som: sufoca canções e magias.'),
-  derivado('dobra', 'Dobra', ['espaco', 'gravidade'], 'O espaço curvado sobre si: encurta distâncias e esmaga.', { fator: 1.25, minimo: 12 }),
+  derivado('cometa', 'Cometa', ['agua', 'ar', 'gravidade'], 'Bola de gelo sideral: risca o céu e congela ao cair.'),
+  derivado('asteroide', 'Asteroide', ['ar', 'gravidade', 'terra'], 'Fragmento de mundo: bombardeio de rocha do espaço.'),
+  derivado('pulsar', 'Pulsar', ['ar', 'eletricidade', 'gravidade'], 'Farol estelar: pulsos de energia em intervalos precisos.'),
+  derivado('constelacao', 'Constelação', ['ar', 'gravidade', 'luz'], 'Mapa de estrelas: guia, abençoa e marca alvos.'),
+  derivado('devorador', 'Devorador', ['ar', 'gravidade', 'vileza'], 'O que vem de além: horror cósmico que não deveria existir.'),
+  derivado('nebulosa', 'Nebulosa', ['ar', 'gravidade', 'morte'], 'Berço e túmulo de estrelas: névoa que mata e cria.'),
+  derivado('semente_estelar', 'Semente Estelar', ['ar', 'gravidade', 'vida'], 'Vida vinda do cosmos: brota onde nada deveria crescer.'),
+  derivado('gigante_estelar', 'Gigante Estelar', ['ar', 'gravidade', 'marcial', 'vida'], 'Corpo de proporções cósmicas: força além da escala.'),
+  derivado('lamina_sideral', 'Lâmina Sideral', ['ar', 'gravidade', 'marcial'], 'Corte que atravessa a distância: fende o próprio espaço.'),
+  derivado('continuum', 'Continuum', ['ar', 'arcano', 'gravidade'], 'Espaço-tempo dominado: mover-se por onde e quando quiser.', { fator: 1.3, minimo: 12 }),
+
+  // ---- os quatro que saíram da base e voltaram como par de 2ª geração ----
+  //
+  // Não foram apagados: foram REBAIXADOS. Cada um continua existindo, com
+  // nível efetivo e arquétipos próprios — só deixou de aceitar ponto direto.
+  // As identidades que ocupavam estas quatro casas eram, uma a uma, sinônimos
+  // do elemento que as engoliu (Maestria e Vitalidade eram Vigor; Cronomancia
+  // e Dilatação eram Tempo; Vácuo e Dobra eram Espaço; Alento e Melodia eram
+  // Som), então a fusão não perdeu fantasia — juntou nomes que diziam a mesma
+  // coisa por caminhos diferentes.
+  derivado('vigor', 'Vigor', ['vida', 'marcial'], 'O corpo treinado: força, fôlego e a resistência que sustenta o combate físico.'),
+  derivado('tempo', 'Tempo', ['gravidade', 'arcano'], 'A corrente do tempo: pressa, lentidão, decadência e reversão.'),
+  derivado('espaco', 'Espaço', ['gravidade', 'ar'], 'A distância entre os pontos: portais, teleporte e o vazio entre as estrelas.'),
+  derivado('som', 'Som', ['ar', 'vida'], 'Vibração e ressonância: a voz, o brado, a canção e a onda de choque.'),
 
   // ---- triplas ----
-  derivado('chama_demoniaca', 'Chama Demoníaca', ['fogo', 'vileza', 'morte'], 'Fogo alimentado por pacto e morte: queima corpo, alma e contrato.'),
-  derivado('paradoxo', 'Paradoxo', ['tempo', 'arcano', 'morte'], 'Vida e morte fora de ordem: desfaz causas e efeitos.'),
-  derivado('big_bang', 'Big Bang', ['espaco', 'gravidade', 'tempo'], 'O início e o fim de tudo: a criação comprimida num instante.', { fator: 1.35, minimo: 15 }),
-  derivado('sinfonia', 'Sinfonia', ['som', 'luz', 'vida'], 'A canção da criação: aura que cura, protege e inspira em grande área.'),
+  derivado('chama_demoniaca', 'Chama Demoníaca', ['fogo', 'morte', 'vileza'], 'Fogo alimentado por pacto e morte: queima corpo, alma e contrato.'),
+  derivado('paradoxo', 'Paradoxo', ['arcano', 'gravidade', 'morte'], 'Vida e morte fora de ordem: desfaz causas e efeitos.'),
+  derivado('big_bang', 'Big Bang', ['gravidade', 'arcano', 'fogo', 'luz'], 'O início e o fim de tudo: a criação comprimida num instante.', { fator: 1.35, minimo: 15 }),
   derivado('furacao', 'Furacão', ['agua', 'ar', 'eletricidade'], 'A tempestade perfeita: área devastadora que se move sozinha.'),
   derivado('selva', 'Selva', ['agua', 'terra', 'vida'], 'Ecossistema vivo: terreno inteiro que luta por você.'),
-  derivado('abominacao', 'Abominação', ['sombra', 'morte', 'vileza'], 'O horror completo: criaturas que não deveriam existir.'),
-  derivado('eclipse', 'Eclipse', ['luz', 'sombra', 'arcano'], 'O instante em que os opostos se alinham: anula magias alheias.'),
-  derivado('reencarnacao', 'Reencarnação', ['vida', 'morte', 'arcano'], 'O ciclo dominado: retorno da morte e segunda chance.'),
-  derivado('sobrecarga', 'Sobrecarga', ['eletricidade', 'arcano', 'vigor'], 'Corpo-condutor: velocidade e poder além do limite seguro.'),
-  derivado('ascensao', 'Ascensão', ['luz', 'vida', 'vigor'], 'Forma exaltada: transcende brevemente a condição mortal.'),
-  derivado('nucleo', 'Núcleo', ['fogo', 'terra', 'eletricidade'], 'O coração do mundo: erupções magnéticas e magma pressurizado.'),
-  derivado('avatar_de_guerra', 'Avatar de Guerra', ['marcial', 'vigor', 'arcano'], 'A guerra encarnada: cem armas orbitando um corpo perfeito.'),
+  derivado('abominacao', 'Abominação', ['morte', 'sombra', 'vileza'], 'O horror completo: criaturas que não deveriam existir.'),
+  derivado('eclipse', 'Eclipse', ['arcano', 'luz', 'sombra'], 'O instante em que os opostos se alinham: anula magias alheias.'),
+  derivado('reencarnacao', 'Reencarnação', ['arcano', 'morte', 'vida'], 'O ciclo dominado: retorno da morte e segunda chance.'),
+  derivado('sobrecarga', 'Sobrecarga', ['arcano', 'eletricidade', 'marcial', 'vida'], 'Corpo-condutor: velocidade e poder além do limite seguro.'),
+  derivado('nucleo', 'Núcleo', ['eletricidade', 'fogo', 'terra'], 'O coração do mundo: erupções magnéticas e magma pressurizado.'),
+  derivado('avatar_de_guerra', 'Avatar de Guerra', ['marcial', 'vida', 'arcano', 'fogo'], 'A guerra encarnada: cem armas orbitando um corpo perfeito.'),
 
   // ---- amplas e especiais ----
   derivado(
@@ -485,7 +436,7 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado(
     'nulo',
     'Nulo',
-    ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'arcano', 'sombra', 'luz', 'vileza', 'morte', 'vida', 'vigor', 'marcial', 'tempo', 'som', 'gravidade', 'espaco'],
+    ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'arcano', 'sombra', 'luz', 'vileza', 'morte', 'vida', 'marcial', 'gravidade'],
     'O elemento de quem dominou todos: nega, absorve e devolve qualquer coisa.',
     { fator: 1.4, minimo: 8, tipo: 'especial' },
   ),
@@ -528,19 +479,17 @@ export const SINERGIAS: Sinergia[] = [
   { de: 'morte', para: ['sombra'], razao: 0.1 },
   { de: 'luz', para: ['vida'], razao: 0.1 },
   { de: 'vida', para: ['luz'], razao: 0.1 },
-  { de: 'vigor', para: ['vida'], razao: 0.1 },
-  { de: 'vida', para: ['vigor'], razao: 0.1 },
-  { de: 'marcial', para: ['vigor'], razao: 0.1 },
-  { de: 'vigor', para: ['marcial'], razao: 0.1 },
-  { de: 'arcano', para: ['tempo'], razao: 0.08 },
-  { de: 'tempo', para: ['arcano'], razao: 0.08 },
-  { de: 'arcano', para: ['espaco'], razao: 0.08 },
-  { de: 'espaco', para: ['gravidade'], razao: 0.08 },
-  { de: 'gravidade', para: ['espaco'], razao: 0.08 },
-  { de: 'eletricidade', para: ['som'], razao: 0.05 },
-  { de: 'ar', para: ['som'], razao: 0.05 },
-  { de: 'terra', para: ['vigor'], razao: 0.05 },
+  // Vida e Marcial se alimentam: o corpo treinado é o que sobrou do Vigor,
+  // que virou justamente o par dos dois.
+  { de: 'marcial', para: ['vida'], razao: 0.1 },
+  { de: 'vida', para: ['marcial'], razao: 0.1 },
+  { de: 'terra', para: ['vida'], razao: 0.05 },
+  // Arcano e Gravidade se alimentam: Tempo e Espaço saíram da base e viraram
+  // pares da Gravidade, então o transbordo aponta para a raiz, não para eles.
+  { de: 'arcano', para: ['gravidade'], razao: 0.08 },
+  { de: 'gravidade', para: ['arcano'], razao: 0.08 },
   { de: 'eletricidade', para: ['ar'], razao: 0.05 },
+  { de: 'ar', para: ['vida'], razao: 0.05 },
   // Arcano é magia pura: alimenta de leve tudo que não é físico.
   {
     de: 'arcano',

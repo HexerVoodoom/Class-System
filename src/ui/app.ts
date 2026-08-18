@@ -293,12 +293,8 @@ const CORES: Record<ElementoBaseId, string> = {
   vileza: '#b04a6e',
   morte: '#8a9184',
   vida: '#5fae82',
-  vigor: '#c07a50',
   marcial: '#9aa3b5',
-  tempo: '#5fb3ad',
-  som: '#cf7fa8',
   gravidade: '#7d6fa0',
-  espaco: '#4d5fb0',
 };
 
 const el = (id: string) => document.getElementById(id)!;
@@ -912,7 +908,7 @@ function renderControlesCeu(desenhados: number, total: number): void {
     <div class="ceu-grupo">
       ${btn('foco', 'toggle', ceu.foco ? '◉ Foco de linhagem' : '○ Foco de linhagem', ceu.foco)}</div>
     <div class="ceu-grupo ceu-busca">
-      <input id="ceu-busca" type="search" placeholder="buscar entre 3.215 combinações…"
+      <input id="ceu-busca" type="search" placeholder="buscar combinação…"
         value="${esc(ceu.busca)}" aria-label="Buscar elemento ou combinação">
     </div>
     <div class="ceu-conta">${desenhados} de ${total} nós desenhados</div>`;

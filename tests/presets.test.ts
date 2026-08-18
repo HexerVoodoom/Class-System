@@ -156,11 +156,16 @@ describe('o custo de cada preset é honesto', () => {
   });
 
   it('a complexidade declarada corresponde ao custo real', () => {
-    // um preset marcado "Simples" que custa 120 pontos mente para quem escolhe
+    // Um preset marcado "Simples" que custa 120 pontos mente para quem
+    // escolhe. Os tetos subiram de 70/95 para 80/105 quando a base caiu de 17
+    // para 13: elementos que eram par (mínimo 10 em duas bases) viraram tripla
+    // (mínimo 15 em três), então a MESMA fantasia passou a custar mais. O que
+    // a complexidade mede continua sendo quantas peças a pessoa administra,
+    // não o preço — e o Paladino segue administrando uma ideia só.
     for (const def of PRESETS) {
       const c = custoDe(def).atributos;
-      if (def.complexidade === 1) expect(c, def.id).toBeLessThanOrEqual(70);
-      if (def.complexidade === 2) expect(c, def.id).toBeLessThanOrEqual(95);
+      if (def.complexidade === 1) expect(c, def.id).toBeLessThanOrEqual(80);
+      if (def.complexidade === 2) expect(c, def.id).toBeLessThanOrEqual(105);
     }
   });
 });

@@ -49,19 +49,19 @@ function ficha(elems: [ElementoBaseId, number][]) {
 }
 
 describe('o espaço completo de combinações', () => {
-  it('enumera exatamente C(17,3) triplas e C(17,4) quádruplas', () => {
-    expect(TRIPLAS).toHaveLength(680);
-    expect(QUADRUPLAS).toHaveLength(2380);
-    expect(TODAS_COMBINACOES).toHaveLength(3060);
+  it('enumera exatamente C(13,3) triplas e C(13,4) quádruplas', () => {
+    expect(TRIPLAS).toHaveLength(286);
+    expect(QUADRUPLAS).toHaveLength(715);
+    expect(TODAS_COMBINACOES).toHaveLength(1001);
   });
 
   it('toda combinação tem um id único', () => {
-    expect(new Set(TODAS_COMBINACOES.map((c) => c.id)).size).toBe(3060);
+    expect(new Set(TODAS_COMBINACOES.map((c) => c.id)).size).toBe(1001);
   });
 
   it('toda combinação tem um NOME único — a nomenclatura procedural não colide', () => {
     const nomes = new Set(TODAS_COMBINACOES.map((c) => elementoDef(c.id)!.nome));
-    expect(nomes.size).toBe(3060);
+    expect(nomes.size).toBe(1001);
   });
 
   it('a ordenação dos componentes não altera a resolução', () => {
@@ -73,8 +73,8 @@ describe('o espaço completo de combinações', () => {
 
   it('as combinações curadas mantêm o nome escrito à mão', () => {
     expect(elementoDePorComponentes(['fogo', 'terra', 'ar'])?.nome).toBe('Vulcão');
-    expect(elementoDePorComponentes(['espaco', 'fogo', 'gravidade'])?.nome).toBe('Supernova');
-    expect(elementoDePorComponentes(['agua', 'ar', 'eletricidade', 'som'])?.nome).toBe(
+    expect(elementoDePorComponentes(['ar', 'fogo', 'gravidade'])?.nome).toBe('Supernova');
+    expect(elementoDePorComponentes(['agua', 'ar', 'eletricidade', 'vida'])?.nome).toBe(
       'Tempestade Perfeita',
     );
   });
@@ -255,11 +255,11 @@ describe('meias-identidades: aridade compra largura, não altura', () => {
 });
 
 describe('o registro completo continua íntegro', () => {
-  it('todos os 17 elementos base seguem aceitando pontos diretos', () => {
-    expect(elementosBase()).toHaveLength(17);
+  it('todos os 13 elementos base seguem aceitando pontos diretos', () => {
+    expect(elementosBase()).toHaveLength(13);
     const p = criarPersonagem('t');
     for (const e of elementosBase()) investirElemento(p, e.id as ElementoBaseId, 1);
-    expect(Object.keys(p.elementos)).toHaveLength(17);
+    expect(Object.keys(p.elementos)).toHaveLength(13);
   });
 
   it('elementoDef resolve base, curado e procedural pelo mesmo caminho', () => {
@@ -267,5 +267,38 @@ describe('o registro completo continua íntegro', () => {
     expect(elementoDef('lava')?.tipo).toBe('derivado');
     const proc = combinacaoInfoPorComponentes(['fogo', 'terra', 'sombra'])!;
     expect(elementoDef(proc.id)?.receita).toHaveLength(3);
+  });
+});
+
+describe('nenhuma receita pode ter dois donos', () => {
+  it('cada conjunto de bases nomeia no máximo um elemento', async () => {
+    // Os índices por chave (`INDICE_CURADAS`, `PAR_POR_CHAVE`) são Map: em
+    // chave repetida o último a escrever ganha, em silêncio. O efeito não é
+    // um erro — é `nomeDoPar` devolvendo o nome errado, o que muda o nome
+    // procedural de dezenas de triplas e faz a cascata apontar para o pai
+    // errado. Foi assim que `pira_eterna` e `big_bang` dividiram a mesma casa
+    // durante a redução de 17 para 13 bases, sem uma única exceção.
+    const { ELEMENTOS } = await import('../src/registry/elementos');
+    const { CURADAS } = await import('../src/registry/combinacoes');
+    const donos = new Map<string, string[]>();
+    const registrar = (chave: string, id: string): void => {
+      if (!donos.has(chave)) donos.set(chave, []);
+      donos.get(chave)!.push(id);
+    };
+    for (const def of Object.values(ELEMENTOS)) {
+      if (!def.receita) continue;
+      registrar([...new Set(def.receita.map((c) => c.elemento))].sort().join('|'), def.id);
+    }
+    for (const c of CURADAS) {
+      registrar([...new Set(c.componentes)].sort().join('|'), c.id);
+    }
+    const duplicadas = [...donos].filter(([, ids]) => ids.length > 1);
+    expect(duplicadas.map(([k, ids]) => `${k}: ${ids.join(' + ')}`)).toEqual([]);
+  });
+
+  it('nenhuma receita curada passa da aridade máxima enumerável', async () => {
+    const { CURADAS, ARIDADE_MAXIMA } = await import('../src/registry/combinacoes');
+    const estouradas = CURADAS.filter((c) => c.componentes.length > ARIDADE_MAXIMA);
+    expect(estouradas.map((c) => `${c.id}: ${c.componentes.length}`)).toEqual([]);
   });
 });

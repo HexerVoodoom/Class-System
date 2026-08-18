@@ -1,8 +1,8 @@
 /**
  * LAYOUT DO CÉU DOS ELEMENTOS — matemática pura, sem DOM.
  *
- * O problema: o espaço completo tem 17 bases + 136 pares + 680 triplas +
- * 2.380 quádruplas ≈ 3.213 nós. Um disco de raio 348 tem ~380.000 unidades²;
+ * O problema: o espaço completo tem 13 bases + 78 pares + 286 triplas +
+ * 715 quádruplas ≈ 1.092 nós. Um disco de raio 348 tem ~380.000 unidades²;
  * 3.213 nós com espaçamento mínimo decente pedem ~260.000 unidades² de
  * ocupação exclusiva, concentradas justamente nos anéis internos, onde a área
  * é escassa. **Desenhar tudo de uma vez é geometricamente impossível**, em
@@ -16,7 +16,7 @@
  * ENDEREÇO CANÔNICO (a, w, padrão):
  *   Os índices dos componentes vivem em ℤ₁₇. Calculam-se as lacunas cíclicas;
  *   a MAIOR lacuna é "a de fora", e o elemento logo depois dela é a ÂNCORA.
- *   O ARCO w = 17 − maiorLacuna mede quão dispersos os componentes são.
+ *   O ARCO w = 13 − maiorLacuna mede quão dispersos os componentes são.
  *
  *   - direção  = setor da âncora → parentesco de receita vira vizinhança visual
  *   - profundidade = arco w → componentes vizinhos na borda, opostos no fundo
@@ -27,9 +27,17 @@
  * de pares não se move um pixel.
  */
 
+import { elementosBase } from '../registry/elementos';
+
 export const W = 880;
 export const CENTRO = W / 2;
-export const N_BASES = 17;
+/**
+ * Quantos elementos base o jogo tem. VEM DO REGISTRO: escrever `17` (ou `13`)
+ * aqui é conteúdo na camada de apresentação, e foi exatamente o que fez a
+ * redução de 17 para 13 exigir editar `src/ui/` para acompanhar
+ * `src/registry/` — com a geometria calada até alguém olhar a tela.
+ */
+export const N_BASES = elementosBase().length;
 export const PASSO = (2 * Math.PI) / N_BASES;
 /** Fração do setor efetivamente usada — os 12% restantes são calha visual. */
 const PHI = 0.88;
@@ -57,12 +65,12 @@ export interface FaixaAridade {
 }
 
 export const FAIXAS: Record<2 | 3 | 4, FaixaAridade> = {
-  2: { wMin: 1, wMax: 8, rOut: 348, passoR: 7.0, dMin: 9, lMax: 1, dLane: 0, rNo: 3.2 },
-  3: { wMin: 2, wMax: 11, rOut: 278, passoR: 9.0, dMin: 8, lMax: 3, dLane: 4.0, rNo: 2.8 },
-  4: { wMin: 3, wMax: 12, rOut: 168, passoR: 8.5, dMin: 7, lMax: 5, dLane: 3.5, rNo: 2.4 },
+  2: { wMin: 1, wMax: 6, rOut: 348, passoR: 9.0, dMin: 9, lMax: 1, dLane: 0, rNo: 3.6 },
+  3: { wMin: 2, wMax: 8, rOut: 278, passoR: 11.0, dMin: 8, lMax: 3, dLane: 4.5, rNo: 3.2 },
+  4: { wMin: 3, wMax: 9, rOut: 168, passoR: 10.0, dMin: 7, lMax: 4, dLane: 4.0, rNo: 2.8 },
 };
 
-// --- binomiais (triângulo de Pascal até 17) ---
+// --- binomiais (triângulo de Pascal até N_BASES) ---
 const BINOM: number[][] = (() => {
   const t: number[][] = Array.from({ length: N_BASES + 1 }, () =>
     new Array(N_BASES + 1).fill(0),

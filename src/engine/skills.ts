@@ -29,6 +29,7 @@ import {
   ARIDADE_MAXIMA,
   aridadeDe,
   baseDominanteDe,
+  ehTemporal,
   efetividadeDe,
   elementoDef,
 } from '../registry/combinacoes';
@@ -298,7 +299,7 @@ export function tagsDaSkill(cfg: SkillConfig): TagSkill[] {
   else tags.add('dano');
   // projétil: dano lançado à distância, seja flecha ou bola de fogo
   if (escola.entregaPadrao === 'dano' && cfg.alcanceMetros > 0) tags.add('projetil');
-  if (baseDominanteDe(cfg.elemento) === 'tempo') tags.add('temporal');
+  if (ehTemporal(cfg.elemento)) tags.add('temporal');
   if ((elementoDef(cfg.elemento)?.receita?.length ?? 0) > 0) tags.add('derivado');
   return [...tags];
 }
@@ -591,8 +592,8 @@ export function calcularSkill(
   const multProficiencia = 1 + BONUS_IMPACTO_POR_PROFICIENCIA * prof;
   // pressa do Cronomante: elementos temporais aceleram a conjuração,
   // rendendo mais poder por segundo de cast (escala com o nível do elemento)
-  const ehTemporal = baseDominanteDe(cfg.elemento) === 'tempo';
-  const multPressa = ehTemporal
+  const temporal = ehTemporal(cfg.elemento);
+  const multPressa = temporal
     ? 1 + Math.min(BONUS_PRESSA_TETO, BONUS_PRESSA_POR_NIVEL * nivelElemento)
     : 1;
   const orcamento =
@@ -771,7 +772,7 @@ export function calcularSkill(
       valor: mods.multCusto,
     });
   }
-  if (ehTemporal && multPressa > 1) {
+  if (temporal && multPressa > 1) {
     propriedades.push({
       chave: 'pressa',
       rotulo: 'Pressa (Cronomante): conjuração acelerada',
