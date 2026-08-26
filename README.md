@@ -284,6 +284,48 @@ Além de Ferreiro, Tecelão, Artesão, Joalheiro, Alquimista e Curtidor:
 
 E **14 propriedades emergentes novas**, seis delas exigindo combinações de aridade alta: *Tempestuosa* (água+ar+eletricidade), *Cataclísmica* (terra+gravidade+fogo), *Sepulcral* (morte+sombra+vileza), *Consagrada* (luz+vida+vigor), *Paradoxal* (tempo+espaço) e *Primordial* (os cinco primais, nível 15 de profissão).
 
+## Camada 13 — Gerador automático
+
+A folha em branco é o problema real de um sistema com 3.215 elementos
+alcançáveis: ninguém distribui 1.200 pontos à mão, e quem mestra uma sessão
+precisa de cinco fichas prontas, não de uma. A aba **🎲 Gerador** (e o comando
+`gerar` da CLI) monta a ficha inteira a partir de **um único filtro: o nível**.
+
+O nível é o orçamento (a curva `ORCAMENTO_POR_TIER`, de 60 no tier 1 a 1.200 no
+tier 7). Todo o resto é sorteado: núcleo elemental, escolas, recursos,
+talentos, profissão e as skills — inclusive os modificadores compatíveis.
+
+Para um **grupo**, você define quantos e, se quiser, o papel de cada membro
+(tank, curandeiro, DPS, controle, suporte, invocador). O que você não definir a
+composição padrão preenche, sem repetir papel enquanto houver papel novo. Cada
+membro recebe as bases já usadas pelos anteriores como preferência negativa —
+é o que impede o grupo de sair como cinco piromantes.
+
+Duas propriedades que valem a pena conhecer:
+
+- **Nada de ficha impossível.** A construção passa pelos mesmos mutadores que a
+  UI usa (`investirElemento`, `investirTalento`…). Ponto direto só cai em base
+  ou em derivado que a cascata destravou; rank de talento respeita máximo,
+  requisito e exclusividade de ramo; o gasto nunca passa do orçamento. Uma
+  ficha gerada é uma ficha que você poderia ter montado à mão.
+- **Determinismo.** O sorteio vem de um PRNG semeado, então a **semente**
+  reconstrói a ficha exata — anote a de uma build que você gostou. Sem semente
+  explícita, ela é derivada dos filtros; para variar, é o botão *Sortear de
+  novo* (ou `--semente`).
+
+```bash
+npm run cs -- gerar --nivel 5 --papel controle --texto
+npm run cs -- gerar-grupo --nivel 4 --quantidade 5 --papeis tank,curandeiro
+npm run cs -- gerar --nivel 3 --semente 1234 > ficha.json   # volta em --ficha
+npm run cs -- papeis          # os papéis que o gerador conhece
+npm run cs -- niveis          # a curva de orçamento por nível
+```
+
+A ficha gerada sai no mesmo formato que o simulador exporta, então ela volta
+por `--ficha` em qualquer outra consulta (`analisar`, `proximas`, `caminho`).
+Na UI, *Carregar na minha ficha* transforma o resultado em ponto de partida
+editável — as skills geradas vão para as skills salvas.
+
 ## Os agentes do projeto
 
 `.claude/agents/` traz seis especialistas que sabem as regras deste sistema:
@@ -314,6 +356,9 @@ npm run cs -- analisar --ficha ficha.json           # o que esta ficha é hoje
 npm run cs -- proximas --ficha ficha.json           # o que está a um passo, e por quanto
 npm run cs -- caminho vulcanologo --ficha ficha.json # plano de pontos até um arquétipo
 npm run cs -- skill --ficha ficha.json --skill s.json
+
+npm run cs -- gerar --nivel 5 --papel controle        # uma ficha completa, sorteada
+npm run cs -- gerar-grupo --nivel 4 --quantidade 5    # um grupo inteiro
 ```
 
 O planejamento é **verificado ponta a ponta**: `caminhoParaArquetipo` monta a

@@ -45,6 +45,17 @@ import {
   type ModificadorId,
 } from '../registry/modificadores';
 import { ESCOLAS, type EscolaId } from '../registry/escolas';
+import {
+  NIVEL_MAXIMO,
+  NIVEL_MINIMO,
+  PAPEIS,
+  PAPEIS_VALIDOS,
+  gerarGrupo,
+  gerarPersonagem,
+  orcamentoDoNivel,
+  type PapelId,
+  type PersonagemGerado,
+} from '../engine/gerador';
 import { RECURSOS, type RecursoId } from '../registry/recursos';
 import { TALENTOS, type TalentoDef, type TalentoId } from '../registry/talentos';
 import { ARQUETIPOS } from '../registry/arquetipos';
@@ -132,7 +143,36 @@ type AbaId =
   | 'bestiario'
   | 'profissao'
   | 'skill'
-  | 'fusao';
+  | 'fusao'
+  | 'gerador';
+
+/**
+ * Configuração da aba GERADOR. Só o que o usuário escolheu é guardado — o
+ * resultado em si nunca vai para o localStorage: ele é reconstruível a partir
+ * de (nível, modo, quantidade, papéis, semente), e guardar fichas inteiras
+ * inflaria o storage por nada.
+ */
+interface ConfigGerador {
+  nivel: number;
+  modo: 'individual' | 'grupo';
+  quantidade: number;
+  /** 'aleatorio' = deixa o gerador sortear. */
+  papel: PapelId | 'aleatorio';
+  /** Papéis por posição no grupo; 'auto' deixa a composição padrão decidir. */
+  papeis: (PapelId | 'auto')[];
+  semente: number;
+}
+
+function geradorPadrao(): ConfigGerador {
+  return {
+    nivel: 3,
+    modo: 'individual',
+    quantidade: 4,
+    papel: 'aleatorio',
+    papeis: ['auto', 'auto', 'auto', 'auto'],
+    semente: 1,
+  };
+}
 
 interface Estado {
   personagem: Personagem;
@@ -148,6 +188,7 @@ interface Estado {
   abaAtiva: AbaId;
   evocacao: ConfigEvocacao;
   craft: ConfigCraft;
+  gerador: ConfigGerador;
   /** Índices em `skillsSalvas` marcados como componentes da fusão. */
   fusao: number[];
 }
@@ -186,6 +227,7 @@ function estadoPadrao(): Estado {
     evocacao: { modo: 'elemental', elemento: 'fogo' },
     fusao: [],
     craft: { profissao: 'ferreiro', itemId: 'espada', elementosImbuidos: [] },
+    gerador: geradorPadrao(),
   };
 }
 
@@ -236,6 +278,7 @@ function carregar(): Estado {
       filtroCriaturas: salvo.filtroCriaturas ?? '',
       filtroInvestir: salvo.filtroInvestir ?? '',
       craft: salvo.craft ?? base.craft,
+      gerador: { ...base.gerador, ...(salvo.gerador ?? {}) },
       fusao: Array.isArray(salvo.fusao) ? salvo.fusao : [],
     };
     if ((estado.vistaTalentos as string) === 'constelacao') estado.vistaTalentos = 'arvore';
@@ -569,6 +612,7 @@ function render(): void {
   renderFormCraft(prog);
   renderResultadoCraft(prog);
   renderFusao(prog);
+  renderGerador();
   renderComparacao();
   salvar();
 }
@@ -607,6 +651,7 @@ const ABAS_VALIDAS: string[] = [
   'profissao',
   'skill',
   'fusao',
+  'gerador',
 ];
 
 let elementoSelecionado: ElementoId | null = null;
@@ -2375,6 +2420,213 @@ function resumoBuild(personagem: Personagem, skill: SkillConfig) {
   };
 }
 
+// ------------------------------------------------- aba gerador
+
+/**
+ * O resultado corrente do gerador. Fica FORA de `estado` de propósito: é
+ * derivável da configuração (que é persistida) e guardar N fichas completas
+ * no localStorage a cada render seria caro sem comprar nada.
+ */
+let ultimaGeracao: PersonagemGerado[] = [];
+
+/** Rola a semente. Aqui `Math.random` é legítimo: é o usuário pedindo "outro". */
+function novaSemente(): number {
+  return Math.floor(Math.random() * 0xffffffff) >>> 0;
+}
+
+function executarGeracao(): void {
+  const g = estado.gerador;
+  try {
+    if (g.modo === 'individual') {
+      ultimaGeracao = [
+        gerarPersonagem({
+          nivel: g.nivel,
+          papel: g.papel === 'aleatorio' ? undefined : g.papel,
+          semente: g.semente,
+        }),
+      ];
+    } else {
+      // Só os papéis definidos à mão viajam para o motor; os 'auto' ficam de
+      // fora para a composição padrão preencher — mandar 'auto' como papel
+      // seria inventar um papel que o registro não tem.
+      const explicitos: PapelId[] = [];
+      for (const papel of g.papeis.slice(0, g.quantidade)) {
+        if (papel === 'auto') break;
+        explicitos.push(papel);
+      }
+      ultimaGeracao = gerarGrupo({
+        nivel: g.nivel,
+        quantidade: g.quantidade,
+        papeis: explicitos.length ? explicitos : undefined,
+        semente: g.semente,
+      }).membros;
+    }
+  } catch (e) {
+    ultimaGeracao = [];
+    toast((e as Error).message);
+  }
+}
+
+/** Coloca uma ficha gerada na build atual — o gerador vira ponto de partida. */
+function adotarFichaGerada(indice: number): void {
+  const g = ultimaGeracao[indice];
+  if (!g) return;
+  estado.personagem = structuredClone(g.personagem);
+  estado.skillsSalvas = g.skills.map((s) => structuredClone(s.config));
+  if (g.skills[0]) estado.skill = structuredClone(g.skills[0].config);
+  // O orçamento da tela sobe para caber a ficha: gerar no tier 6 e cair numa
+  // barra de tier 3 mostraria "excedido" numa build que é legal por construção.
+  estado.orcamentoAtributos = Math.max(estado.orcamentoAtributos, g.orcamento.disponivel);
+  estado.orcamentoTalentos = Math.max(estado.orcamentoTalentos, g.orcamento.gasto.talentos);
+  (el('orc-atributos') as HTMLInputElement).value = String(estado.orcamentoAtributos);
+  (el('orc-talentos') as HTMLInputElement).value = String(estado.orcamentoTalentos);
+  estado.abaAtiva = 'elementos';
+  render();
+  toast(`"${g.personagem.nome}" carregado na sua ficha.`);
+}
+
+function opcoesPapel(selecionado: string, incluirAuto: boolean): string {
+  const itens = [
+    ...(incluirAuto
+      ? [{ id: 'auto', nome: 'Automático' }]
+      : [{ id: 'aleatorio', nome: 'Aleatório' }]),
+    ...PAPEIS_VALIDOS.map((id) => ({ id, nome: PAPEIS[id].nome })),
+  ];
+  return itens
+    .map(
+      (i) =>
+        `<option value="${i.id}"${i.id === selecionado ? ' selected' : ''}>${esc(i.nome)}</option>`,
+    )
+    .join('');
+}
+
+function renderControlesGerador(): void {
+  const g = estado.gerador;
+  const niveis = [];
+  for (let n = NIVEL_MINIMO; n <= NIVEL_MAXIMO; n++) {
+    niveis.push(
+      `<option value="${n}"${n === g.nivel ? ' selected' : ''}>Nível ${n} · ${orcamentoDoNivel(n)} pontos</option>`,
+    );
+  }
+
+  const papeisGrupo =
+    g.modo === 'grupo'
+      ? `<div class="linha-campo">
+          <label>Papéis</label>
+          <div class="gerador-papeis">${Array.from({ length: g.quantidade }, (_, i) => {
+            const valor = g.papeis[i] ?? 'auto';
+            return `<select data-acao="ger-papel-membro" data-idx="${i}" aria-label="Papel do membro ${i + 1}">${opcoesPapel(valor, true)}</select>`;
+          }).join('')}</div>
+          <span class="dica">Deixe em Automático para a composição padrão preencher (tank, curandeiro, dano, controle…).</span>
+        </div>`
+      : `<div class="linha-campo">
+          <label>Papel</label>
+          <select data-acao="ger-papel">${opcoesPapel(g.papel, false)}</select>
+          <span></span>
+        </div>`;
+
+  el('gerador-controles').innerHTML = `
+    <div class="linha-campo">
+      <label>O que gerar</label>
+      <div class="radios">
+        <button type="button" data-acao="ger-modo" data-id="individual" class="${g.modo === 'individual' ? 'ativo' : ''}">Um personagem</button>
+        <button type="button" data-acao="ger-modo" data-id="grupo" class="${g.modo === 'grupo' ? 'ativo' : ''}">Um grupo</button>
+      </div>
+      <span></span>
+    </div>
+    <div class="linha-campo">
+      <label>Nível</label>
+      <select data-acao="ger-nivel">${niveis.join('')}</select>
+      <span class="dica">O nível é o orçamento de pontos — é o único filtro que muda o tamanho da build.</span>
+    </div>
+    ${
+      g.modo === 'grupo'
+        ? `<div class="linha-campo">
+             <label>Quantos</label>
+             <input type="number" min="1" max="24" step="1" value="${g.quantidade}" data-acao="ger-quantidade">
+             <span></span>
+           </div>`
+        : ''
+    }
+    ${papeisGrupo}
+    <div class="linha-campo">
+      <label>Semente</label>
+      <input type="number" min="0" step="1" value="${g.semente}" data-acao="ger-semente">
+      <span class="dica">A mesma semente devolve exatamente a mesma ficha — anote a de uma build que você gostou.</span>
+    </div>
+    <div class="acoes-inline">
+      <button type="button" data-acao="ger-gerar">Gerar</button>
+      <button type="button" data-acao="ger-sortear">🎲 Sortear de novo</button>
+    </div>`;
+}
+
+function renderCartaGerada(g: PersonagemGerado, indice: number): string {
+  const prog = g.progressao;
+  const nucleo = g.nucleo
+    .map((id) => `<span class="chip" style="border-color:${CORES[id] ?? '#666'}">${esc(ELEMENTOS[id].nome)}</span>`)
+    .join('');
+  const arquetipos = prog.arquetipos.length
+    ? prog.arquetipos.map((a) => `<span class="chip">${esc(a.nome)}</span>`).join('')
+    : '<span class="dica">nenhum arquétipo ainda — orçamento baixo demais</span>';
+  const derivados = prog.elementosDisponiveis
+    .filter((id) => (elementoDef(id)?.receita?.length ?? 0) >= 2)
+    .sort((a, b) => (prog.niveisEfetivos[b] ?? 0) - (prog.niveisEfetivos[a] ?? 0) || a.localeCompare(b))
+    .slice(0, 6)
+    .map((id) => `<span class="chip">${esc(elementoDef(id)?.nome ?? id)} ${prog.niveisEfetivos[id] ?? 0}</span>`)
+    .join('');
+
+  const skills = g.skills.length
+    ? g.skills
+        .map(
+          (s) => `<li>
+            <strong>${esc(s.config.nome)}</strong>
+            <span class="conta">${esc(ESCOLAS[s.config.escola].nome)} · ${esc(elementoDef(s.config.elemento)?.nome ?? s.config.elemento)}</span>
+            <span class="conta">impacto ${f1(s.resultado.impactoTotal)} · custo ${f1(s.resultado.custoTotal)}</span>
+          </li>`,
+        )
+        .join('')
+    : '<li class="dica">Sem skill: a ficha não tem escola ou fonte de energia suficiente neste orçamento.</li>';
+
+  const pontos = (mapa: Partial<Record<string, number>>, nomear: (id: string) => string): string =>
+    Object.entries(mapa)
+      .filter(([, v]) => (v ?? 0) > 0)
+      .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
+      .map(([id, v]) => `<span class="chip">${esc(nomear(id))} ${v}</span>`)
+      .join('') || '<span class="dica">—</span>';
+
+  return `<article class="carta gerada">
+    <header class="gerada-topo">
+      <h3>${esc(g.personagem.nome)}</h3>
+      <span class="conta">${esc(PAPEIS[g.papel].nome)} · nível ${g.nivel} · ${g.orcamento.gasto.total}/${g.orcamento.disponivel} pontos</span>
+    </header>
+    <p class="dica">${esc(PAPEIS[g.papel].descricao)}</p>
+    <div class="gerada-linha"><span class="rotulo">Núcleo</span><div class="chips">${nucleo}</div></div>
+    <div class="gerada-linha"><span class="rotulo">Combinados</span><div class="chips">${derivados || '<span class="dica">nenhum destravado</span>'}</div></div>
+    <div class="gerada-linha"><span class="rotulo">Escolas</span><div class="chips">${pontos(g.personagem.escolas, (id) => ESCOLAS[id as EscolaId].nome)}</div></div>
+    <div class="gerada-linha"><span class="rotulo">Recursos</span><div class="chips">${pontos(g.personagem.recursos, (id) => RECURSOS[id as RecursoId].nome)}</div></div>
+    <div class="gerada-linha"><span class="rotulo">Talentos</span><div class="chips">${pontos(g.personagem.talentos, (id) => TALENTOS[id as TalentoId].nome)}</div></div>
+    <div class="gerada-linha"><span class="rotulo">Arquétipos</span><div class="chips">${arquetipos}</div></div>
+    <ul class="gerada-skills">${skills}</ul>
+    <div class="acoes-inline">
+      <button type="button" data-acao="ger-adotar" data-idx="${indice}">Carregar na minha ficha</button>
+      <span class="conta">semente ${g.semente}</span>
+    </div>
+  </article>`;
+}
+
+function renderGerador(): void {
+  renderControlesGerador();
+  const alvo = el('gerador-resultado');
+  if (!ultimaGeracao.length) {
+    alvo.innerHTML = `<div class="vazio">Escolha o nível e clique em <strong>Gerar</strong>. O gerador distribui o orçamento inteiro,
+      deixa a cascata destravar o que der, e desenha skills que o motor já aceita — nada que você não pudesse montar à mão.</div>`;
+    return;
+  }
+  alvo.innerHTML = `<div class="lista-cartas">${ultimaGeracao
+    .map((g, i) => renderCartaGerada(g, i))
+    .join('')}</div>`;
+}
+
 function renderComparacao(): void {
   el('conta-snapshots').textContent = `${estado.snapshots.length}/4 snapshots`;
   const colunas = [
@@ -2470,6 +2722,26 @@ document.addEventListener('click', (ev) => {
         ceuManual();
         ceu.foco = !ceu.foco;
         render();
+        return;
+      case 'ger-modo':
+        estado.gerador.modo = id as 'individual' | 'grupo';
+        ultimaGeracao = [];
+        renderGerador();
+        salvar();
+        return;
+      case 'ger-gerar':
+        executarGeracao();
+        renderGerador();
+        salvar();
+        return;
+      case 'ger-sortear':
+        estado.gerador.semente = novaSemente();
+        executarGeracao();
+        renderGerador();
+        salvar();
+        return;
+      case 'ger-adotar':
+        adotarFichaGerada(Number(alvo.dataset.idx));
         return;
       case 'aba':
         estado.abaAtiva = id as AbaId;
@@ -2777,6 +3049,40 @@ document.addEventListener('change', (ev) => {
   if (t.type === 'range' && (t.id?.startsWith('sk-') || t.id?.startsWith('sk-fonte-'))) {
     renderFormSkill(calcularProgressao(estado.personagem));
   }
+
+  // --- controles do gerador (selects e campos numéricos) -------------------
+  const acao = t.dataset?.acao;
+  if (!acao?.startsWith('ger-')) return;
+  const g = estado.gerador;
+  switch (acao) {
+    case 'ger-nivel':
+      g.nivel = Number(t.value);
+      break;
+    case 'ger-quantidade': {
+      // preso em 1..24 aqui também, e não só no atributo `max` do input: o
+      // campo aceita digitação livre e o motor recusaria 0 com exceção.
+      g.quantidade = Math.min(24, Math.max(1, Math.round(Number(t.value) || 1)));
+      t.value = String(g.quantidade);
+      while (g.papeis.length < g.quantidade) g.papeis.push('auto');
+      break;
+    }
+    case 'ger-papel':
+      g.papel = t.value as PapelId | 'aleatorio';
+      break;
+    case 'ger-papel-membro':
+      g.papeis[Number(t.dataset.idx)] = t.value as PapelId | 'auto';
+      break;
+    case 'ger-semente':
+      g.semente = Math.max(0, Math.round(Number(t.value) || 0));
+      break;
+    default:
+      return;
+  }
+  // Regerar a cada mudança é barato (milissegundos) e transforma os controles
+  // num painel vivo: o usuário vê o efeito do filtro sem clicar em Gerar.
+  if (ultimaGeracao.length) executarGeracao();
+  renderGerador();
+  salvar();
 });
 
 el('btn-exportar').addEventListener('click', () => {

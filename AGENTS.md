@@ -33,6 +33,17 @@ npm run cs -- modificadores --ficha ficha.json --skill skill.json
 npm run cs -- fusao --ficha ficha.json --skills a.json,b.json
 ```
 
+Para produzir uma ficha do zero em vez de analisar uma existente:
+
+```bash
+npm run cs -- gerar --nivel 5 --papel controle       # uma ficha completa
+npm run cs -- gerar-grupo --nivel 4 --quantidade 5   # um grupo, com papéis
+npm run cs -- papeis                                 # ids de papel válidos
+npm run cs -- niveis                                 # a curva de orçamento
+```
+
+O que sai de `gerar` entra em `--ficha` sem conversão — é o mesmo formato.
+
 `--texto` troca JSON por saída legível. `npm run cs -- ajuda` lista tudo.
 
 Em TypeScript, o mesmo está em `src/api/consultas.ts` — importe de lá, não de
@@ -60,6 +71,25 @@ Em TypeScript, o mesmo está em `src/api/consultas.ts` — importe de lá, não 
    distribuição de pontos satisfaz a condição.
 
 ---
+
+## 2b. O gerador automático
+
+`engine/gerador.ts` monta fichas completas a partir de um orçamento. Duas
+regras suas que valem como invariante:
+
+1. **Ele nunca escreve na ficha por fora.** Toda alocação passa pelos mutadores
+   de `personagem.ts`, então uma ficha gerada obedece às mesmas regras de uma
+   ficha montada à mão (ponto direto só em base ou derivado destravado,
+   requisito e exclusividade de talento, orçamento). Se você precisar mudar
+   como o gerador aloca, mude a heurística — não contorne o mutador.
+2. **Ele é determinístico.** Toda escolha vem de um PRNG semeado
+   (`criarPrng`). Não introduza `Math.random()` no caminho de geração: a única
+   chamada legítima está na UI, no botão "sortear de novo", que só produz a
+   semente. Mesma semente + mesmos filtros → mesma ficha.
+
+O filtro que o usuário informa é o **nível** (1..7 → `ORCAMENTO_POR_TIER`); para
+grupos, também quantidade e papéis. Papel é conteúdo declarativo em `PAPEIS` —
+adicionar um papel novo é uma entrada nesse mapa, não um `if` na geração.
 
 ## 3. Os invariantes que você não pode quebrar
 
@@ -110,6 +140,7 @@ Arquivos por assunto:
 | Fusão | `engine/fusao.ts` |
 | Progressão, transbordo, arquétipos | `engine/progressao.ts` |
 | Posição das estrelas no céu | `ui/ceu-layout.ts` |
+| Geração automática de fichas e grupos | `engine/gerador.ts` |
 
 ---
 
