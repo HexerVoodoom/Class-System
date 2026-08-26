@@ -57,6 +57,19 @@ import {
   type SkillConfig,
 } from '../engine/skills';
 import { MODOS_FUSAO, calcularFusao, previewFusao, type FusaoConfig } from '../engine/fusao';
+import {
+  NIVEL_MAXIMO,
+  NIVEL_MINIMO,
+  PAPEIS,
+  PAPEIS_VALIDOS,
+  gerarGrupo,
+  gerarPersonagem,
+  orcamentoDoNivel,
+  type FiltrosGeracao,
+  type FiltrosGrupo,
+  type PapelId,
+  type PersonagemGerado,
+} from '../engine/gerador';
 
 const BASES = elementosBase().map((e) => e.id as ElementoBaseId);
 
@@ -1038,3 +1051,116 @@ export function listarCombinacoes(
 
 /** Reexporta o util de chave para consumidores externos montarem consultas. */
 export { chaveCombinacao, progressoCombinacao };
+
+// ---------------------------------------------------------------------------
+// 12. Geração automática
+// ---------------------------------------------------------------------------
+
+/**
+ * A ficha gerada, no formato que um programa consome: `personagem` é a ficha
+ * exportável (mesmo formato que o simulador salva e que `--ficha` lê de
+ * volta), e o resto é leitura pronta para não obrigar quem consome a
+ * recalcular a progressão.
+ *
+ * `Progressao` NÃO sai daqui de propósito: ela carrega `niveisEfetivos` com
+ * uma entrada por elemento do registro e dois `Set`s, que não sobrevivem a
+ * `JSON.stringify`. A leitura equivalente é `analise`.
+ */
+export interface FichaGerada {
+  personagem: Personagem;
+  papel: PapelId;
+  papelNome: string;
+  nivel: number;
+  semente: number;
+  orcamento: { disponivel: number; gasto: number; sobra: number };
+  /** As bases que formaram o núcleo, na ordem de investimento. */
+  nucleo: string[];
+  elementoPrincipal: { id: string; nome: string; nivel: number };
+  analise: AnaliseFicha;
+  skills: {
+    config: SkillConfig;
+    valida: boolean;
+    erros: string[];
+    custoTotal: number;
+    impactoTotal: number;
+    impactoPorAlvo: number;
+    alvosEsperados: number;
+  }[];
+}
+
+function serializarGerado(g: PersonagemGerado): FichaGerada {
+  return {
+    personagem: g.personagem,
+    papel: g.papel,
+    papelNome: PAPEIS[g.papel].nome,
+    nivel: g.nivel,
+    semente: g.semente,
+    orcamento: {
+      disponivel: g.orcamento.disponivel,
+      gasto: g.orcamento.gasto.total,
+      sobra: g.orcamento.sobra,
+    },
+    nucleo: g.nucleo,
+    elementoPrincipal: {
+      id: g.elementoPrincipal,
+      nome: elementoDef(g.elementoPrincipal)?.nome ?? g.elementoPrincipal,
+      nivel: g.progressao.niveisEfetivos[g.elementoPrincipal] ?? 0,
+    },
+    analise: analisarFicha(g.personagem),
+    skills: g.skills.map((s) => ({
+      config: s.config,
+      valida: s.resultado.valida,
+      erros: s.resultado.erros,
+      custoTotal: s.resultado.custoTotal,
+      impactoTotal: s.resultado.impactoTotal,
+      impactoPorAlvo: s.resultado.impactoPorAlvo,
+      alvosEsperados: s.resultado.alvosEsperados,
+    })),
+  };
+}
+
+/** Gera uma ficha completa. Único filtro obrigatório: nenhum. */
+export function gerarFicha(filtros: FiltrosGeracao = {}): FichaGerada {
+  return serializarGerado(gerarPersonagem(filtros));
+}
+
+export interface GrupoGeradoSerializado {
+  nome: string;
+  nivel: number;
+  semente: number;
+  quantidade: number;
+  /** Papéis na ordem dos membros — a composição que de fato saiu. */
+  composicao: PapelId[];
+  membros: FichaGerada[];
+}
+
+/** Gera um grupo com quantidade e papéis definidos (ou sorteados). */
+export function gerarGrupoDeFichas(filtros: FiltrosGrupo = {}): GrupoGeradoSerializado {
+  const grupo = gerarGrupo(filtros);
+  return {
+    nome: grupo.nome,
+    nivel: grupo.nivel,
+    semente: grupo.semente,
+    quantidade: grupo.membros.length,
+    composicao: grupo.membros.map((m) => m.papel),
+    membros: grupo.membros.map(serializarGerado),
+  };
+}
+
+/** Os papéis que o gerador conhece — alimenta menus e validação de entrada. */
+export function listarPapeis(): { id: PapelId; nome: string; descricao: string }[] {
+  return PAPEIS_VALIDOS.map((id) => ({
+    id,
+    nome: PAPEIS[id].nome,
+    descricao: PAPEIS[id].descricao,
+  }));
+}
+
+/** A curva de orçamento por nível, para a UI mostrar o que cada tier compra. */
+export function listarNiveis(): { nivel: number; orcamento: number }[] {
+  const niveis: { nivel: number; orcamento: number }[] = [];
+  for (let n = NIVEL_MINIMO; n <= NIVEL_MAXIMO; n++) {
+    niveis.push({ nivel: n, orcamento: orcamentoDoNivel(n) });
+  }
+  return niveis;
+}

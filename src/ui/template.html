@@ -159,10 +159,11 @@
   .condicoes .falta { color: var(--alerta); }
   .capacidades-lista { font-size: 11.5px; color: var(--arcano); margin-top: 2px; }
 
-  form.skill { background: var(--surface); border: 1px solid var(--linha); border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
-  form.skill .linha-campo { display: grid; grid-template-columns: 118px 1fr auto; gap: 8px; align-items: center; font-size: 13px; }
-  form.skill label { color: var(--ink-2); }
-  form.skill select, form.skill input[type='text'] {
+  form.skill, div.skill { background: var(--surface); border: 1px solid var(--linha); border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
+  form.skill .linha-campo, div.skill .linha-campo { display: grid; grid-template-columns: 118px 1fr auto; gap: 8px; align-items: center; font-size: 13px; }
+  form.skill label, div.skill label { color: var(--ink-2); }
+  form.skill select, form.skill input[type='text'],
+  div.skill select, div.skill input[type='text'], div.skill input[type='number'] {
     background: var(--surface-2); color: var(--ink); border: 1px solid var(--linha);
     border-radius: 5px; padding: 5px 8px; width: 100%; font: inherit;
   }
@@ -546,6 +547,30 @@
   .limite-hint { color: var(--ink-2); font-size: 10.5px; }
 
   /* sigilos (arte PNG) */
+  /* ---- aba Gerador ---- */
+  .radios button {
+    background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--linha);
+    border-radius: 5px; padding: 5px 10px; font: inherit; cursor: pointer;
+  }
+  .radios button.ativo { color: var(--ink); border-color: var(--acento); background: var(--surface); }
+  .gerador-papeis { display: flex; flex-wrap: wrap; gap: 6px; }
+  .gerador-papeis select { width: auto; min-width: 120px; }
+  #gerador-resultado .lista-cartas { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+  .carta.gerada { display: flex; flex-direction: column; gap: 6px; }
+  .carta.gerada .gerada-topo { display: flex; flex-direction: column; gap: 2px; }
+  .carta.gerada h3 { font-size: 15px; }
+  .gerada-linha { display: grid; grid-template-columns: 84px 1fr; gap: 6px; align-items: start; font-size: 12px; }
+  .gerada-linha .rotulo { color: var(--ink-2); }
+  .gerada-linha .chip {
+    display: inline-block; background: var(--surface-2); border: 1px solid var(--linha);
+    border-radius: 999px; padding: 1px 8px; font-size: 11.5px;
+  }
+  .gerada-skills { list-style: none; display: grid; gap: 4px; margin-top: 2px; }
+  .gerada-skills li {
+    background: var(--surface-2); border: 1px solid var(--linha); border-radius: 6px;
+    padding: 5px 8px; font-size: 12px; display: grid; gap: 1px;
+  }
+
   .carta-com-sig { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: start; }
   .sig-carta { width: 52px; height: 52px; border-radius: 10px; }
   .carta-com-sig .carta-corpo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -658,6 +683,7 @@
     <button type="button" data-acao="aba" data-id="profissao">🔨 Profissão</button>
     <button type="button" data-acao="aba" data-id="skill">⚔ Criar Skill</button>
     <button type="button" data-acao="aba" data-id="fusao">⚗ Fusão</button>
+    <button type="button" data-acao="aba" data-id="gerador">🎲 Gerador</button>
   </nav>
 
   <main>
@@ -773,6 +799,20 @@
       <h2>Fusão de Skills <span class="conta">2ª e 3ª geração</span></h2>
       <div id="fusao-componentes"></div>
       <div id="fusao-resultado"></div>
+    </section>
+
+    <section id="aba-gerador" class="aba">
+      <section class="bloco">
+        <h2>Gerador automático <span class="conta">ficha completa a partir do nível</span></h2>
+        <p class="dica">Escolha o <strong>nível</strong> — o resto é sorteado: elementos, escolas, recursos, talentos,
+          profissão e skills. Para um grupo, defina quantos e, se quiser, o papel de cada um. Toda ficha gerada é uma
+          ficha que você poderia ter montado à mão: os mesmos limites de orçamento, cascata e talento valem.</p>
+        <div id="gerador-controles" class="skill"></div>
+      </section>
+      <section class="bloco">
+        <h2>Resultado</h2>
+        <div id="gerador-resultado"></div>
+      </section>
     </section>
 
     <section id="aba-skill" class="aba">

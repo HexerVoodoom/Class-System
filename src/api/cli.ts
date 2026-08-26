@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import { criarPersonagem, type Personagem } from '../engine/personagem';
 import type { SkillConfig } from '../engine/skills';
 import type { FusaoConfig } from '../engine/fusao';
+import type { PapelId } from '../engine/gerador';
 import {
   analisarFicha,
   arquetiposProximos,
@@ -23,9 +24,13 @@ import {
   diagnosticarFusao,
   diagnosticarSkill,
   explicarElemento,
+  gerarFicha,
+  gerarGrupoDeFichas,
   listarArquetipos,
   listarCombinacoes,
   listarModificadores,
+  listarNiveis,
+  listarPapeis,
   listarTalentos,
   modificadoresPara,
   panorama,
@@ -104,6 +109,12 @@ CONSULTAS SOBRE UMA FICHA (--ficha arquivo.json, ou - para stdin)
   arquetipos-proximos           Arquétipos mais baratos de alcançar
   caminho <arquetipo>           Plano de pontos até um arquétipo
 
+GERAÇÃO AUTOMÁTICA (nenhum filtro é obrigatório)
+  gerar                         Uma ficha completa: elementos, escolas, skills
+  gerar-grupo                   Um grupo inteiro, com papéis distribuídos
+  papeis                        Papéis que o gerador conhece
+  niveis                        Curva de orçamento por nível
+
 SKILLS E FUSÃO (--skill a.json, --skills a.json,b.json)
   skill                         Valida e calcula uma skill
   modificadores                 Quais modificadores cabem nesta skill, e por quê
@@ -114,6 +125,13 @@ OPÇÕES
   --ficha <arq|->    Ficha do personagem em JSON
   --skill <arq>      Configuração de skill em JSON
   --skills <a,b,..>  Componentes de uma fusão
+  --nivel <1..7>     Nível/tier do que for gerado (default 3)
+  --papel <id>       Papel de uma ficha gerada (default: sorteado)
+  --papeis <a,b,..>  Papéis do grupo, na ordem; o resto completa sozinho
+  --quantidade <n>   Tamanho do grupo (default 4, máximo 24)
+  --semente <n>      Semente do sorteio — a mesma semente devolve a mesma ficha
+  --skills-por <n>   Quantas skills desenhar por ficha (default 2)
+  --orcamento <n>    Orçamento explícito, no lugar da curva por nível
   --limite <n>       Máximo de itens devolvidos
   --offset <n>       Início da paginação
   --aridade <n>      Filtra combinações por número de componentes
@@ -127,6 +145,9 @@ EXEMPLOS
   npx tsx src/api/cli.ts proximas --ficha minha.json --limite 5
   npx tsx src/api/cli.ts caminho vulcanologo --ficha minha.json
   npx tsx src/api/cli.ts skill --ficha minha.json --skill fogo.json
+  npx tsx src/api/cli.ts gerar --nivel 5 --papel controle --texto
+  npx tsx src/api/cli.ts gerar-grupo --nivel 4 --quantidade 5 --papeis tank,curandeiro
+  npx tsx src/api/cli.ts gerar --nivel 3 --semente 1234 > ficha.json
 `;
 
 function texto(valor: unknown, indent = 0): string {
@@ -220,6 +241,46 @@ export function executar(argv: string[]): number {
             );
         }
       }
+
+      case 'papeis':
+        emitir(listarPapeis(), o);
+        return 0;
+
+      case 'niveis':
+        emitir(listarNiveis(), o);
+        return 0;
+
+      case 'gerar':
+        emitir(
+          gerarFicha({
+            nivel: o.nivel ? num(o, 'nivel', 3) : undefined,
+            papel: o.papel ? (String(o.papel) as PapelId) : undefined,
+            semente: o.semente ? num(o, 'semente', 0) : undefined,
+            skills: o['skills-por'] ? num(o, 'skills-por', 2) : undefined,
+            orcamento: o.orcamento ? num(o, 'orcamento', 0) : undefined,
+            nome: typeof o.nome === 'string' ? o.nome : undefined,
+          }),
+          o,
+        );
+        return 0;
+
+      case 'gerar-grupo':
+        emitir(
+          gerarGrupoDeFichas({
+            nivel: o.nivel ? num(o, 'nivel', 3) : undefined,
+            quantidade: o.quantidade ? num(o, 'quantidade', 4) : undefined,
+            papeis:
+              typeof o.papeis === 'string'
+                ? o.papeis.split(',').map((x) => x.trim()).filter(Boolean) as PapelId[]
+                : undefined,
+            semente: o.semente ? num(o, 'semente', 0) : undefined,
+            skills: o['skills-por'] ? num(o, 'skills-por', 2) : undefined,
+            orcamento: o.orcamento ? num(o, 'orcamento', 0) : undefined,
+            nome: typeof o.nome === 'string' ? o.nome : undefined,
+          }),
+          o,
+        );
+        return 0;
 
       case 'analisar':
         emitir(analisarFicha(lerFicha(o), limite), o);
