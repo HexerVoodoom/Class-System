@@ -119,10 +119,24 @@ import {
 } from '../engine/recursos';
 import { calcularFusao, previewFusao } from '../engine/fusao';
 import { sigilo } from './sigilos';
+import { iconeElemento } from './iconesElementos';
 
-/** <img> do sigilo, ou string vazia se não houver arte para o id. */
+/**
+ * <img> da arte do id, ou string vazia se não houver arte nenhuma.
+ *
+ * Duas fontes, nesta ordem:
+ *  1. `sigilo(id)` — sigilos procedurais. Cobrem os 17 elementos BASE, mais
+ *     escolas, famílias de criatura, profissões e recursos.
+ *  2. `iconeElemento(id)` — pixel art por elemento. Cobre os 136 DERIVADOS e
+ *     o `neutro`, que nunca tiveram sigilo.
+ *
+ * Os dois conjuntos não se sobrepõem, então a ordem é indiferente hoje; o
+ * sigilo vem primeiro porque é o que já existia. Antes desta segunda fonte,
+ * `sig(def.id)` devolvia vazio para todo derivado, e a UI compensava
+ * mostrando os sigilos dos COMPONENTES no lugar (ver `sigDeriv`).
+ */
 function sig(id: string, classe = 'sig'): string {
-  const src = sigilo(id);
+  const src = sigilo(id) ?? iconeElemento(id);
   return src ? `<img class="${classe}" src="${src}" alt="" loading="lazy">` : '';
 }
 
