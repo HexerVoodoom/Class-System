@@ -3910,8 +3910,8 @@
       "cascata": null
     },
     {
-      "id": "pesadelo_doce",
-      "nome": "Pesadelo Doce",
+      "id": "sonho_sombrio",
+      "nome": "Sonho Sombrio",
       "tipo": "derivado",
       "descricao": "O sonho que vira armadilha: sono, medo e doçura.",
       "fatorPotencia": 1.15,

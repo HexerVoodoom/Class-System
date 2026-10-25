@@ -485,7 +485,7 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado('brisa_cintilante', 'Brisa Cintilante', ['fada', 'ar'], 'Vento de glitter: cega de leve e acelera aliados.'),
   derivado('glitter', 'Glitter', ['fada', 'eletricidade'], 'Faíscas de purpurina: choques que deslumbram em área.'),
   derivado('feerie', 'Feérie', ['fada', 'arcano'], 'Magia das fadas: ilusões tão reais que ferem.', { fator: 1.2 }),
-  derivado('pesadelo_doce', 'Pesadelo Doce', ['fada', 'sombra'], 'O sonho que vira armadilha: sono, medo e doçura.'),
+  derivado('sonho_sombrio', 'Sonho Sombrio', ['fada', 'sombra'], 'O sonho que vira armadilha: sono, medo e doçura.'),
   derivado('arco_iris', 'Arco-Íris', ['fada', 'luz'], 'Ponte de sete cores: escudo e bênção que se espalham.'),
   derivado('encanto_traicoeiro', 'Encanto Traiçoeiro', ['fada', 'vileza'], 'O sorriso da fada má: charme que se volta contra o alvo.'),
   derivado('banshee', 'Banshee', ['fada', 'morte'], 'O lamento feérico: o grito que anuncia o fim.'),
