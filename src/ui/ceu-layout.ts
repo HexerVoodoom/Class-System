@@ -1,8 +1,8 @@
 /**
  * LAYOUT DO CÉU DOS ELEMENTOS — matemática pura, sem DOM.
  *
- * O problema: o espaço completo tem 17 bases + 136 pares + 680 triplas +
- * 2.380 quádruplas ≈ 3.213 nós. Um disco de raio 348 tem ~380.000 unidades²;
+ * O problema: o espaço completo tem 20 bases + 190 pares + 1.140 triplas +
+ * 4.845 quádruplas ≈ 6.195 nós. Um disco de raio 348 tem ~380.000 unidades²;
  * 3.213 nós com espaçamento mínimo decente pedem ~260.000 unidades² de
  * ocupação exclusiva, concentradas justamente nos anéis internos, onde a área
  * é escassa. **Desenhar tudo de uma vez é geometricamente impossível**, em
@@ -14,9 +14,9 @@
  * apareceu ou sumiu — a posição depende só dos índices dos componentes.
  *
  * ENDEREÇO CANÔNICO (a, w, padrão):
- *   Os índices dos componentes vivem em ℤ₁₇. Calculam-se as lacunas cíclicas;
+ *   Os índices dos componentes vivem em ℤ_N (N = 20). Calculam-se as lacunas cíclicas;
  *   a MAIOR lacuna é "a de fora", e o elemento logo depois dela é a ÂNCORA.
- *   O ARCO w = 17 − maiorLacuna mede quão dispersos os componentes são.
+ *   O ARCO w = N − maiorLacuna mede quão dispersos os componentes são.
  *
  *   - direção  = setor da âncora → parentesco de receita vira vizinhança visual
  *   - profundidade = arco w → componentes vizinhos na borda, opostos no fundo
@@ -29,7 +29,7 @@
 
 export const W = 880;
 export const CENTRO = W / 2;
-export const N_BASES = 17;
+export const N_BASES = 20;
 export const PASSO = (2 * Math.PI) / N_BASES;
 /** Fração do setor efetivamente usada — os 12% restantes são calha visual. */
 const PHI = 0.88;
@@ -57,12 +57,12 @@ export interface FaixaAridade {
 }
 
 export const FAIXAS: Record<2 | 3 | 4, FaixaAridade> = {
-  2: { wMin: 1, wMax: 8, rOut: 348, passoR: 7.0, dMin: 9, lMax: 1, dLane: 0, rNo: 3.2 },
-  3: { wMin: 2, wMax: 11, rOut: 278, passoR: 9.0, dMin: 8, lMax: 3, dLane: 4.0, rNo: 2.8 },
-  4: { wMin: 3, wMax: 12, rOut: 168, passoR: 8.5, dMin: 7, lMax: 5, dLane: 3.5, rNo: 2.4 },
+  2: { wMin: 1, wMax: 10, rOut: 348, passoR: 7.0, dMin: 9, lMax: 1, dLane: 0, rNo: 3.2 },
+  3: { wMin: 2, wMax: 13, rOut: 278, passoR: 9.0, dMin: 8, lMax: 3, dLane: 4.0, rNo: 2.8 },
+  4: { wMin: 3, wMax: 15, rOut: 168, passoR: 8.5, dMin: 7, lMax: 5, dLane: 3.5, rNo: 2.4 },
 };
 
-// --- binomiais (triângulo de Pascal até 17) ---
+// --- binomiais (triângulo de Pascal até N_BASES) ---
 const BINOM: number[][] = (() => {
   const t: number[][] = Array.from({ length: N_BASES + 1 }, () =>
     new Array(N_BASES + 1).fill(0),
@@ -90,7 +90,7 @@ export interface Endereco {
 
 /**
  * O endereço canônico. Injetivo sobre TODO o espaço — verificado por força
- * bruta: 136/136 pares, 680/680 triplas, 2380/2380 quádruplas, zero colisões.
+ * bruta: 190/190 pares, 1140/1140 triplas, 4845/4845 quádruplas, zero colisões.
  */
 export function enderecoCanonico(indices: number[]): Endereco {
   const s = [...new Set(indices)].sort((x, y) => x - y);

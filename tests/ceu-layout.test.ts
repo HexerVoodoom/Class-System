@@ -55,7 +55,7 @@ describe('endereço canônico do céu', () => {
 });
 
 describe('posicionamento', () => {
-  it('as 3.196 posições de aridade 2–4 são todas distintas', () => {
+  it('as 6.175 posições de aridade 2–4 são todas distintas', () => {
     const chaves = new Set<string>();
     let total = 0;
     for (const k of [2, 3, 4]) {
@@ -65,7 +65,7 @@ describe('posicionamento', () => {
         total++;
       }
     }
-    expect(total).toBe(136 + 680 + 2380);
+    expect(total).toBe(190 + 1140 + 4845);
     expect(chaves.size).toBe(total);
   });
 

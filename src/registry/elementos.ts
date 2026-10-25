@@ -2,12 +2,12 @@
  * Registro de elementos.
  *
  * Categorias:
- *  - "base": recebem pontos diretamente do jogador (17 elementos).
+ *  - "base": recebem pontos diretamente do jogador (20 elementos).
  *  - "derivado": não recebem pontos diretos; o nível é o MENOR nível efetivo
  *    entre os componentes da receita (evolução conjunta), desde que todos
- *    atinjam o mínimo. TODOS os 136 pares existem aqui, nomeados à mão.
+ *    atinjam o mínimo. TODOS os 190 pares existem aqui, nomeados à mão.
  *    Triplas e quádruplas moram em `combinacoes.ts`: as de identidade forte
- *    são curadas, as outras 3.000 são geradas sob demanda.
+ *    são curadas, as outras ~5.900 são geradas sob demanda.
  *  - "especial": derivados com receita ampla (primordial, ciclo, nulo).
  *
  * Cada elemento tem um PERFIL (pesos de dano/controle/cura/defesa/suporte)
@@ -34,7 +34,10 @@ export type ElementoBaseId =
   | 'tempo'
   | 'som'
   | 'gravidade'
-  | 'espaco';
+  | 'espaco'
+  | 'fada'
+  | 'industrial'
+  | 'planta';
 
 export interface PerfilPesos {
   dano: number;
@@ -232,6 +235,30 @@ const ELEMENTOS_BASE: Record<ElementoBaseId, ElementoDef> = {
     pesos: pesos(0.3, 0.4, 0, 0, 0.3),
     descricao: 'A distância entre os pontos: portais, teleporte e o cosmos.',
   },
+  fada: {
+    id: 'fada',
+    nome: 'Fada',
+    tipo: 'base',
+    fatorPotencia: 1.0,
+    pesos: pesos(0.2, 0.3, 0.2, 0, 0.3),
+    descricao: 'Encanto feérico: arco-íris, corações e glitter — encanta, ilude e abençoa.',
+  },
+  industrial: {
+    id: 'industrial',
+    nome: 'Industrial',
+    tipo: 'base',
+    fatorPotencia: 1.0,
+    pesos: pesos(0.4, 0.1, 0, 0.4, 0.1),
+    descricao: 'Fábrica e máquina: constructos, ferramentas e blindagem fabricada.',
+  },
+  planta: {
+    id: 'planta',
+    nome: 'Planta',
+    tipo: 'base',
+    fatorPotencia: 1.0,
+    pesos: pesos(0.2, 0.3, 0.3, 0.2, 0),
+    descricao: 'Raiz, espinho e semente: enreda, envenena e regenera.',
+  },
 };
 
 interface OpcoesDerivado {
@@ -259,7 +286,7 @@ function derivado(
     media.defesa += p.defesa / componentes.length;
     media.suporte += p.suporte / componentes.length;
   }
-  // Especiais têm receita AMPLA (5/4/17 componentes) sem sub-combinações de
+  // Especiais têm receita AMPLA (5/4/20 componentes) sem sub-combinações de
   // aridade N−1 no espaço enumerado: a cascata deles vem declarada — pais são
   // as próprias bases, divisor alto, nunca destraváveis para ponto direto.
   const cascata =
@@ -280,7 +307,7 @@ function derivado(
 }
 
 /**
- * A matriz completa: TODOS os 136 pares dos 17 elementos base, seguidos das
+ * A matriz completa: TODOS os 190 pares dos 20 elementos base, seguidos das
  * triplas curadas historicamente, das amplas (primordial, ciclo) e do nulo.
  */
 const DERIVADOS_LISTA: ElementoDef[] = [
@@ -317,7 +344,7 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado('ouro_vivo', 'Ouro Vivo', ['terra', 'luz'], 'Metal sagrado: armaduras e armas conjuradas brilhantes.'),
   derivado('solo_profano', 'Solo Profano', ['terra', 'vileza'], 'Chão corrompido: território que enfraquece quem pisa.'),
   derivado('ossuario', 'Ossuário', ['terra', 'morte'], 'Os ossos da terra: muralhas e lanças de osso.'),
-  derivado('flora', 'Flora', ['terra', 'vida'], 'Natureza desperta: vinhas, raízes e crescimento selvagem.'),
+  derivado('flora', 'Bosque', ['terra', 'vida'], 'Natureza desperta: vinhas, raízes e crescimento selvagem.'),
   derivado('tita', 'Titã', ['terra', 'vigor'], 'Corpo de pedra: força colossal e pele impenetrável.'),
 
   // ---- ar + X ----
@@ -451,6 +478,65 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado('continuum', 'Continuum', ['espaco', 'tempo'], 'Espaço-tempo dominado: mover-se por onde e quando quiser.', { fator: 1.3, minimo: 12 }),
   derivado('silencio_cosmico', 'Silêncio Cósmico', ['espaco', 'som'], 'O vácuo não propaga som: sufoca canções e magias.'),
   derivado('dobra', 'Dobra', ['espaco', 'gravidade'], 'O espaço curvado sobre si: encurta distâncias e esmaga.', { fator: 1.25, minimo: 12 }),
+  // ---- fada + X (base nova, 25/10/2026) ----
+  derivado('fogo_fatuo', 'Fogo-Fátuo', ['fada', 'fogo'], 'Luzinhas que dançam: chamas rosadas que atraem e confundem.'),
+  derivado('orvalho', 'Orvalho Encantado', ['fada', 'agua'], 'Gotas de arco-íris: cura leve que reflete feitiços.'),
+  derivado('circulo_feerico', 'Círculo de Fadas', ['fada', 'terra'], 'Anel de cogumelos: quem entra fica preso no encanto.'),
+  derivado('brisa_cintilante', 'Brisa Cintilante', ['fada', 'ar'], 'Vento de glitter: cega de leve e acelera aliados.'),
+  derivado('glitter', 'Glitter', ['fada', 'eletricidade'], 'Faíscas de purpurina: choques que deslumbram em área.'),
+  derivado('feerie', 'Feérie', ['fada', 'arcano'], 'Magia das fadas: ilusões tão reais que ferem.', { fator: 1.2 }),
+  derivado('sonho_sombrio', 'Sonho Sombrio', ['fada', 'sombra'], 'O sonho que vira armadilha: sono, medo e doçura.'),
+  derivado('arco_iris', 'Arco-Íris', ['fada', 'luz'], 'Ponte de sete cores: escudo e bênção que se espalham.'),
+  derivado('encanto_traicoeiro', 'Encanto Traiçoeiro', ['fada', 'vileza'], 'O sorriso da fada má: charme que se volta contra o alvo.'),
+  derivado('banshee', 'Banshee', ['fada', 'morte'], 'O lamento feérico: o grito que anuncia o fim.'),
+  derivado('coracao', 'Coração', ['fada', 'vida'], 'Amor encantado: corações que curam e unem aliados.'),
+  derivado('graca', 'Graça', ['fada', 'vigor'], 'Leveza de dança: esquiva e golpes delicados e certeiros.'),
+  derivado('lamina_purpurina', 'Lâmina de Purpurina', ['fada', 'marcial'], 'A espada rosa: cada corte deixa um rastro cintilante.'),
+  derivado('sono_encantado', 'Sono Encantado', ['fada', 'tempo'], 'Cem anos num piscar: adormece e congela o instante.'),
+  derivado('cancao_feerica', 'Canção Feérica', ['fada', 'som'], 'Melodia que enfeitiça: aliados inspirados, inimigos distraídos.'),
+  derivado('leveza', 'Leveza', ['fada', 'gravidade'], 'Asas de fada: anula o peso, levita e flutua.'),
+  derivado('poeira_estelar', 'Poeira Estelar', ['fada', 'espaco'], 'Pó de estrela: teleporte curto num estouro de brilho.'),
+
+  // ---- industrial + X (base nova, 25/10/2026) ----
+  derivado('fornalha', 'Fornalha', ['industrial', 'fogo'], 'A caldeira acesa: calor constante que funde metal.'),
+  derivado('hidraulica', 'Hidráulica', ['industrial', 'agua'], 'Pressão de pistão: empurrões e jatos esmagadores.'),
+  derivado('mineracao', 'Mineração', ['industrial', 'terra'], 'Broca e picareta: perfura defesas e escava abrigos.'),
+  derivado('pneumatica', 'Pneumática', ['industrial', 'ar'], 'Ar comprimido: disparos e saltos propulsionados.'),
+  derivado('usina', 'Usina', ['industrial', 'eletricidade'], 'Gerador em carga máxima: energia para aliados e torres.'),
+  derivado('artificio', 'Artifício', ['industrial', 'arcano'], 'Máquina com runa: dispositivos mágicos programáveis.', { fator: 1.2 }),
+  derivado('fuligem', 'Fuligem', ['industrial', 'sombra'], 'Fumaça de chaminé: nuvem negra que cega e sufoca.'),
+  derivado('holofote', 'Holofote', ['industrial', 'luz'], 'Luz fabricada: revela, ofusca e marca alvos.'),
+  derivado('poluicao', 'Poluição', ['industrial', 'vileza'], 'Resíduo tóxico: corrói o terreno e quem nele vive.'),
+  derivado('ferro_velho', 'Ferro-Velho', ['industrial', 'morte'], 'Sucata reanimada: constructos feitos do que morreu.'),
+  derivado('biomecanica', 'Biomecânica', ['industrial', 'vida'], 'Carne e prótese: reparo de corpo e máquina.'),
+  derivado('exoesqueleto', 'Exoesqueleto', ['industrial', 'vigor'], 'Armadura motorizada: força e resistência fabricadas.'),
+  derivado('armaria', 'Armaria', ['industrial', 'marcial'], 'Linha de montagem de armas: munição sem fim.'),
+  derivado('relojoaria', 'Relojoaria', ['industrial', 'tempo'], 'Mecanismo preciso: atrasa e adianta turnos.'),
+  derivado('britadeira', 'Britadeira', ['industrial', 'som'], 'Vibração mecânica: atordoa e racha estruturas.'),
+  derivado('prensa', 'Prensa', ['industrial', 'gravidade'], 'Toneladas de aço descendo: esmaga e imobiliza.'),
+  derivado('estacao_orbital', 'Estação Orbital', ['industrial', 'espaco'], 'Fábrica no céu: bombardeio e suporte de longe.'),
+  derivado('brinquedo', 'Brinquedo de Corda', ['industrial', 'fada'], 'Corda e encanto: bonecos que dançam, distraem e protegem.'),
+
+  // ---- planta + X (base nova, 25/10/2026) ----
+  derivado('queimada', 'Queimada', ['planta', 'fogo'], 'Mato seco em chamas: incêndio que se alastra pelo chão.'),
+  derivado('mangue', 'Mangue', ['planta', 'agua'], 'Raízes na água: terreno que prende e alimenta.'),
+  derivado('raiz_profunda', 'Raiz Profunda', ['planta', 'terra'], 'Raízes que racham pedra: prende e ancora.'),
+  derivado('polen', 'Pólen', ['planta', 'ar'], 'Nuvem dourada: espirros, sono e cura leve no vento.'),
+  derivado('fotossintese', 'Fotossíntese', ['planta', 'eletricidade'], 'Energia da folha: recarga contínua de recurso.'),
+  derivado('druidismo', 'Druidismo', ['planta', 'arcano'], 'A magia verde: forma de fera e o chamado da mata.', { fator: 1.2 }),
+  derivado('fungo', 'Fungo', ['planta', 'sombra'], 'Micélio no escuro: esporos que drenam e se espalham.'),
+  derivado('girassol', 'Girassol', ['planta', 'luz'], 'A flor do sol: cura e proteção voltadas aos aliados.'),
+  derivado('espinheiro', 'Espinheiro', ['planta', 'vileza'], 'Espinhos venenosos: quem toca sangra e adoece.'),
+  derivado('murcha', 'Murcha', ['planta', 'morte'], 'A folha que cai: drena vigor e apodrece o terreno.'),
+  derivado('seiva', 'Seiva', ['planta', 'vida'], 'Sangue verde: regeneração profunda e lenta.'),
+  derivado('carvalho', 'Carvalho', ['planta', 'vigor'], 'Tronco de mil anos: pele de casca e força de raiz.'),
+  derivado('bambu', 'Bambu', ['planta', 'marcial'], 'Haste flexível: bastões e lanças que nunca quebram.'),
+  derivado('estacoes', 'Estações', ['planta', 'tempo'], 'Primavera ao inverno: o terreno muda a cada turno.'),
+  derivado('farfalhar', 'Farfalhar', ['planta', 'som'], 'A floresta sussurra: alerta, confunde e esconde.'),
+  derivado('trepadeira', 'Trepadeira', ['planta', 'gravidade'], 'Vinhas que puxam: arrasta e prende ao chão.'),
+  derivado('arvore_mundo', 'Árvore-Mundo', ['planta', 'espaco'], 'Galhos que tocam outros mundos: portais vivos.', { fator: 1.25, minimo: 12 }),
+  derivado('jardim_encantado', 'Jardim Encantado', ['planta', 'fada'], 'Flores que cantam e brilham: cura e encanto em área.'),
+  derivado('estufa', 'Estufa', ['planta', 'industrial'], 'Cultivo acelerado: plantas crescem armadas e rápidas.'),
 
   // ---- triplas ----
   derivado('chama_demoniaca', 'Chama Demoníaca', ['fogo', 'vileza', 'morte'], 'Fogo alimentado por pacto e morte: queima corpo, alma e contrato.'),
@@ -465,6 +551,9 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado('sobrecarga', 'Sobrecarga', ['eletricidade', 'arcano', 'vigor'], 'Corpo-condutor: velocidade e poder além do limite seguro.'),
   derivado('ascensao', 'Ascensão', ['luz', 'vida', 'vigor'], 'Forma exaltada: transcende brevemente a condição mortal.'),
   derivado('nucleo', 'Núcleo', ['fogo', 'terra', 'eletricidade'], 'O coração do mundo: erupções magnéticas e magma pressurizado.'),
+  derivado('pestilencia', 'Pestilência', ['planta', 'morte', 'vileza'], 'A praga verde: esporos e espinhos que apodrecem tudo em volta.'),
+  derivado('maldicao', 'Maldição', ['fada', 'sombra', 'vileza'], 'O encanto que virou praga: a fada corrompida amaldiçoa quem ama.'),
+  derivado('cyber', 'Cyber', ['industrial', 'eletricidade', 'arcano'], 'Mana digital: código, rede e máquina pensante.'),
   derivado('avatar_de_guerra', 'Avatar de Guerra', ['marcial', 'vigor', 'arcano'], 'A guerra encarnada: cem armas orbitando um corpo perfeito.'),
 
   // ---- amplas e especiais ----
@@ -485,7 +574,7 @@ const DERIVADOS_LISTA: ElementoDef[] = [
   derivado(
     'nulo',
     'Nulo',
-    ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'arcano', 'sombra', 'luz', 'vileza', 'morte', 'vida', 'vigor', 'marcial', 'tempo', 'som', 'gravidade', 'espaco'],
+    ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'arcano', 'sombra', 'luz', 'vileza', 'morte', 'vida', 'vigor', 'marcial', 'tempo', 'som', 'gravidade', 'espaco', 'fada', 'industrial', 'planta'],
     'O elemento de quem dominou todos: nega, absorve e devolve qualquer coisa.',
     { fator: 1.4, minimo: 8, tipo: 'especial' },
   ),
@@ -541,10 +630,17 @@ export const SINERGIAS: Sinergia[] = [
   { de: 'ar', para: ['som'], razao: 0.05 },
   { de: 'terra', para: ['vigor'], razao: 0.05 },
   { de: 'eletricidade', para: ['ar'], razao: 0.05 },
+  { de: 'planta', para: ['vida'], razao: 0.1 },
+  { de: 'vida', para: ['planta'], razao: 0.1 },
+  { de: 'fada', para: ['luz'], razao: 0.08 },
+  { de: 'luz', para: ['fada'], razao: 0.08 },
+  { de: 'industrial', para: ['eletricidade'], razao: 0.05 },
+  { de: 'industrial', para: ['marcial'], razao: 0.05 },
+  { de: 'terra', para: ['planta'], razao: 0.05 },
   // Arcano é magia pura: alimenta de leve tudo que não é físico.
   {
     de: 'arcano',
-    para: ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'sombra', 'luz'],
+    para: ['fogo', 'agua', 'terra', 'ar', 'eletricidade', 'sombra', 'luz', 'fada'],
     razao: 0.05,
   },
 ];
