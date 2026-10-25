@@ -21,16 +21,16 @@ export interface AfinidadeDef {
 
 /** Relações por elemento base. Vazio = neutro contra tudo (físico). */
 export const AFINIDADES: Record<ElementoBaseId, AfinidadeDef> = {
-  fogo: { forteContra: ['vida', 'terra'], fracoContra: ['agua'] },
-  agua: { forteContra: ['fogo'], fracoContra: ['eletricidade', 'vida'] },
+  fogo: { forteContra: ['vida', 'terra', 'planta'], fracoContra: ['agua'] },
+  agua: { forteContra: ['fogo', 'industrial'], fracoContra: ['eletricidade', 'vida'] },
   terra: { forteContra: ['eletricidade', 'som'], fracoContra: ['ar', 'fogo'] },
   ar: { forteContra: ['terra'], fracoContra: ['eletricidade'] },
-  eletricidade: { forteContra: ['agua', 'ar'], fracoContra: ['terra'] },
+  eletricidade: { forteContra: ['agua', 'ar', 'industrial'], fracoContra: ['terra'] },
   arcano: { forteContra: ['vigor', 'marcial', 'tempo', 'espaco'], fracoContra: ['sombra'] },
   sombra: { forteContra: ['luz', 'arcano'], fracoContra: ['luz'] },
   luz: { forteContra: ['sombra', 'morte', 'vileza'], fracoContra: [] },
-  vileza: { forteContra: ['vida'], fracoContra: ['luz'] },
-  morte: { forteContra: ['vida'], fracoContra: ['luz'] },
+  vileza: { forteContra: ['vida', 'planta'], fracoContra: ['luz'] },
+  morte: { forteContra: ['vida', 'fada'], fracoContra: ['luz'] },
   vida: { forteContra: ['morte', 'vileza'], fracoContra: ['fogo', 'morte'] },
   vigor: { forteContra: [], fracoContra: ['arcano', 'tempo'] },
   marcial: { forteContra: [], fracoContra: ['arcano', 'tempo'] },
@@ -42,6 +42,12 @@ export const AFINIDADES: Record<ElementoBaseId, AfinidadeDef> = {
   gravidade: { forteContra: ['ar', 'vigor', 'marcial'], fracoContra: ['espaco'] },
   // Espaço supera gravidade e tempo; o arcano o mapeia.
   espaco: { forteContra: ['gravidade', 'tempo'], fracoContra: ['arcano'] },
+  // Fada encanta o profano e flutua acima do peso; o ferro e a morte a quebram.
+  fada: { forteContra: ['sombra', 'vileza', 'gravidade'], fracoContra: ['industrial', 'morte'] },
+  // A máquina derruba a mata e o encanto; a água enferruja, o raio dá curto.
+  industrial: { forteContra: ['fada', 'planta', 'terra'], fracoContra: ['agua', 'eletricidade'] },
+  // A planta bebe a água, racha a pedra e aterra o raio; o fogo a queima.
+  planta: { forteContra: ['agua', 'terra', 'eletricidade'], fracoContra: ['fogo'] },
 };
 
 /**

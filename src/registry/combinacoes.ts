@@ -1,11 +1,11 @@
 /**
  * Motor de COMBINAÇÕES N-ÁRIAS — o espaço completo de triplas e quádruplas.
  *
- * Os 136 pares dos 17 elementos base são todos curados à mão em
+ * Os 190 pares dos 20 elementos base são todos curados à mão em
  * `elementos.ts`. A partir de 3 componentes o espaço explode:
  *
- *   C(17,3) =   680 triplas
- *   C(17,4) = 2.380 quádruplas
+ *   C(20,3) = 1.140 triplas
+ *   C(20,4) = 4.845 quádruplas
  *
  * Curar 3.060 entradas à mão é inviável e desnecessário. A estratégia é
  * HÍBRIDA:
@@ -123,6 +123,9 @@ export const LEXICO: Record<ElementoBaseId, LexicoElemento> = {
   som: { adjetivo: { m: 'Sonoro', f: 'Sonora' }, dominio: 'Eco', genero: 'm' },
   gravidade: { adjetivo: { m: 'Denso', f: 'Densa' }, dominio: 'Peso', genero: 'f' },
   espaco: { adjetivo: { m: 'Sideral', f: 'Sideral' }, dominio: 'Vazio', genero: 'm' },
+  fada: { adjetivo: { m: 'Feérico', f: 'Feérica' }, dominio: 'Encanto', genero: 'm' },
+  industrial: { adjetivo: { m: 'Fabril', f: 'Fabril' }, dominio: 'Fábrica', genero: 'f' },
+  planta: { adjetivo: { m: 'Silvestre', f: 'Silvestre' }, dominio: 'Raiz', genero: 'f' },
 };
 
 /**
@@ -180,7 +183,7 @@ for (const def of Object.values(ELEMENTOS)) {
   );
 }
 
-/** Nome do par (a,b) — todos os 136 existem em `elementos.ts`. */
+/** Nome do par (a,b) — todos os 190 existem em `elementos.ts`. */
 function nomeDoPar(a: ElementoBaseId, b: ElementoBaseId): string | undefined {
   const id = INDICE_CURADAS.get(chaveCombinacao([a, b]));
   return id ? ELEMENTOS[id].nome : undefined;
@@ -494,7 +497,7 @@ function enumerar(aridade: number): CombinacaoInfo[] {
   return saida;
 }
 
-/** Todas as 680 triplas. */
+/** Todas as 1.140 triplas. */
 export const TRIPLAS: CombinacaoInfo[] = enumerar(3);
 /** Todas as 2.380 quádruplas. */
 export const QUADRUPLAS: CombinacaoInfo[] = enumerar(4);
@@ -679,7 +682,7 @@ export function buscarCombinacoes(termo: string, limite = 40): CombinacaoInfo[] 
 // a declaração — exceção no registro, nunca `if` por id aqui.
 // ---------------------------------------------------------------------------
 
-/** chave "a+b" ordenada → id do par curado (os 136 vivem em ELEMENTOS). */
+/** chave "a+b" ordenada → id do par curado (os 190 vivem em ELEMENTOS). */
 const PAR_POR_CHAVE = new Map<string, ElementoId>(
   Object.values(ELEMENTOS)
     .filter((d) => d.receita?.length === 2)

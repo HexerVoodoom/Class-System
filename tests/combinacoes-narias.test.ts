@@ -49,19 +49,19 @@ function ficha(elems: [ElementoBaseId, number][]) {
 }
 
 describe('o espaço completo de combinações', () => {
-  it('enumera exatamente C(17,3) triplas e C(17,4) quádruplas', () => {
-    expect(TRIPLAS).toHaveLength(680);
-    expect(QUADRUPLAS).toHaveLength(2380);
-    expect(TODAS_COMBINACOES).toHaveLength(3060);
+  it('enumera exatamente C(20,3) triplas e C(20,4) quádruplas', () => {
+    expect(TRIPLAS).toHaveLength(1140);
+    expect(QUADRUPLAS).toHaveLength(4845);
+    expect(TODAS_COMBINACOES).toHaveLength(5985);
   });
 
   it('toda combinação tem um id único', () => {
-    expect(new Set(TODAS_COMBINACOES.map((c) => c.id)).size).toBe(3060);
+    expect(new Set(TODAS_COMBINACOES.map((c) => c.id)).size).toBe(5985);
   });
 
   it('toda combinação tem um NOME único — a nomenclatura procedural não colide', () => {
     const nomes = new Set(TODAS_COMBINACOES.map((c) => elementoDef(c.id)!.nome));
-    expect(nomes.size).toBe(3060);
+    expect(nomes.size).toBe(5985);
   });
 
   it('a ordenação dos componentes não altera a resolução', () => {
@@ -255,11 +255,11 @@ describe('meias-identidades: aridade compra largura, não altura', () => {
 });
 
 describe('o registro completo continua íntegro', () => {
-  it('todos os 17 elementos base seguem aceitando pontos diretos', () => {
-    expect(elementosBase()).toHaveLength(17);
+  it('todos os 20 elementos base seguem aceitando pontos diretos', () => {
+    expect(elementosBase()).toHaveLength(20);
     const p = criarPersonagem('t');
     for (const e of elementosBase()) investirElemento(p, e.id as ElementoBaseId, 1);
-    expect(Object.keys(p.elementos)).toHaveLength(17);
+    expect(Object.keys(p.elementos)).toHaveLength(20);
   });
 
   it('elementoDef resolve base, curado e procedural pelo mesmo caminho', () => {

@@ -16,7 +16,7 @@ import { calcularProgressao } from '../src/engine/progressao';
 import { calcularSkill, type SkillConfig } from '../src/engine/skills';
 
 describe('matriz completa de combinações', () => {
-  it('TODOS os 136 pares de elementos base têm um derivado registrado', () => {
+  it('TODOS os 190 pares de elementos base têm um derivado registrado', () => {
     const bases = elementosBase().map((e) => e.id as ElementoBaseId);
     const paresRegistrados = new Set(
       elementosDerivados()
@@ -36,7 +36,7 @@ describe('matriz completa de combinações', () => {
       }
     }
     expect(faltando).toEqual([]);
-    expect(paresRegistrados.size).toBe(136); // C(17,2): +tempo, som, gravidade, espaço
+    expect(paresRegistrados.size).toBe(190); // C(20,2): +fada, industrial, planta
   });
 
   it('derivados herdam perfil como média dos componentes', () => {
@@ -51,7 +51,7 @@ describe('matriz completa de combinações', () => {
     expect(ELEMENTOS.chama_demoniaca.receita).toHaveLength(3);
     expect(ELEMENTOS.primordial.receita).toHaveLength(5);
     expect(ELEMENTOS.ciclo.receita).toHaveLength(4);
-    expect(ELEMENTOS.nulo.receita).toHaveLength(17);
+    expect(ELEMENTOS.nulo.receita).toHaveLength(20);
   });
 
   it('tempo (14º base) fecha a matriz: pira eterna e cronomancia existem', () => {

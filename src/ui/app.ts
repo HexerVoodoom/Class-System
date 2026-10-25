@@ -333,6 +333,9 @@ const CORES: Record<ElementoBaseId, string> = {
   som: '#cf7fa8',
   gravidade: '#7d6fa0',
   espaco: '#4d5fb0',
+  fada: '#f08cc8',
+  industrial: '#8c7f73',
+  planta: '#6f9a3a',
 };
 
 const el = (id: string) => document.getElementById(id)!;

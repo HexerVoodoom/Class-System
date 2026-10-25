@@ -80,6 +80,9 @@ export const ESTADOS_POR_ELEMENTO: Record<ElementoBaseId, EstadoId[]> = {
   som: ['silencio', 'atordoamento'],
   gravidade: ['derrubada', 'lentidao', 'atordoamento'],
   espaco: ['derrubada', 'lentidao'],
+  fada: ['encantado', 'escudo'],
+  industrial: ['atordoamento', 'escudo'],
+  planta: ['veneno', 'regeneracao'],
 };
 
 /** Estados que cada escola tende a aplicar, além do elemento. */

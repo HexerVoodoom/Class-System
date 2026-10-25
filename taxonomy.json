@@ -312,6 +312,54 @@
       "cascata": null
     },
     {
+      "id": "fada",
+      "nome": "Fada",
+      "tipo": "base",
+      "descricao": "Encanto feérico: arco-íris, corações e glitter — encanta, ilude e abençoa.",
+      "fatorPotencia": 1,
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.3,
+        "cura": 0.2,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": null,
+      "cascata": null
+    },
+    {
+      "id": "industrial",
+      "nome": "Industrial",
+      "tipo": "base",
+      "descricao": "Fábrica e máquina: constructos, ferramentas e blindagem fabricada.",
+      "fatorPotencia": 1,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0.4,
+        "suporte": 0.1
+      },
+      "receita": null,
+      "cascata": null
+    },
+    {
+      "id": "planta",
+      "nome": "Planta",
+      "tipo": "base",
+      "descricao": "Raiz, espinho e semente: enreda, envenena e regenera.",
+      "fatorPotencia": 1,
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.3,
+        "cura": 0.3,
+        "defesa": 0.2,
+        "suporte": 0
+      },
+      "receita": null,
+      "cascata": null
+    },
+    {
       "id": "vapor",
       "nome": "Vapor",
       "tipo": "derivado",
@@ -1013,7 +1061,7 @@
     },
     {
       "id": "flora",
-      "nome": "Flora",
+      "nome": "Bosque",
       "tipo": "derivado",
       "descricao": "Natureza desperta: vinhas, raízes e crescimento selvagem.",
       "fatorPotencia": 1.15,
@@ -3712,6 +3760,1356 @@
       "cascata": null
     },
     {
+      "id": "fogo_fatuo",
+      "nome": "Fogo-Fátuo",
+      "tipo": "derivado",
+      "descricao": "Luzinhas que dançam: chamas rosadas que atraem e confundem.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.15,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "orvalho",
+      "nome": "Orvalho Encantado",
+      "tipo": "derivado",
+      "descricao": "Gotas de arco-íris: cura leve que reflete feitiços.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.35,
+        "cura": 0.2,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "circulo_feerico",
+      "nome": "Círculo de Fadas",
+      "tipo": "derivado",
+      "descricao": "Anel de cogumelos: quem entra fica preso no encanto.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.25,
+        "cura": 0.1,
+        "defesa": 0.25,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "brisa_cintilante",
+      "nome": "Brisa Cintilante",
+      "tipo": "derivado",
+      "descricao": "Vento de glitter: cega de leve e acelera aliados.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.35,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "glitter",
+      "nome": "Glitter",
+      "tipo": "derivado",
+      "descricao": "Faíscas de purpurina: choques que deslumbram em área.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.25,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "feerie",
+      "nome": "Feérie",
+      "tipo": "derivado",
+      "descricao": "Magia das fadas: ilusões tão reais que ferem.",
+      "fatorPotencia": 1.2,
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.25,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "pesadelo_doce",
+      "nome": "Pesadelo Doce",
+      "tipo": "derivado",
+      "descricao": "O sonho que vira armadilha: sono, medo e doçura.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.3,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "arco_iris",
+      "nome": "Arco-Íris",
+      "tipo": "derivado",
+      "descricao": "Ponte de sete cores: escudo e bênção que se espalham.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.15,
+        "cura": 0.25,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "encanto_traicoeiro",
+      "nome": "Encanto Traiçoeiro",
+      "tipo": "derivado",
+      "descricao": "O sorriso da fada má: charme que se volta contra o alvo.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.3,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "banshee",
+      "nome": "Banshee",
+      "tipo": "derivado",
+      "descricao": "O lamento feérico: o grito que anuncia o fim.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.3,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "coracao",
+      "nome": "Coração",
+      "tipo": "derivado",
+      "descricao": "Amor encantado: corações que curam e unem aliados.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.1,
+        "controle": 0.15,
+        "cura": 0.4,
+        "defesa": 0.1,
+        "suporte": 0.25
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "graca",
+      "nome": "Graça",
+      "tipo": "derivado",
+      "descricao": "Leveza de dança: esquiva e golpes delicados e certeiros.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.15,
+        "cura": 0.1,
+        "defesa": 0.15,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "lamina_purpurina",
+      "nome": "Lâmina de Purpurina",
+      "tipo": "derivado",
+      "descricao": "A espada rosa: cada corte deixa um rastro cintilante.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.2,
+        "cura": 0.1,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "sono_encantado",
+      "nome": "Sono Encantado",
+      "tipo": "derivado",
+      "descricao": "Cem anos num piscar: adormece e congela o instante.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.4,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "cancao_feerica",
+      "nome": "Canção Feérica",
+      "tipo": "derivado",
+      "descricao": "Melodia que enfeitiça: aliados inspirados, inimigos distraídos.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.3,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "leveza",
+      "nome": "Leveza",
+      "tipo": "derivado",
+      "descricao": "Asas de fada: anula o peso, levita e flutua.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.35,
+        "cura": 0.1,
+        "defesa": 0.05,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "poeira_estelar",
+      "nome": "Poeira Estelar",
+      "tipo": "derivado",
+      "descricao": "Pó de estrela: teleporte curto num estouro de brilho.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.35,
+        "cura": 0.1,
+        "defesa": 0,
+        "suporte": 0.3
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "fornalha",
+      "nome": "Fornalha",
+      "tipo": "derivado",
+      "descricao": "A caldeira acesa: calor constante que funde metal.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.7,
+        "controle": 0.05,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "hidraulica",
+      "nome": "Hidráulica",
+      "tipo": "derivado",
+      "descricao": "Pressão de pistão: empurrões e jatos esmagadores.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.25,
+        "cura": 0.1,
+        "defesa": 0.2,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "mineracao",
+      "nome": "Mineração",
+      "tipo": "derivado",
+      "descricao": "Broca e picareta: perfura defesas e escava abrigos.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.15000000000000002,
+        "cura": 0,
+        "defesa": 0.45,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "pneumatica",
+      "nome": "Pneumática",
+      "tipo": "derivado",
+      "descricao": "Ar comprimido: disparos e saltos propulsionados.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "usina",
+      "nome": "Usina",
+      "tipo": "derivado",
+      "descricao": "Gerador em carga máxima: energia para aliados e torres.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.6000000000000001,
+        "controle": 0.15000000000000002,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "artificio",
+      "nome": "Artifício",
+      "tipo": "derivado",
+      "descricao": "Máquina com runa: dispositivos mágicos programáveis.",
+      "fatorPotencia": 1.2,
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.15000000000000002,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "fuligem",
+      "nome": "Fuligem",
+      "tipo": "derivado",
+      "descricao": "Fumaça de chaminé: nuvem negra que cega e sufoca.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "holofote",
+      "nome": "Holofote",
+      "tipo": "derivado",
+      "descricao": "Luz fabricada: revela, ofusca e marca alvos.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.05,
+        "cura": 0.15,
+        "defesa": 0.30000000000000004,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "poluicao",
+      "nome": "Poluição",
+      "tipo": "derivado",
+      "descricao": "Resíduo tóxico: corrói o terreno e quem nele vive.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "ferro_velho",
+      "nome": "Ferro-Velho",
+      "tipo": "derivado",
+      "descricao": "Sucata reanimada: constructos feitos do que morreu.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "biomecanica",
+      "nome": "Biomecânica",
+      "tipo": "derivado",
+      "descricao": "Carne e prótese: reparo de corpo e máquina.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.05,
+        "cura": 0.3,
+        "defesa": 0.30000000000000004,
+        "suporte": 0.15000000000000002
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "exoesqueleto",
+      "nome": "Exoesqueleto",
+      "tipo": "derivado",
+      "descricao": "Armadura motorizada: força e resistência fabricadas.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.05,
+        "cura": 0,
+        "defesa": 0.35,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "armaria",
+      "nome": "Armaria",
+      "tipo": "derivado",
+      "descricao": "Linha de montagem de armas: munição sem fim.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.55,
+        "controle": 0.1,
+        "cura": 0,
+        "defesa": 0.30000000000000004,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "relojoaria",
+      "nome": "Relojoaria",
+      "tipo": "derivado",
+      "descricao": "Mecanismo preciso: atrasa e adianta turnos.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.3,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "britadeira",
+      "nome": "Britadeira",
+      "tipo": "derivado",
+      "descricao": "Vibração mecânica: atordoa e racha estruturas.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.2,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "prensa",
+      "nome": "Prensa",
+      "tipo": "derivado",
+      "descricao": "Toneladas de aço descendo: esmaga e imobiliza.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.45,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.25,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "estacao_orbital",
+      "nome": "Estação Orbital",
+      "tipo": "derivado",
+      "descricao": "Fábrica no céu: bombardeio e suporte de longe.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.25,
+        "cura": 0,
+        "defesa": 0.2,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "brinquedo",
+      "nome": "Brinquedo de Corda",
+      "tipo": "derivado",
+      "descricao": "Corda e encanto: bonecos que dançam, distraem e protegem.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.2,
+        "cura": 0.1,
+        "defesa": 0.2,
+        "suporte": 0.2
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "queimada",
+      "nome": "Queimada",
+      "tipo": "derivado",
+      "descricao": "Mato seco em chamas: incêndio que se alastra pelo chão.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.6,
+        "controle": 0.15,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fogo",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "mangue",
+      "nome": "Mangue",
+      "tipo": "derivado",
+      "descricao": "Raízes na água: terreno que prende e alimenta.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.35,
+        "cura": 0.25,
+        "defesa": 0.1,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "agua",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "raiz_profunda",
+      "nome": "Raiz Profunda",
+      "tipo": "derivado",
+      "descricao": "Raízes que racham pedra: prende e ancora.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.25,
+        "cura": 0.15,
+        "defesa": 0.35,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "terra",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "polen",
+      "nome": "Pólen",
+      "tipo": "derivado",
+      "descricao": "Nuvem dourada: espirros, sono e cura leve no vento.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.35,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "ar",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "fotossintese",
+      "nome": "Fotossíntese",
+      "tipo": "derivado",
+      "descricao": "Energia da folha: recarga contínua de recurso.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.5,
+        "controle": 0.25,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "druidismo",
+      "nome": "Druidismo",
+      "tipo": "derivado",
+      "descricao": "A magia verde: forma de fera e o chamado da mata.",
+      "fatorPotencia": 1.2,
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.25,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "fungo",
+      "nome": "Fungo",
+      "tipo": "derivado",
+      "descricao": "Micélio no escuro: esporos que drenam e se espalham.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.3,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "girassol",
+      "nome": "Girassol",
+      "tipo": "derivado",
+      "descricao": "A flor do sol: cura e proteção voltadas aos aliados.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.15,
+        "cura": 0.3,
+        "defesa": 0.2,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "luz",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "espinheiro",
+      "nome": "Espinheiro",
+      "tipo": "derivado",
+      "descricao": "Espinhos venenosos: quem toca sangra e adoece.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.3,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "murcha",
+      "nome": "Murcha",
+      "tipo": "derivado",
+      "descricao": "A folha que cai: drena vigor e apodrece o terreno.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.3,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "seiva",
+      "nome": "Seiva",
+      "tipo": "derivado",
+      "descricao": "Sangue verde: regeneração profunda e lenta.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.1,
+        "controle": 0.15,
+        "cura": 0.44999999999999996,
+        "defesa": 0.2,
+        "suporte": 0.1
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vida",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "carvalho",
+      "nome": "Carvalho",
+      "tipo": "derivado",
+      "descricao": "Tronco de mil anos: pele de casca e força de raiz.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.4,
+        "controle": 0.15,
+        "cura": 0.15,
+        "defesa": 0.25,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "vigor",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "bambu",
+      "nome": "Bambu",
+      "tipo": "derivado",
+      "descricao": "Haste flexível: bastões e lanças que nunca quebram.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.44999999999999996,
+        "controle": 0.2,
+        "cura": 0.15,
+        "defesa": 0.2,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "marcial",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "estacoes",
+      "nome": "Estações",
+      "tipo": "derivado",
+      "descricao": "Primavera ao inverno: o terreno muda a cada turno.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.4,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "tempo",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "farfalhar",
+      "nome": "Farfalhar",
+      "tipo": "derivado",
+      "descricao": "A floresta sussurra: alerta, confunde e esconde.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.3,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "som",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "trepadeira",
+      "nome": "Trepadeira",
+      "tipo": "derivado",
+      "descricao": "Vinhas que puxam: arrasta e prende ao chão.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.35,
+        "controle": 0.35,
+        "cura": 0.15,
+        "defesa": 0.15000000000000002,
+        "suporte": 0
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "gravidade",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "arvore_mundo",
+      "nome": "Árvore-Mundo",
+      "tipo": "derivado",
+      "descricao": "Galhos que tocam outros mundos: portais vivos.",
+      "fatorPotencia": 1.25,
+      "pesos": {
+        "dano": 0.25,
+        "controle": 0.35,
+        "cura": 0.15,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 12
+        },
+        {
+          "elemento": "espaco",
+          "nivelMinimo": 12
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "jardim_encantado",
+      "nome": "Jardim Encantado",
+      "tipo": "derivado",
+      "descricao": "Flores que cantam e brilham: cura e encanto em área.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.2,
+        "controle": 0.3,
+        "cura": 0.25,
+        "defesa": 0.1,
+        "suporte": 0.15
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "fada",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "estufa",
+      "nome": "Estufa",
+      "tipo": "derivado",
+      "descricao": "Cultivo acelerado: plantas crescem armadas e rápidas.",
+      "fatorPotencia": 1.15,
+      "pesos": {
+        "dano": 0.30000000000000004,
+        "controle": 0.2,
+        "cura": 0.15,
+        "defesa": 0.30000000000000004,
+        "suporte": 0.05
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 10
+        },
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 10
+        }
+      ],
+      "cascata": null
+    },
+    {
       "id": "chama_demoniaca",
       "nome": "Chama Demoníaca",
       "tipo": "derivado",
@@ -4060,6 +5458,93 @@
       "cascata": null
     },
     {
+      "id": "pestilencia",
+      "nome": "Pestilência",
+      "tipo": "derivado",
+      "descricao": "A praga verde: esporos e espinhos que apodrecem tudo em volta.",
+      "fatorPotencia": 1.3,
+      "pesos": {
+        "dano": 0.4666666666666667,
+        "controle": 0.3,
+        "cura": 0.09999999999999999,
+        "defesa": 0.06666666666666667,
+        "suporte": 0.06666666666666667
+      },
+      "receita": [
+        {
+          "elemento": "planta",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "morte",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 15
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "maldicao",
+      "nome": "Maldição",
+      "tipo": "derivado",
+      "descricao": "O encanto que virou praga: a fada corrompida amaldiçoa quem ama.",
+      "fatorPotencia": 1.3,
+      "pesos": {
+        "dano": 0.43333333333333335,
+        "controle": 0.3,
+        "cura": 0.06666666666666667,
+        "defesa": 0,
+        "suporte": 0.19999999999999998
+      },
+      "receita": [
+        {
+          "elemento": "fada",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "sombra",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "vileza",
+          "nivelMinimo": 15
+        }
+      ],
+      "cascata": null
+    },
+    {
+      "id": "cyber",
+      "nome": "Cyber",
+      "tipo": "derivado",
+      "descricao": "Mana digital: código, rede e máquina pensante.",
+      "fatorPotencia": 1.3,
+      "pesos": {
+        "dano": 0.5666666666666667,
+        "controle": 0.16666666666666669,
+        "cura": 0,
+        "defesa": 0.13333333333333333,
+        "suporte": 0.13333333333333333
+      },
+      "receita": [
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "eletricidade",
+          "nivelMinimo": 15
+        },
+        {
+          "elemento": "arcano",
+          "nivelMinimo": 15
+        }
+      ],
+      "cascata": null
+    },
+    {
       "id": "avatar_de_guerra",
       "nome": "Avatar de Guerra",
       "tipo": "derivado",
@@ -4184,11 +5669,11 @@
       "descricao": "O elemento de quem dominou todos: nega, absorve e devolve qualquer coisa.",
       "fatorPotencia": 1.4,
       "pesos": {
-        "dano": 0.47647058823529415,
-        "controle": 0.23529411764705882,
-        "cura": 0.06470588235294117,
-        "defesa": 0.08823529411764705,
-        "suporte": 0.1352941176470588
+        "dano": 0.4450000000000001,
+        "controle": 0.23500000000000004,
+        "cura": 0.08,
+        "defesa": 0.10500000000000001,
+        "suporte": 0.135
       },
       "receita": [
         {
@@ -4258,6 +5743,18 @@
         {
           "elemento": "espaco",
           "nivelMinimo": 8
+        },
+        {
+          "elemento": "fada",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "industrial",
+          "nivelMinimo": 8
+        },
+        {
+          "elemento": "planta",
+          "nivelMinimo": 8
         }
       ],
       "cascata": {
@@ -4278,7 +5775,10 @@
           "tempo",
           "som",
           "gravidade",
-          "espaco"
+          "espaco",
+          "fada",
+          "industrial",
+          "planta"
         ],
         "divisor": 20,
         "destravavel": false
